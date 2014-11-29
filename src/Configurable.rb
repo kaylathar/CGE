@@ -1,9 +1,9 @@
 
 module Configurable
-  def has_option(name,type,optionType = Option)
+  def has_option(name,type,&verifier)
     define_method("#{name}") do
       unless instance_variable_get("@"+name)
-        instance_variable_set("@"+name,optionType.new(name,type))   
+        instance_variable_set("@"+name,Option.new(name,type,verifier))   
       end
 
       instance_variable_get("@"+name)
@@ -41,13 +41,21 @@ class Option
   attr_reader :name,:type
   attr_accessor :value
 
-  def initialize(name,type)
+  def initialize(name,type,verifier = nil,&block_verifier)
     @type = type;
     @name = name;
+    @verifier = if verifier
+      verifier
+    elsif block_verifier
+      block_verifier
+    else
+      true
+    end
   end
 
   def is_valid?
-    @value != nil && @value.is_a?(@type)
+    
+    @value != nil && @value.is_a?(@type) && (@verifier || @verifier.call)
   end
 end
 

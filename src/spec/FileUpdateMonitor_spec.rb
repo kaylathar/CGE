@@ -4,7 +4,7 @@ require 'yaml'
 describe FileUpdateMonitor do
   before :each do
     @monitor = FileUpdateMonitor.new( 
-      :path => "/var/test",
+      :path => "/tmp/test1",
       :frequency => 3,
     )
   end

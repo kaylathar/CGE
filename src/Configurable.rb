@@ -54,8 +54,7 @@ class Option
   end
 
   def is_valid?
-    
-    @value != nil && @value.is_a?(@type) && (@verifier || @verifier.call)
+    @value != nil && @value.is_a?(@type) && (@verifier == true || @verifier.call(@value))
   end
 end
 

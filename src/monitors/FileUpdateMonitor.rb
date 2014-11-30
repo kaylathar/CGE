@@ -9,16 +9,16 @@ class FileUpdateMonitor < Monitor
     val > 1 
   end
 
-  def initialize(*options)
+  def initialize(options)
     super 
   end
 
   def block_until_triggered
-    initialModifiedTime = File.mtime(@path)
-    modifiedTime = File.mtime(@path) 
-    until modifiedTime > initialModifiedTime
-      sleep @frequency
-      modifiedTime = File.mtime(@path)
+    initialModifiedTime = File.mtime(@path.value)
+    loop do
+      sleep @frequency.value
+      modifiedTime = File.mtime(@path.value)
+      break if modifiedTime > initialModifiedTime
     end
   end
 

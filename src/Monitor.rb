@@ -8,8 +8,8 @@ class Monitor
   end
 
   def on_trigger
-    loop do
-      Thread.new do
+    Thread.new do
+      loop do
         block_until_triggered
         yield
       end

@@ -1,4 +1,15 @@
 
+# Module used for configurable objects internally
+# adds the has_option class method that creates an option
+# for use on Monitor and Action subclasses - it exposes
+# the options that are present, and required types, so that
+# parsers and UI can view them if required
+#
+# Of particular note, it adds an accessor to instances 
+# for each option, a process_options helper method to
+# parse a hash set of parameters into options and validate
+# each option, and a options class method that returns the options
+# this class supports in the form of a hash
 module Configurable
   def has_option(name,type,&verifier)
     name = name.to_s
@@ -38,6 +49,11 @@ module Configurable
 
 end
 
+# Used to store options - includes the expected type
+# the name, and the value.  Also includes validation logic
+# - the absence of validation logic in the value= operator is
+# intentional, as there may be cases where you can set an invalid
+# option value
 class Option
   attr_reader :name,:type
   attr_accessor :value

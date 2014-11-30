@@ -4,6 +4,8 @@ class Action
 
   def activate(options)
     process_options(options)
-    yield invoke 
+    success = invoke
+    yield success if block_given?
+    success
   end
 end

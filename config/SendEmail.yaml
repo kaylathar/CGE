@@ -1,0 +1,15 @@
+---
+Monitor:
+  Type: FileUpdateMonitor
+  Options: 
+    path: /tmp/test1
+    frequency: 2
+
+Action:
+  Type: EmailAction
+  Options:
+    to: test@example.com
+    from: test@example.com
+    subject: Test Email
+    body: test email body
+---

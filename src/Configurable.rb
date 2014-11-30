@@ -43,8 +43,26 @@ module Configurable
     end
   end
 
+  def has_output(name, type)
+    define_method("@#{name}") do
+      instance_variable_get("@#{name}")
+    end
+
+    begin
+      class_variable_get("@@outputs")
+    rescue
+      class_variable_set("@@outputs",Hash.new)  
+    end
+
+    class_variable_get("@@outputs")[name]=type
+  end
+
   def options
     class_variable_get("@@options")
+  end
+
+  def outputs
+    class_variable_get("@@outputs")
   end
 
 end

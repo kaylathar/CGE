@@ -9,6 +9,9 @@ class FileUpdateMonitor < Monitor
     val > 1 
   end
 
+  has_output "time", Time
+  has_output "contents", String
+
   def initialize(options)
     super 
   end
@@ -18,7 +21,13 @@ class FileUpdateMonitor < Monitor
     loop do
       sleep @frequency.value
       modifiedTime = File.mtime(@path.value)
-      break if modifiedTime > initialModifiedTime
+      if modifiedTime > initialModifiedTime
+        @time = modifiedTime
+        file = File.open(@path.value)
+        @contents = file.read()
+        file.close()
+        break
+      end
     end
   end
 

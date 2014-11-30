@@ -1,16 +1,39 @@
-require_relative "monitors/FileUpdateMonitor"
-require_relative "actions/EmailAction"
+require_relative 'Command'
 
-monitor = FileUpdateMonitor.new(:path => "/tmp/test1", :frequency => 2)
-action = EmailAction.new()
 
-monitor.on_trigger do
-  action.activate(:to => "test@example.com",
-                  :from => "test@example.com",
-                  :subject => "test subject",
-                  :body => "test body") do
-    puts "Email sent successful!"
+def start_dad
+  if ARGV[0] && File.directory?(ARGV[0])
+    dad = DynamicActionDaemon.new(ARGV[0])
+    dad.start()
+  else
+    print_usage
+  end 
+    
+end
+
+def print_usage
+  puts "DAF not started - please see below"
+  puts "Usage: daf [path to config folder]"
+  puts "Directory must contain one or more config"
+  puts "files with a .yaml extension"
+end
+
+
+class DynamicActionDaemon
+  def initialize(configPath)
+    @commands = []
+    Dir[configPath + "/*.yaml"].each do |file|
+      @commands << Command.new(file)
+    end 
+  end
+
+  def start
+    @commands.each do |command|
+      command.execute()
+      sleep
+    end
   end
 end
 
-sleep(10000)
+
+start_dad() if __FILE__ == $0

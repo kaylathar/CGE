@@ -1,6 +1,7 @@
 
 module Configurable
   def has_option(name,type,&verifier)
+    name = name.to_s
     define_method("#{name}") do
       unless instance_variable_get("@"+name)
         instance_variable_set("@"+name,Option.new(name,type,verifier))   

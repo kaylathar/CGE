@@ -11,7 +11,7 @@
 # each option, and a options class method that returns the options
 # this class supports in the form of a hash
 module Configurable
-  def has_option(name,type,&verifier)
+  def has_option(name, type, required = :optional, &verifier)
     name = name.to_s
     define_method("#{name}") do
       unless instance_variable_get("@"+name)
@@ -27,6 +27,16 @@ module Configurable
       class_variable_set("@@options",Hash.new)
     end 
 
+    begin
+      class_variable_get("@@required_options")
+    rescue
+      class_variable_set("@@required_options",Array.new)
+    end
+
+    if required == :required
+      class_variable_get("@@required_options") << name
+    end
+
     class_variable_get("@@options")[name] = type
 
     unless respond_to?(:process_options)
@@ -37,6 +47,11 @@ module Configurable
           opt = send("#{key}")
           opt.value = value;
           raise OptionException, "Invalid option value for option #{key}" unless opt.is_valid?   
+        end
+
+        self.class.send("required_options").each do |name|
+          opt = send("#{name}")
+          raise OptionException, "Required option #{name} missing or invalid" unless opt.is_valid?
         end
       end
       protected :process_options 
@@ -55,6 +70,10 @@ module Configurable
     end
 
     class_variable_get("@@outputs")[name]=type
+  end
+
+  def required_options
+    class_variable_get("@@required_options")
   end
 
   def options

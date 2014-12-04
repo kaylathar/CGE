@@ -1,11 +1,11 @@
 require_relative "../Monitor.rb"
 
 class FileUpdateMonitor < Monitor
-  has_option "path", String do |val|
+  has_option "path", String, :required do |val|
     File.exist? val 
   end
   
-  has_option "frequency", Integer do |val|
+  has_option "frequency", Integer, :required do |val|
     val > 1 
   end
 

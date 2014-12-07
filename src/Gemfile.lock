@@ -63,6 +63,7 @@ GEM
       memoizable (~> 0.4.0)
       naught (~> 1.0)
       simple_oauth (~> 0.3.0)
+    yard (0.8.7.6)
 
 PLATFORMS
   ruby
@@ -72,3 +73,4 @@ DEPENDENCIES
   rubocop
   simplecov
   twitter
+  yard

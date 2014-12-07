@@ -3,3 +3,4 @@ gem 'rspec', require: 'spec'
 gem 'twitter'
 gem 'rubocop', require: false
 gem 'simplecov'
+gem 'yard'

@@ -4,13 +4,13 @@
 # for use on Monitor and Action subclasses - it exposes
 # the options that are present, and required types, so that
 # parsers and UI can view them if required
-#
-# Of particular note, it adds an accessor to instances
-# for each option, a process_options helper method to
-# parse a hash set of parameters into options and validate
-# each option, and a options class method that returns the options
-# this class supports in the form of a hash
 module Configurable
+
+  # Processes given parameter into the defined options previously declared
+  # includes validation for types and any custom validators delcared
+  #
+  # @param [Hash<String,Object>] Hash of option name/value pairs, values
+  # must conform to validation rules for options or exception will be raised
   def process_options(options)
     options.each do |key, value|
       key = key.to_s
@@ -72,6 +72,12 @@ module Configurable
       class_variable_get('@@outputs')[name] = type
     end
 
+    # Notes that this class has the specified option
+    # 
+    # @param [String, Symbol] name Name of this option
+    # @param [Class] type Type required for this option - will be verified
+    # @param [optional, :optional, :required] required Is this option  
+    # required to be set, or merely optional
     def attr_option(name, type, required = :optional, &verifier)
       name = name.to_s
       setup_options

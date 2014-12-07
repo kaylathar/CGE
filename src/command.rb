@@ -7,14 +7,15 @@ Dir[File.dirname(__FILE__) + '/actions/*'].each { |file| require file }
 # default Command continues monitoring forever
 # though subclasses may override this behavior
 class Command
-  # Create a new command object form a data source
+  # Create a new command object from a data source
   # @param datasource [CommandDataSource] The data source to use to initialize
   # command object
   def initialize(datasource)
     @datasource = datasource
   end
 
-  # Begins executing the command by starting the monitor
+  # Begins executing the command by starting the monitor specified in
+  # the data source - will return immediately
   def execute
     Thread.new do
       loop do

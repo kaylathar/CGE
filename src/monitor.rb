@@ -8,6 +8,10 @@ class Monitor
   extend Configurable
 
   # Requires the set of options expected by this monitor
+  #
+  # @param options [Hash] The options in key/value format, 
+  # the type of each option must match that expected or an
+  # exception will be raised 
   def initialize(options)
     process_options(options)
   end

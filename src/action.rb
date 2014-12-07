@@ -10,6 +10,10 @@ class Action
   # block parameter that will be invoked when action
   # is complete, with a parameter of if the action was successful
   # and also returns if action was successful
+  #
+  # @param options [Hash] A hash of options with name/value pairs, must
+  # match types expected for each option or will raise an exception
+  # @yield If successful, will execute the optional block passed in
   def activate(options)
     process_options(options)
     success = invoke

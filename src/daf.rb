@@ -35,6 +35,8 @@ end
 # it requires a set of commands to be passed in
 class DynamicActionDaemon
   # Initializes DAD with a given command set
+  #
+  # @param commands [Array] Array containing Command objects
   def initialize(commands)
     @commands = commands
   end

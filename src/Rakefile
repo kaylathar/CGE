@@ -1,0 +1,16 @@
+task default: :validate
+
+desc 'Validate Package'
+task validate: [:rubocop, :test]
+
+desc 'Run Spec Tests'
+task :test do
+  require 'rspec/core/rake_task'
+  RSpec::Core::RakeTask.new(:spec)
+end
+
+desc 'Run RuboCop'
+task :rubocop do
+  require 'rubocop/rake_task'
+  RuboCop::RakeTask.new
+end

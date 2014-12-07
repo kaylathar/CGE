@@ -19,7 +19,7 @@ class Command
     Thread.new do
       loop do
         @datasource.monitor.on_trigger do
-          @datasource.action.activate(@datasource.actionOptions)
+          @datasource.action.activate(@datasource.action_options)
         end
       end
     end

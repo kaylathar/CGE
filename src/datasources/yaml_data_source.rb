@@ -16,7 +16,7 @@ class YAMLDataSource < CommandDataSource
   # @param filePath [String] Path for YAML file
   def initialize(file_path)
     configuration = YAML.load_file(file_path)
-    action_class, monitor_class = action_monitor_glasses(configuration)
+    action_class, monitor_class = action_monitor_classes(configuration)
     @monitor = monitor_class.new(configuration['Monitor']['Options'])
     @action = action_class.new
     @action_options = configuration['Action']['Options']

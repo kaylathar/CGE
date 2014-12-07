@@ -5,7 +5,7 @@
 # the options that are present, and required types, so that
 # parsers and UI can view them if required
 #
-# Of particular note, it adds an accessor to instances 
+# Of particular note, it adds an accessor to instances
 # for each option, a process_options helper method to
 # parse a hash set of parameters into options and validate
 # each option, and a options class method that returns the options

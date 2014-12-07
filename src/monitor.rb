@@ -1,4 +1,4 @@
-require_relative 'Configurable'
+require_relative 'configurable'
 
 # Stores information relating to things being monitored
 # sub-classes define specific criteria for when a monitor
@@ -15,8 +15,7 @@ class Monitor
   # Begins monitoring for event, when event occurs will
   # execute required block parameter
   def on_trigger
-        block_until_triggered
-        yield
+    block_until_triggered
+    yield
   end
-
 end

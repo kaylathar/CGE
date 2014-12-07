@@ -1,4 +1,4 @@
-Dir[File.dirname(__FILE__) + '/monitors/*'].each { |file| require file } 
+Dir[File.dirname(__FILE__) + '/monitors/*'].each { |file| require file }
 Dir[File.dirname(__FILE__) + '/actions/*'].each { |file| require file }
 
 # Represents a pair of Action and Monitor objects
@@ -7,6 +7,9 @@ Dir[File.dirname(__FILE__) + '/actions/*'].each { |file| require file }
 # default Command continues monitoring forever
 # though subclasses may override this behavior
 class Command
+  # Create a new command object form a data source
+  # @param datasource [CommandDataSource] The data source to use to initialize
+  # command object
   def initialize(datasource)
     @datasource = datasource
   end
@@ -23,20 +26,20 @@ class Command
   end
 end
 
+# Exception generated during loading or execution of command
 class CommandException < Exception
 end
 
+# Data source to initialize command with
 class CommandDataSource
-
   # Overridden by subclasses - returns options that should be passed to action
-  def actionOptions
+  def action_options
   end
 
   # Overridden by subclasses - returns action that should be used by command
   def action
   end
-  
-  # Overridden by subclasses - returns monitor that should be used by command 
+
   def monitor
   end
 end

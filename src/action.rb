@@ -1,4 +1,4 @@
-require_relative 'Configurable'
+require_relative 'configurable'
 
 # Stores information related to actions that can
 # be taken as a result of a Monitor firing

@@ -1,4 +1,4 @@
-require_relative 'datasources/YAMLDataSource'
+require_relative 'datasources/yaml_data_source'
 
 # Starts the DAF daemon (DAD) - takes a directory
 # containing the YAML files for monitor/action pairs
@@ -13,28 +13,27 @@ def start_dad
   if ARGV[0] && File.directory?(ARGV[0])
     commands = []
 
-    Dir[ARGV[0] + "/*.yaml"].each do |file|
+    Dir[ARGV[0] + '/*.yaml'].each do |file|
       commands << Command.new(YAMLDataSource.new(file))
     end
 
     dad = DynamicActionDaemon.new(commands)
-    dad.start()
+    dad.start
   else
     print_usage
-  end 
+  end
 end
 
 def print_usage
-  puts "DAF not started - please see below"
-  puts "Usage: daf [path to config folder]"
-  puts "Directory must contain one or more config"
-  puts "files with a .yaml extension"
+  puts 'DAF not started - please see below'
+  puts 'Usage: daf [path to config folder]'
+  puts 'Directory must contain one or more config'
+  puts 'files with a .yaml extension'
 end
 
 # This class represents the Dynamic Action Daemon
 # it requires a set of commands to be passed in
 class DynamicActionDaemon
-
   # Initializes DAD with a given command set
   def initialize(commands)
     @commands = commands
@@ -43,12 +42,9 @@ class DynamicActionDaemon
   # Starts the daemon - this method will block for duration
   # of execution of program
   def start
-    @commands.each do |command|
-      command.execute()
-    end
+    @commands.each(&:execute)
     sleep
   end
 end
 
-
-start_dad() if __FILE__ == $0
+start_dad if __FILE__ == $PROGRAM_NAME

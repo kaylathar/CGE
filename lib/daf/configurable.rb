@@ -16,7 +16,7 @@ module DAF
         fail OptionException, "No Option #{key}" unless self.class.options[key]
         opt = send("#{key}")
         opt.value = value
-        fail OptionException, "Bad value for option #{key}" unless opt.is_valid?
+        fail OptionException, "Bad value for option #{key}" unless opt.valid?
       end
       validate_required_options
     end
@@ -25,7 +25,7 @@ module DAF
       self.class.send('required_options').each do |name|
         opt = send("#{name}")
         fail OptionException,
-             "Required option #{name} missing or invalid" unless opt.is_valid?
+             "Required option #{name} missing or invalid" unless opt.valid?
       end
     end
 

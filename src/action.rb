@@ -4,7 +4,7 @@ require_relative 'configurable'
 # be taken as a result of a Monitor firing
 # Exposes only one method, and is a Configurable
 class Action
-  extend Configurable
+  include Configurable
 
   # Activate this action using given options - takes an optional
   # block parameter that will be invoked when action

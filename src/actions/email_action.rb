@@ -2,10 +2,10 @@ require_relative '../action'
 
 # An action that sends an email based on parameters
 class EmailAction < Action
-  has_option :to, String
-  has_option :from, String
-  has_option :subject, String
-  has_option :body, String
+  attr_option :to, String
+  attr_option :from, String
+  attr_option :subject, String
+  attr_option :body, String
 
   def invoke
     message = format_email(@to.value, @from.value, @subject.value, @body.value)

@@ -11,79 +11,106 @@
 # each option, and a options class method that returns the options
 # this class supports in the form of a hash
 module Configurable
-  def has_option(name, type, required = :optional, &verifier)
-    name = name.to_s
-    define_method("#{name}") do
-      unless instance_variable_get("@"+name)
-        instance_variable_set("@"+name,Option.new(name,type,verifier))   
+
+  def process_options(options)
+    options.each do |key,value|
+      key = key.to_s
+      raise OptionException, "Invalid option #{key}" unless self.class.options[key]
+      opt = self.send("#{key}")
+      opt.value = value;
+      raise OptionException, "Invalid option value for option #{key}" unless opt.is_valid?
+    end
+    validate_required_options
+  end
+
+  def validate_required_options
+    self.class.send("required_options").each do |name|
+            opt = send("#{name}")
+            raise OptionException, "Required option #{name} missing or invalid" unless opt.is_valid?
+    end
+  end
+
+  def self.included(base)
+    base.send(:extend, ClassMethods)
+  end
+
+  private :validate_required_options
+  protected :process_options
+
+  module ClassMethods
+    def setup_options
+      begin
+        class_variable_get("@@options")
+        class_variable_get("@@required_options")
+      rescue
+        class_variable_set("@@options",Hash.new)
+        class_variable_set("@@required_options",Array.new)
+      end
+    end
+
+    def setup_option(name, type, required, verifier)
+      define_method("#{name}") do
+        instance_variable_set("@"+name, Option.new(name, type, verifier)) unless instance_variable_get("@"+name)
+        instance_variable_get("@"+name)
       end
 
-      instance_variable_get("@"+name)
-    end
-     
-    begin
-      class_variable_get("@@options")
-    rescue
-      class_variable_set("@@options",Hash.new)
-    end 
+      if required == :required
+        class_variable_get("@@required_options") << name
+      end
 
-    begin
+      class_variable_get("@@options")[name] = type
+    end
+
+    def setup_outputs
+      begin
+        class_variable_get("@@outputs")
+      rescue
+        class_variable_set("@@outputs",Hash.new)
+      end 
+    end
+
+    def setup_output(name, type)
+      define_method("#{name}") do
+        instance_variable_get("@#{name}")
+      end
+      class_variable_get("@@outputs")[name]=type
+    end
+
+    def attr_option(name, type, required = :optional, &verifier)
+      name = name.to_s
+      setup_options    
+      setup_option(name,type,required,verifier) 
+    end
+
+    def attr_output(name, type)
+      name = name.to_s
+      setup_outputs
+      setup_output(name,type)
+    end
+
+    # Returns required set of options
+    # @return [Array<Option>] Required options for this class
+    def required_options
       class_variable_get("@@required_options")
-    rescue
-      class_variable_set("@@required_options",Array.new)
     end
 
-    if required == :required
-      class_variable_get("@@required_options") << name
+    # Returns valid oset of options
+    # @return [Hash<String,Class>] Available set of options, with expected
+    # class for each.
+    def options
+      class_variable_get("@@options")
     end
 
-    class_variable_get("@@options")[name] = type
-
-    unless respond_to?(:process_options)
-      define_method("process_options") do |initOptions|
-        initOptions.each do |key,value|
-          key = key.to_s
-          raise OptionException, "Invalid option #{key}" unless self.class.options[key]
-          opt = send("#{key}")
-          opt.value = value;
-          raise OptionException, "Invalid option value for option #{key}" unless opt.is_valid?   
-        end
-
-        self.class.send("required_options").each do |name|
-          opt = send("#{name}")
-          raise OptionException, "Required option #{name} missing or invalid" unless opt.is_valid?
-        end
-      end
-      protected :process_options 
-    end
-  end
-
-  def has_output(name, type)
-    define_method("@#{name}") do
-      instance_variable_get("@#{name}")
-    end
-
-    begin
+    # Returns set of outputs that are set
+    # @return [Hash<String,Class>]] Outputs that are set on trigger, with
+    # types of each as values
+    def outputs
       class_variable_get("@@outputs")
-    rescue
-      class_variable_set("@@outputs",Hash.new)  
     end
 
-    class_variable_get("@@outputs")[name]=type
+    protected :attr_option, :attr_output
+    #private :setup_options, :setup_option, :setup_output
   end
-
-  def required_options
-    class_variable_get("@@required_options")
-  end
-
-  def options
-    class_variable_get("@@options")
-  end
-
-  def outputs
-    class_variable_get("@@outputs")
-  end
-
 end
 
 # Used to store options - includes the expected type

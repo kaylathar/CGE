@@ -5,7 +5,7 @@ require_relative 'configurable'
 # should 'go off'.  Has only one method, #on_trigger, that
 # allows you to begin monitoring for an event
 class Monitor
-  extend Configurable
+  include Configurable
 
   # Requires the set of options expected by this monitor
   #

@@ -3,19 +3,19 @@ require_relative '../monitor'
 # Monitor that watches a file's last update time, and triggers when it changes
 # includes several return outputs that can be used as well
 class FileUpdateMonitor < Monitor
-  has_option :path, String, :required do |val|
+  attr_option :path, String, :required do |val|
     File.exist? val
   end
 
-  has_option :frequency, Integer, :required do |val|
+  attr_option :frequency, Integer, :required do |val|
     val > 1
   end
 
   # @return [Time] The last modified time of file that caused trigger
-  has_output :time, Time
+  attr_output :time, Time
 
   # @return [String] The contents of the tile that caused trigger
-  has_output :contents, String
+  attr_output :contents, String
 
   def initialize(options)
     super

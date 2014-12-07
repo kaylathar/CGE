@@ -2,4 +2,4 @@
 
 require 'daf'
 
-start_dad
+DAF::start_dad

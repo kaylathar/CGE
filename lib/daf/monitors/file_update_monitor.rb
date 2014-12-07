@@ -1,4 +1,4 @@
-require_relative '../monitor'
+require 'daf/monitor'
 
 # Monitor that watches a file's last update time, and triggers when it changes
 # includes several return outputs that can be used as well

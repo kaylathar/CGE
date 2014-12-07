@@ -1,7 +1,5 @@
 require 'yaml'
-require_relative '../command'
-require_relative '../monitors/file_update_monitor'
-require_relative '../actions/email_action'
+require 'daf/command'
 
 # A datasource that is parsed out of a YAML file
 # does not permit any dynamic updates, but useful

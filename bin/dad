@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require 'daf'
+
+start_dad

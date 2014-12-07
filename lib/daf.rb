@@ -1,4 +1,4 @@
-require_relative 'datasources/yaml_data_source'
+require 'daf/datasources/yaml_data_source'
 
 # Starts the DAF daemon (DAD) - takes a directory
 # containing the YAML files for monitor/action pairs

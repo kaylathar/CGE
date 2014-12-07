@@ -1,4 +1,4 @@
-require_relative '../action'
+require 'daf/action'
 
 # An action that sends an email based on parameters
 class EmailAction < Action

@@ -1,11 +1,9 @@
-
 # Module used for configurable objects internally
 # adds the has_option class method that creates an option
 # for use on Monitor and Action subclasses - it exposes
 # the options that are present, and required types, so that
 # parsers and UI can view them if required
 module Configurable
-
   # Processes given parameter into the defined options previously declared
   # includes validation for types and any custom validators delcared
   #
@@ -73,10 +71,10 @@ module Configurable
     end
 
     # Notes that this class has the specified option
-    # 
+    #
     # @param [String, Symbol] name Name of this option
     # @param [Class] type Type required for this option - will be verified
-    # @param [optional, :optional, :required] required Is this option  
+    # @param [optional, :optional, :required] required Is this option
     # required to be set, or merely optional
     def attr_option(name, type, required = :optional, &verifier)
       name = name.to_s

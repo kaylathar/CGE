@@ -1,4 +1,4 @@
-require_relative 'configurable'
+require 'daf/configurable'
 
 # Stores information relating to things being monitored
 # sub-classes define specific criteria for when a monitor

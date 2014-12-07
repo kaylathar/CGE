@@ -14,10 +14,10 @@ module Configurable
   def process_options(options)
     options.each do |key, value|
       key = key.to_s
-      fail OptionException, "Invalid option #{key}" unless self.class.options[key]
+      fail OptionException, "No Option #{key}" unless self.class.options[key]
       opt = send("#{key}")
       opt.value = value
-      fail OptionException, "Invalid option value for option #{key}" unless opt.is_valid?
+      fail OptionException, "Bad value for option #{key}" unless opt.is_valid?
     end
     validate_required_options
   end
@@ -25,7 +25,8 @@ module Configurable
   def validate_required_options
     self.class.send('required_options').each do |name|
       opt = send("#{name}")
-      fail OptionException, "Required option #{name} missing or invalid" unless opt.is_valid?
+      fail OptionException,
+           "Required option #{name} missing or invalid" unless opt.is_valid?
     end
   end
 
@@ -36,6 +37,7 @@ module Configurable
   private :validate_required_options
   protected :process_options
 
+  # Class methods used by configurable classes
   module ClassMethods
     def setup_options
       class_variable_get('@@options')
@@ -47,14 +49,13 @@ module Configurable
 
     def setup_option(name, type, required, verifier)
       define_method("#{name}") do
-        instance_variable_set('@' + name, Option.new(name, type, verifier)) unless instance_variable_get('@' + name)
+        instance_variable_set('@' + name,
+                              Option.new(name, type, verifier)) unless
+          instance_variable_get('@' + name)
         instance_variable_get('@' + name)
       end
 
-      if required == :required
-        class_variable_get('@@required_options') << name
-      end
-
+      class_variable_get('@@required_options') << name if required == :required
       class_variable_get('@@options')[name] = type
     end
 
@@ -126,11 +127,12 @@ class Option
                   block_verifier
                 else
                   true
-    end
+                end
   end
 
-  def is_valid?
-    !@value.nil? && @value.is_a?(@type) && (@verifier == true || @verifier.call(@value))
+  def valid?
+    !@value.nil? && @value.is_a?(@type) &&
+      (@verifier == true || @verifier.call(@value))
   end
 end
 

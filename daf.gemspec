@@ -5,7 +5,7 @@ require 'daf/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "daf"
-  spec.version       = Daf::VERSION
+  spec.version       = DAF::VERSION
   spec.authors       = ["Kayla McArthur"]
   spec.email         = ["kayla@kayla.is"]
   spec.summary       = %q{A daemon and framework for monitoring for events, and triggering actions}

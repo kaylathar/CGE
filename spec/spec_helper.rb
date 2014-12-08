@@ -1,5 +1,9 @@
 require 'simplecov'
-SimpleCov.start
+SimpleCov.start do
+  add_filter '/spec/'
+  add_group 'Actions', 'lib/daf/actions/'
+  add_group 'Monitors', 'lib/daf/monitors/'
+end
 
 require 'daf'
 require 'daf/command'

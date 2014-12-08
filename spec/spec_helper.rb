@@ -3,6 +3,8 @@ SimpleCov.start do
   add_filter '/spec/'
   add_group 'Actions', 'lib/daf/actions/'
   add_group 'Monitors', 'lib/daf/monitors/'
+  minimum_coverage 55
+  refuse_coverage_drop
 end
 
 require 'daf'

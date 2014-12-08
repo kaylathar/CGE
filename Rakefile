@@ -21,9 +21,3 @@ task :yard do
   require 'yard'
   YARD::Rake::YardocTask.new
 end
-
-desc 'Coverage Report'
-task :coverage do
-  ENV['COVERAGE'] = 'true'
-  Rake::Task['spec'].execute
-end

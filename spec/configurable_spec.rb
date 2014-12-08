@@ -1,4 +1,4 @@
-require 'daf/configurable'
+require 'spec_helper'
 
 describe DAF::Configurable do
   # Test class to verify Configurable functionality

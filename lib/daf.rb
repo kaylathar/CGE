@@ -47,6 +47,4 @@ module DAF
       sleep
     end
   end
-
-  start_dad if __FILE__ == $PROGRAM_NAME
 end

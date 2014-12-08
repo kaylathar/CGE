@@ -1,14 +1,14 @@
+require 'rubygems'
+require 'bundler'
 require 'bundler/gem_tasks'
+Bundler.setup(:default, :development)
+require 'rspec/core'
+require 'rspec/core/rake_task'
+RSpec::Core::RakeTask.new(:spec)
 task default: :validate
 
 desc 'Validate Package'
-task validate: [:rubocop, :test]
-
-desc 'Run Spec Tests'
-task :test do
-  require 'rspec/core/rake_task'
-  RSpec::Core::RakeTask.new(:spec)
-end
+task validate: [:rubocop, :spec]
 
 desc 'Run RuboCop'
 task :rubocop do
@@ -20,4 +20,10 @@ desc 'Build Documentation'
 task :yard do
   require 'yard'
   YARD::Rake::YardocTask.new
+end
+
+desc 'Coverage Report'
+task :coverage do
+  ENV['COVERAGE'] = 'true'
+  Rake::Task['spec'].execute
 end

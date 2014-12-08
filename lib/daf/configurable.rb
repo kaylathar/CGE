@@ -54,7 +54,8 @@ module DAF
           instance_variable_get('@' + name)
         end
 
-        class_variable_get('@@required_options') << name if required == :required
+        class_variable_get('@@required_options') << name if
+          required == :required
         class_variable_get('@@options')[name] = type
       end
 

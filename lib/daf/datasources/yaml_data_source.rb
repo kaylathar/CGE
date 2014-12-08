@@ -1,10 +1,10 @@
 require 'yaml'
 require 'daf/command'
 
-# A datasource that is parsed out of a YAML file
-# does not permit any dynamic updates, but useful
-# for a basic command parser
 module DAF
+  # A datasource that is parsed out of a YAML file
+  # does not permit any dynamic updates, but useful
+  # for a basic command parser
   class YAMLDataSource < CommandDataSource
     attr_reader :monitor, :action, :action_options
 

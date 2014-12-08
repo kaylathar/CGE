@@ -5,10 +5,8 @@ require 'daf/datasources/yaml_data_source'
 # After parsing configuration, will daemonize and continue
 # monitoring until SIGTERM is received
 #
-# Author::    Kayla McArthur (mailto:kayla@kayla.is)
-# Copyright:: Copyright (c) 2014 Kayla McArthur
-# License::   MIT License
-
+# @author Kayla McArthur (mailto:kayla@kayla.is)
+# @icense MIT License
 module DAF
   def start_dad
     if ARGV[0] && File.directory?(ARGV[0])
@@ -52,4 +50,3 @@ module DAF
 
   start_dad if __FILE__ == $PROGRAM_NAME
 end
-

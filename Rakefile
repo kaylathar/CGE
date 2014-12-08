@@ -15,3 +15,9 @@ task :rubocop do
   require 'rubocop/rake_task'
   RuboCop::RakeTask.new
 end
+
+desc 'Build Documentation'
+task :yard do
+  require 'yard'
+  YARD::Rake::YardocTask.new
+end

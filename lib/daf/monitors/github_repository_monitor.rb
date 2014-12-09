@@ -6,7 +6,7 @@ module DAF
   # Monitors a github repository for updates at periodic intervals
   class GithubRepositoryMonitor < Monitor
     attr_option :owner, String, :required
-    attr_option :repo, String, :required
+    attr_option :repository, String, :required
     attr_option :branch, String, :required
     attr_option :frequency, Integer, :required
     attr_output :sha, String

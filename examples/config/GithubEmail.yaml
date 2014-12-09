@@ -1,0 +1,17 @@
+---
+Monitor:
+  Type: GithubRepositoryMonitor
+  Options: 
+    owner: klmcarthur
+    branch: mainline
+    repository: DAF 
+    frequency: 2
+
+Action:
+  Type: EmailAction
+  Options:
+    to: test@example.com
+    from: test@example.com
+    subject: Test Email
+    body: test email body
+---

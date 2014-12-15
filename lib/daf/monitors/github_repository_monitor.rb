@@ -11,11 +11,13 @@ module DAF
     attr_option :frequency, Integer, :required
     attr_output :sha, String
 
+    GITHUB_URI_PREFIX = 'https://api.github.com/'
+
     def block_until_triggered
-      head_sha = github_head_sha(@owner, @repo, @branch)
+      head_sha = github_head_sha(@owner, @repository, @branch)
       loop do
         sleep @frequency
-        new_sha = github_head_sha(@owner, @repo, @branch)
+        new_sha = github_head_sha(@owner, @repository, @branch)
         next unless new_sha != head_sha
         @sha = new_sha
       end
@@ -38,7 +40,8 @@ module DAF
     end
 
     def refs_uri(owner, repo, branch)
-      "https://api.github.com/repos/#{owner.value}/#{repository.value}/git/refs/heads/#{branch.value}"
+      GITHUB_URI_PREFIX +
+        "repos/#{owner.value}/#{repo.value}/git/refs/heads/#{branch.value}"
     end
   end
 end

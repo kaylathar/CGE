@@ -3,9 +3,9 @@ Monitor:
   Type: GithubRepositoryMonitor
   Options: 
     owner: klmcarthur
-    branch: mainline
+    branch: master
     repository: DAF 
-    frequency: 2
+    frequency: 10
 
 Action:
   Type: EmailAction

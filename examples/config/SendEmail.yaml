@@ -10,6 +10,6 @@ Action:
   Options:
     to: test@example.com
     from: test@example.com
-    subject: Test Email
-    body: test email body
+    subject: "{{contents}}"
+    body: test email body again
 ---

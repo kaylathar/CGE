@@ -6,7 +6,7 @@ module DAF
   # does not permit any dynamic updates, but useful
   # for a basic command parser
   class YAMLDataSource < CommandDataSource
-    attr_reader :monitor, :action, :action_options
+    attr_reader :monitor, :action
 
     # Accepts the path of the YAML file to be parsed into
     # commands - will throw a CommandException should it have
@@ -19,6 +19,23 @@ module DAF
       @monitor = monitor_class.new(configuration['Monitor']['Options'])
       @action = action_class.new
       @action_options = configuration['Action']['Options']
+    end
+
+    def action_options
+      # Attempt resolution to outputs of monitor
+      action_options = Hash.new
+      @action_options.each do |key,value|
+        if value.start_with?('{{') && value.end_with?('}}')
+          output_name = value[2,value.length-4]
+          output_class = @monitor.class.outputs[output_name]
+          if output_class
+            action_options[key] = @monitor.send(output_name)
+            next
+          end
+        end
+        action_options[key] = value
+      end
+      action_options
     end
 
     def action_monitor_classes(configuration)

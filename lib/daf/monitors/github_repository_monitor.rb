@@ -38,7 +38,7 @@ module DAF
     end
 
     def refs_uri(owner, repo, branch)
-      "https://api.github.com/repos/#{owner}/#{repo}/git/refs/heads/#{branch}"
+      "https://api.github.com/repos/#{owner.value}/#{repository.value}/git/refs/heads/#{branch.value}"
     end
   end
 end

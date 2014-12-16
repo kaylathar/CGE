@@ -23,17 +23,14 @@ module DAF
 
     def action_options
       # Attempt resolution to outputs of monitor
-      action_options = Hash.new
-      @action_options.each do |key,value|
-        if value.start_with?('{{') && value.end_with?('}}')
-          output_name = value[2,value.length-4]
-          output_class = @monitor.class.outputs[output_name]
-          if output_class
-            action_options[key] = @monitor.send(output_name)
-            next
-          end
+      return @action_options unless defined? @monitor.class.outputs &&
+                                             @monitor.class.outputs.length > 0
+      action_options = {}
+      @monitor.class.outputs.each do |output, _type|
+        @action_options.each do |option_key, option_value|
+          action_options[option_key] =
+            option_value.gsub("{{#{output}}}", @monitor.send(output).to_s)
         end
-        action_options[key] = value
       end
       action_options
     end

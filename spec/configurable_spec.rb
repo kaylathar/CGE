@@ -19,26 +19,26 @@ describe DAF::Configurable do
   end
 
   it 'has required option' do
-    expect{MockClass.required_options}.to_not raise_error
+    expect { MockClass.required_options }.to_not raise_error
     expect(MockClass.required_options).not_to be_empty
     expect(MockClass.required_options.length).to eq(1)
   end
 
   it 'has options' do
-    expect{MockClass.options}.to_not raise_error
+    expect { MockClass.options }.to_not raise_error
     expect(MockClass.options).not_to be_empty
     expect(MockClass.options.length).to eq(2)
   end
 
   it 'has outputs' do
-    expect{MockClass.outputs}.to_not raise_error
+    expect { MockClass.outputs }.to_not raise_error
     expect(MockClass.outputs).not_to be_empty
     expect(MockClass.outputs.length).to eq(2)
   end
 
   it 'has readable outputs' do
-    expect{@under_test.test2_out}.to_not raise_error
-    expect{@under_test.test_out}.to_not raise_error
+    expect { @under_test.test2_out }.to_not raise_error
+    expect { @under_test.test_out }.to_not raise_error
   end
 
   it 'exposes required type for inputs' do
@@ -55,7 +55,7 @@ describe DAF::Configurable do
 
   it 'validates inputs' do
     @under_test.test.value = 40
-    @under_test.test2.value = "bad value"
+    @under_test.test2.value = 'bad value'
     expect(@under_test.test.valid?).to eq(false)
     expect(@under_test.test.valid?).to eq(false)
   end

@@ -10,6 +10,11 @@ Gem::Specification.new do |spec|
   spec.email         = ['kayla@kayla.is']
   spec.summary       = 'A daemon and framework for monitoring events, '\
                        'and triggering actions'
+  spec.description   = 'A library and corresponding daemon based on that '\
+                       'library to monitor a number of sources for events '\
+                       'and trigger actions based on those events. '\
+                       'Includes a default set of monitors and actions '\
+                       'and tools to create more'
   spec.homepage      = 'http://github.com/klmcarthur/DAF'
   spec.license       = 'MIT'
 

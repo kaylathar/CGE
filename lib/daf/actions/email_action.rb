@@ -1,18 +1,23 @@
 require 'daf/action'
+require 'net/smtp'
 
 module DAF
   # An action that sends an email based on parameters
   class EmailAction < Action
-    attr_option :to, String
-    attr_option :from, String
-    attr_option :subject, String
-    attr_option :body, String
+    attr_option :to, String, :required
+    attr_option :from, String, :required
+    attr_option :subject, String, :required
+    attr_option :body, String, :required
+    attr_option :server, String, :required
+    attr_option :port, Integer
 
     def invoke
       message = format_email(@to.value, @from.value,
                              @subject.value, @body.value)
-      # Send using Net::SMTP or sendmail or whatever, for now log
-      puts message
+      port = self.port.valid? ? self.port.value : 25
+      Net::SMTP.start(@server.value, port) do |smtp|
+        smtp.send_message(message, @from.value, @to.value)
+      end
       true
     end
 

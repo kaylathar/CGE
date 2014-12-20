@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe DAF::EmailAction do
+
   before(:each) do
     @server = 'mail.example.com'
     @options = { 'from' => 'test@example.com',
@@ -25,7 +26,7 @@ describe DAF::EmailAction do
     expect(@action.class.options['port']).to eq(Integer)
   end
 
-  context '#activate' do
+  context 'when activate is called' do
     before(:each) do
       @smtp_obj = double(Net::SMTP.new('mail.example.com'))
       @smtp = class_double('Net::SMTP')

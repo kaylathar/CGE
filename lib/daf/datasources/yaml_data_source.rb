@@ -48,5 +48,7 @@ module DAF
     def get_class(class_name)
       Object.const_get(class_name)
     end
+
+    protected :get_class, :action_monitor_classes
   end
 end

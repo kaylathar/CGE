@@ -17,7 +17,7 @@ describe 'DAF' do
 
     let!(:dir) do
       dup = class_double('Dir').as_stubbed_const(
-        :transfer_nested_constants => true)  
+        transfer_nested_constants: true)
       allow(dup).to receive(:[]).and_return(%w(test1 test2))
       dup
     end
@@ -82,9 +82,9 @@ describe 'DAF::DynamicActionDaemon' do
       command2 = double('DAF::Command')
       expect(command1).to receive(:execute)
       expect(command2).to receive(:execute)
-      dad = DynamicActionDaemon.new([command1, command2]) 
+      dad = DynamicActionDaemon.new([command1, command2])
       thread = Thread.new do
-        dad.start 
+        dad.start
       end
       sleep(1)
       thread.kill

@@ -4,7 +4,7 @@ SimpleCov.start do
   add_group 'Actions', 'lib/daf/actions/'
   add_group 'Monitors', 'lib/daf/monitors/'
   add_group 'Data Sources', 'lib/daf/datasources/'
-  minimum_coverage 55
+  minimum_coverage 100
   refuse_coverage_drop
 end
 

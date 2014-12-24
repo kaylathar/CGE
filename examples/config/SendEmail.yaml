@@ -12,4 +12,5 @@ Action:
     from: test@example.com
     subject: "File updated at {{time}}"
     body: "Contents of File: {{contentts}}"
+    server: localhost
 ---

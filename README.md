@@ -9,6 +9,11 @@ Dynamic Action Framework, or DAF, is a flexible, extensible system to let a user
 * Automatically download any picture from facebook that has me tagged
 * Alert me when the weather changes via text message
 
+In addition, you could use it as a library to develop other action systems, including things like:
+
+* Server monitoring systems
+* Email filtering systems
+
 DAF integrates with other action systems such as IFTTT in numerous ways, the easiest probably being through use of Dropbox and monitoring file modification times.  Using DAF with these services permits an even greater level of integration and customizability.
 
 ## Contributing

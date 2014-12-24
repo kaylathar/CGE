@@ -40,5 +40,7 @@ module DAF
       file.close
       contents
     end
+
+    private :contents_of_file
   end
 end

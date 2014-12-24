@@ -10,6 +10,6 @@ Action:
   Options:
     to: test@example.com
     from: test@example.com
-    subject: "{{contents}}"
-    body: test email body again
+    subject: "File updated at {{time}}"
+    body: "Contents of File: {{contentts}}"
 ---

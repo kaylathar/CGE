@@ -1,3 +1,4 @@
+require 'thread'
 Dir[File.dirname(__FILE__) + '/monitors/*'].each { |file| require file }
 Dir[File.dirname(__FILE__) + '/actions/*'].each { |file| require file }
 
@@ -18,13 +19,19 @@ module DAF
     # Begins executing the command by starting the monitor specified in
     # the data source - will return immediately
     def execute
-      Thread.new do
-        loop do
-          @datasource.monitor.on_trigger do
-            @datasource.action.activate(@datasource.action_options)
+      @thread = Thread.new do
+        if Thread.current != Thread.main
+          loop do
+            @datasource.monitor.on_trigger do
+              @datasource.action.activate(@datasource.action_options)
+            end
           end
         end
       end
+    end
+
+    def cancel
+      @thread.kill
     end
   end
 

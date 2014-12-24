@@ -15,19 +15,18 @@ module DAF
     # @param filePath [String] Path for YAML file
     def initialize(file_path)
       configuration = YAML.load_file(file_path)
-      action_class, monitor_class = action_monitor_classes(configuration)
-      @monitor = monitor_class.new(configuration['Monitor']['Options'])
-      @action = action_class.new
+      @action_class, @monitor_class = action_monitor_classes(configuration)
+      @monitor = @monitor_class.new(configuration['Monitor']['Options'])
+      @action = @action_class.new
       @action_options = configuration['Action']['Options']
     end
 
     def action_options
       # Attempt resolution to outputs of monitor
-      return @action_options unless defined? @monitor.class.outputs &&
-                                             @monitor.class.outputs.length > 0
-      action_options = {}
-      @monitor.class.outputs.each do |output, _type|
-        @action_options.each do |option_key, option_value|
+      return @action_options unless @monitor_class.outputs.length > 0
+      action_options = @action_options.clone
+      @monitor_class.outputs.each do |output, _type|
+        action_options.each do |option_key, option_value|
           action_options[option_key] =
             option_value.gsub("{{#{output}}}", @monitor.send(output).to_s)
         end

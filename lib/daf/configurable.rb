@@ -124,13 +124,11 @@ module DAF
     attr_reader :name, :type
     attr_accessor :value
 
-    def initialize(name, type, verifier = nil, &block_verifier)
+    def initialize(name, type, verifier = nil)
       @type = type
       @name = name
       @verifier = if verifier
                     verifier
-                  elsif block_verifier
-                    block_verifier
                   else
                     true
                   end

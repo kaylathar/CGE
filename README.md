@@ -1,5 +1,7 @@
 ## Dynamic Action Framework
 
+https://rubygems.org/gems/daf
+
 Dynamic Action Framework, or DAF, is a flexible, extensible system to let a user trigger actions based on events, either on a system or through anything else you can write in Ruby.  Some examples of things you can automate using DAF:
 
 * When my bus is 10 minutes away, text me

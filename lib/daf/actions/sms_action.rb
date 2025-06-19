@@ -13,13 +13,13 @@ module DAF
     attr_output :message_id, String
 
     def client
-      @client ||= Twilio::REST::Client.new(@sid, @token)
+      @client ||= Twilio::REST::Client.new(sid.value, token.value)
     end
 
     def invoke
-      @message_id = client.account.messages.create(body: @message,
-                                                   to: @to,
-                                                   from: @from)
+      @message_id = client.messages.create(body: message.value,
+                                           to: to.value,
+                                           from: from.value)
     end
   end
 end

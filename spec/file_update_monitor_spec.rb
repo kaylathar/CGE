@@ -1,65 +1,66 @@
 require 'spec_helper'
 
 describe 'DAF::FileUpdateMonitor' do
-  context 'when new monitor is created' do
+  context 'when on_trigger is called' do
     it 'should validate that the path exists' do
-      options = { 'frequency' => 2, 'path' => '/tmp/fake' }
-      expect { FileUpdateMonitor.new(options) }.to raise_error
+      allow(File).to receive(:exist?).and_return(false)
+      options = { 'frequency' => 2, 'path' => '/asdf/' }
+      monitor = DAF::FileUpdateMonitor.new
+
+      allow(monitor).to receive(:sleep).and_return(true)
+      expect { monitor.on_trigger(options){} }.to raise_error(DAF::OptionError)
     end
 
     it 'should validate that the frequency is > 1' do
-      options = { 'frequency' => 0, 'path' => '/' }
-      expect { FileUpdateMonitor.new(options) }.to raise_error
+      allow(File).to receive(:exist?).and_return(true)
+      options = { 'frequency' => -1, 'path' => '/asdf' }
+      monitor = DAF::FileUpdateMonitor.new
+
+      allow(monitor).to receive(:sleep).and_return(true)
+      expect { monitor.on_trigger(options){} }.to raise_error(DAF::OptionError)
     end
 
     it 'should have a required option named path' do
-      expect(FileUpdateMonitor.required_options).to include('path')
+      expect(DAF::FileUpdateMonitor.required_options).to include('path')
     end
 
     it 'should have a required option named frequency' do
-      expect(FileUpdateMonitor.required_options).to include('frequency')
+      expect(DAF::FileUpdateMonitor.required_options).to include('frequency')
     end
   end
 
-  context 'when block_until_triggered is called' do
-    let(:monitor) do
-      options = { 'frequency' => 2, 'path' => '/' }
-      FileUpdateMonitor.new(options)
-    end
-
-    let!(:file) do
-      dup = class_double('File').as_stubbed_const(
-        transfer_nested_constants: true)
+  context 'when on_trigger is called' do
+    before(:each) do
+      @options = { 'frequency' => 2, 'path' => '/asdfasdfasdf' }
+      @file = double('File')
       @time = 0
-      allow(dup).to receive(:mtime) do
+      allow(File).to receive(:mtime) do
+        current_time = @time
         @time += 1
+        current_time
       end
-      allow(dup).to receive(:exist?).and_return(true)
-      allow(dup).to receive(:open).and_return(ifile)
-      dup
-    end
-
-    let(:ifile) do
-      dup = double('File')
-      allow(dup).to receive(:read).and_return('contents')
-      allow(dup).to receive(:close)
-      dup
+      allow(File).to receive(:exist?).and_return(true)
+      allow(File).to receive(:open).and_return(@file)
+      allow(@file).to receive(:read).and_return('contents')
+      allow(@file).to receive(:close)
+      @monitor = DAF::FileUpdateMonitor.new
     end
 
     it 'should sleep the set frequency' do
-      expect(monitor).to receive(:sleep).with(2)
-      monitor.block_until_triggered
+      expect(@monitor).to receive(:sleep).with(2)
+      @monitor.on_trigger(@options){}
     end
 
     it 'should record current time' do
-      expect(file).to receive(:mtime).twice
-      monitor.block_until_triggered
+      expect(File).to receive(:mtime).twice
+      allow(@monitor).to receive(:sleep)
+      @monitor.on_trigger(@options){}
     end
 
     it 'should skip loop unless file modify time changes' do
-      expect(monitor).to receive(:sleep).with(2).exactly(3).times
+      expect(@monitor).to receive(:sleep).with(2).exactly(3).times
       @mtime = 0
-      allow(file).to receive(:mtime) do
+      allow(File).to receive(:mtime) do
         @mtime += 1
         if @mtime < 4
           0
@@ -67,18 +68,20 @@ describe 'DAF::FileUpdateMonitor' do
           1
         end
       end
-      monitor.block_until_triggered
+      @monitor.on_trigger(@options){}
     end
 
     context 'when file is modified' do
       it 'should record the time as output' do
-        monitor.block_until_triggered
-        expect(monitor.time).to eq(2)
+        allow(@monitor).to receive(:sleep)
+        @monitor.on_trigger(@options){}
+        expect(@monitor.time).to eq(1)
       end
 
       it 'should record the contents of the file as output' do
-        monitor.block_until_triggered
-        expect(monitor.contents).to eq('contents')
+        allow(@monitor).to receive(:sleep)
+        @monitor.on_trigger(@options){}
+        expect(@monitor.contents).to eq('contents')
       end
     end
   end

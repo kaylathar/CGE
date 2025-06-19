@@ -18,7 +18,6 @@ module DAF
       Net::SMTP.start(@server.value, port) do |smtp|
         smtp.send_message(message, @from.value, @to.value)
       end
-      true
     end
 
     def format_email(to, from, subject, body)
@@ -30,5 +29,7 @@ module DAF
   #{body}
 TEXT
     end
+
+    private :format_email
   end
 end

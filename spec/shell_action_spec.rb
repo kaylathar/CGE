@@ -50,6 +50,5 @@ describe DAF::ShellAction do
       @options['arguments'] = 'test'
       @action.activate(@options)
     end
-
   end
 end

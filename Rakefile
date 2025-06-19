@@ -8,7 +8,7 @@ RSpec::Core::RakeTask.new(:spec)
 task default: :validate
 
 desc 'Validate Package'
-task validate: [:rubocop, :spec]
+task validate: %i[rubocop spec]
 
 desc 'Run RuboCop'
 task :rubocop do

@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe DAF::EmailAction do
-
   before(:each) do
     @server = 'mail.example.com'
     @options = { 'from' => 'test@example.com',
@@ -54,7 +53,8 @@ describe DAF::EmailAction do
 END
       allow(@smtp).to receive(:start).and_yield(@smtp_obj)
       expect(@smtp_obj).to receive(:send_message).with(
-        target_message, 'test@example.com', 'test_to@example.com')
+        target_message, 'test@example.com', 'test_to@example.com'
+      )
       @action.activate(@options)
     end
   end

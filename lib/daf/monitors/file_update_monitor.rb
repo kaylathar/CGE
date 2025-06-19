@@ -9,7 +9,7 @@ module DAF
     end
 
     attr_option :frequency, Integer, :required do |val|
-      val > 1
+      val >= 1
     end
 
     # @return [Time] The last modified time of file that caused trigger
@@ -18,16 +18,13 @@ module DAF
     # @return [String] The contents of the tile that caused trigger
     attr_output :contents, String
 
-    def initialize(options)
-      super
-    end
-
     def block_until_triggered
       initial_modified_time = File.mtime(@path.value)
       loop do
         sleep @frequency.value
         modified_time = File.mtime(@path.value)
         next unless modified_time > initial_modified_time
+
         @time = modified_time
         @contents = contents_of_file(@path.value)
         break

@@ -1,4 +1,4 @@
-require 'daf/datasources/yaml_data_source'
+require 'daf/datasources/yaml_command_graph'
 
 # Starts the DAF daemon (DAD) - takes a directory
 # containing the YAML files for monitor/action pairs
@@ -10,13 +10,11 @@ require 'daf/datasources/yaml_data_source'
 module DAF
   def start_dad
     if ARGV[0] && File.directory?(ARGV[0])
-      commands = []
-
-      Dir[ARGV[0] + '/*.yaml'].each do |file|
-        commands << Command.new(YAMLDataSource.new(file))
+      command_graphs = Dir["#{ARGV[0]}/*.yaml"].map do |file|
+        YAMLCommandGraph.new(file)
       end
 
-      dad = DynamicActionDaemon.new(commands)
+      dad = DynamicActionDaemon.new(command_graphs)
       dad.start
     else
       print_usage

@@ -1,0 +1,11 @@
+Metrics/MethodLength:
+  Max: 20
+Metrics/AbcSize:
+  Enabled: false
+Gemspec/DevelopmentDependencies:
+  EnforcedStyle: gemspec
+AllCops:
+  NewCops: enable
+  Exclude:
+    - spec/**
+  SuggestExtensions: false

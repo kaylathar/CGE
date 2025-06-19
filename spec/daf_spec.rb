@@ -3,35 +3,40 @@ include DAF
 
 describe 'DAF' do
   context 'when start_dad is called' do
-    let!(:data_source) do
-      dup = class_double('DAF::YAMLDataSource').as_stubbed_const
-      allow(dup).to receive(:new)
+    let(:mock_command_graph1) { double('YAMLCommandGraph1') }
+    let(:mock_command_graph2) { double('YAMLCommandGraph2') }
+    
+    let!(:yaml_command_graph_class) do
+      dup = class_double('DAF::YAMLCommandGraph').as_stubbed_const
+      allow(dup).to receive(:new).with('/test/file1.yaml').and_return(mock_command_graph1)
+      allow(dup).to receive(:new).with('/test/file2.yaml').and_return(mock_command_graph2)
       dup
     end
 
-    let!(:command) do
-      dup = class_double('DAF::Command').as_stubbed_const
-      allow(dup).to receive(:new).and_return('com')
-      dup
-    end
-
-    let!(:dir) do
+    let!(:dir_class) do
       dup = class_double('Dir').as_stubbed_const(
-        transfer_nested_constants: true)
-      allow(dup).to receive(:[]).and_return(%w(test1 test2))
+        transfer_nested_constants: true
+      )
+      allow(dup).to receive(:[]).with('/test/*.yaml').and_return(['/test/file1.yaml', '/test/file2.yaml'])
       dup
     end
 
-    let!(:dad) do
-      dup = class_double('DAF::DynamicActionDaemon').as_stubbed_const
-      allow(dup).to receive(:new).and_return(idad)
-      dup
-    end
-
-    let(:idad) do
+    let(:mock_daemon_instance) do
       dup = double('DAF::DynamicActionDaemon')
       allow(dup).to receive(:start)
       dup
+    end
+
+    let!(:daemon_class) do
+      dup = class_double('DAF::DynamicActionDaemon').as_stubbed_const
+      allow(dup).to receive(:new).and_return(mock_daemon_instance)
+      dup
+    end
+
+    before do
+      # Mock File.directory? to return true for our test directory
+      allow(File).to receive(:directory?).with('/test').and_return(true)
+      allow(File).to receive(:directory?).with('/dev/null').and_return(false)
     end
 
     it 'should print usage if argument is not directory' do
@@ -41,28 +46,27 @@ describe 'DAF' do
     end
 
     it 'should get list of files using Dir' do
-      expect(dir).to receive(:[]).with('//*.yaml')
-      ARGV[0] = '/'
+      expect(dir_class).to receive(:[]).with('/test/*.yaml')
+      ARGV[0] = '/test'
       start_dad
     end
 
-    it 'should generate a list of commands from each file' do
-      expect(command).to receive(:new).twice
-      expect(data_source).to receive(:new).with('test1')
-      expect(data_source).to receive(:new).with('test2')
-      ARGV[0] = '/'
+    it 'should generate YAMLCommandGraph objects from each file' do
+      expect(yaml_command_graph_class).to receive(:new).with('/test/file1.yaml')
+      expect(yaml_command_graph_class).to receive(:new).with('/test/file2.yaml')
+      ARGV[0] = '/test'
       start_dad
     end
 
-    it 'should create a new daemon with commands' do
-      expect(dad).to receive(:new).with(%w(com com))
-      ARGV[0] = '/'
+    it 'should create a new daemon with command graphs' do
+      expect(daemon_class).to receive(:new).with([mock_command_graph1, mock_command_graph2])
+      ARGV[0] = '/test'
       start_dad
     end
 
     it 'should start the daemon' do
-      expect(idad).to receive(:start)
-      ARGV[0] = '/'
+      expect(mock_daemon_instance).to receive(:start)
+      ARGV[0] = '/test'
       start_dad
     end
   end
@@ -77,12 +81,12 @@ end
 
 describe 'DAF::DynamicActionDaemon' do
   context 'when started' do
-    it 'should execute each command' do
-      command1 = double('DAF::Command')
-      command2 = double('DAF::Command')
-      expect(command1).to receive(:execute)
-      expect(command2).to receive(:execute)
-      dad = DynamicActionDaemon.new([command1, command2])
+    it 'should execute each command graph' do
+      command_graph1 = double('DAF::YAMLCommandGraph')
+      command_graph2 = double('DAF::YAMLCommandGraph')
+      expect(command_graph1).to receive(:execute)
+      expect(command_graph2).to receive(:execute)
+      dad = DynamicActionDaemon.new([command_graph1, command_graph2])
       thread = Thread.new do
         dad.start
       end

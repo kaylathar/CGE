@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
 
 require 'daf'
-include DAF
-start_dad
+DAF.new.start_dad

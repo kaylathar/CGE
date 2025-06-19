@@ -1,3 +1,5 @@
+# rubocop:disable Style/ClassVars
+
 module DAF
   # Module used for configurable objects internally
   # adds the has_option class method that creates an option
@@ -13,19 +15,22 @@ module DAF
     def process_options(options)
       options.each do |key, value|
         key = key.to_s
-        fail OptionException, "No Option #{key}" unless self.class.options[key]
-        opt = send("#{key}")
+        raise OptionError, "No Option #{key}" unless self.class.options[key]
+
+        opt = send(key.to_s)
         opt.value = value
-        fail OptionException, "Bad value for option #{key}" unless opt.valid?
+        raise OptionError, "Bad value for option #{key}" unless opt.valid?
       end
       validate_required_options
     end
 
     def validate_required_options
       self.class.send('required_options').each do |name|
-        opt = send("#{name}")
-        fail OptionException,
-             "Required option #{name} missing or invalid" unless opt.valid?
+        opt = send(name.to_s)
+        unless opt.valid?
+          raise OptionError,
+                "Required option #{name} missing or invalid"
+        end
       end
     end
 
@@ -41,17 +46,18 @@ module DAF
       def setup_options
         class_variable_get('@@options')
         class_variable_get('@@required_options')
-      rescue
+      rescue StandardError
         class_variable_set('@@options', {})
         class_variable_set('@@required_options', [])
       end
 
       def setup_option(name, type, required, verifier)
-        define_method("#{name}") do
-          instance_variable_set('@' + name,
-                                Option.new(name, type, verifier)) unless
-            instance_variable_get('@' + name)
-          instance_variable_get('@' + name)
+        define_method(name.to_s) do
+          unless instance_variable_get("@#{name}")
+            instance_variable_set("@#{name}",
+                                  Option.new(name, type, verifier))
+          end
+          instance_variable_get("@#{name}")
         end
 
         class_variable_get('@@required_options') << name if
@@ -61,12 +67,12 @@ module DAF
 
       def setup_outputs
         class_variable_get('@@outputs')
-      rescue
+      rescue StandardError
         class_variable_set('@@outputs', {})
       end
 
       def setup_output(name, type)
-        define_method("#{name}") do
+        define_method(name.to_s) do
           instance_variable_get("@#{name}")
         end
         class_variable_get('@@outputs')[name] = type
@@ -127,11 +133,7 @@ module DAF
     def initialize(name, type, verifier = nil)
       @type = type
       @name = name
-      @verifier = if verifier
-                    verifier
-                  else
-                    true
-                  end
+      @verifier = verifier || true
     end
 
     def valid?
@@ -140,6 +142,7 @@ module DAF
     end
   end
 
-  class OptionException < Exception
+  class OptionError < StandardError
   end
 end
+# rubocop:enable Style/ClassVars

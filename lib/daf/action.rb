@@ -9,17 +9,16 @@ module DAF
 
     # Activate this action using given options - takes an optional
     # block parameter that will be invoked when action
-    # is complete, with a parameter of if the action was successful
-    # and also returns if action was successful
+    # is complete
     #
     # @param options [Hash] A hash of options with name/value pairs, must
     # match types expected for each option or will raise an exception
-    # @yield If successful, will execute the optional block passed in
+    # @yield Upon completion, will execute the optional block passed in
     def activate(options)
       process_options(options)
-      success = invoke
-      yield success if block_given?
-      success
+      output = invoke
+      yield if block_given?
+      output
     end
   end
 end

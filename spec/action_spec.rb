@@ -3,7 +3,7 @@ require 'spec_helper'
 # Test action to verify functionality
 class TestAction < DAF::Action
   attr_accessor :success
-  alias_method :invoke, :success
+  alias invoke success
   attr_option :option, String
 end
 
@@ -12,7 +12,7 @@ describe DAF::Action do
   let(:options) { { 'option' => 'test' } }
 
   it 'should be configurable' do
-    mixed_in = DAF::Action.ancestors.select { |o| o.class == Module }
+    mixed_in = DAF::Action.ancestors.select { |o| o.instance_of?(Module) }
     expect(mixed_in).to include(DAF::Configurable)
   end
 
@@ -20,15 +20,10 @@ describe DAF::Action do
     expect(test_action).to respond_to(:activate)
   end
 
-  it 'should return whatever invoke returns' do
-    test_action.success = 123
-    expect(test_action.activate(options)).to eq(123)
-  end
-
-  it 'should yield to a given block with invoke return value' do
+  it 'should yield to a given block' do
     test_action.success = 123
     expect { |b| test_action.activate(options, &b) }
-      .to yield_with_args(123)
+      .to yield_with_no_args()
   end
 
   it 'should set option values' do

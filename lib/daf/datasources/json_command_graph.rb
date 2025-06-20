@@ -12,6 +12,7 @@ module DAF
   #     "Name": "Graph Name",
   #     "Graph": [
   #       {
+  #         "Name": "MyMonitor"
   #         "Type": "monitor",
   #         "Class": "DAF::FileUpdateMonitor",
   #         "Options": {
@@ -20,6 +21,7 @@ module DAF
   #         }
   #       },
   #       {
+  #         "Name": "MyAction"
   #         "Type": "action",
   #         "Class": "DAF::EmailAction",
   #         "Options": {
@@ -45,11 +47,14 @@ module DAF
       # @param node_data [Hash] JSON node configuration
       # @param next_node [JSONGraphNode, nil] Next node in the chain
       def initialize(node_data, next_node)
+        raise CommandGraphException, 'Node Name is required' unless node_data['Name']
+
+        name = node_data['Name']
         type = node_data['Type'].to_sym
         obj_class = get_class(node_data['Class'])
         options = node_data['Options'] || {}
-        
-        super(underlying: obj_class.new, type: type, next_node: next_node, options: options)
+
+        super(underlying: obj_class.new, name: name, type: type, next_node: next_node, options: options)
       end
 
       # Dynamically loads a class by name
@@ -68,13 +73,13 @@ module DAF
       configuration = JSON.parse(File.read(file_path))
       @name = configuration['Name']
       node_list = configuration['Graph']
-      
+
       current_node = nil
       node_list.reverse.each do |node_data|
         node = JSONGraphNode.new(node_data, current_node)
         current_node = node
       end
-      
+
       super(current_node)
     end
   end

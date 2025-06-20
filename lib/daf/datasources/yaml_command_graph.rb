@@ -11,12 +11,14 @@ module DAF
   # YAML Structure:
   #   Name: "Graph Name"
   #   Graph:
-  #     - Type: "monitor"
+  #     - Name: "mymonitor"
+  #       Type: "monitor"
   #       Class: "DAF::FileUpdateMonitor"
   #       Options:
   #         path: "/tmp/file"
   #         frequency: 5
-  #     - Type: "action"
+  #     - Name: "myaction"
+  #       Type: "action"
   #       Class: "DAF::EmailAction"
   #       Options:
   #         to: "admin@example.com"
@@ -37,10 +39,13 @@ module DAF
       # @param node_data [Hash] YAML node configuration
       # @param next_node [YAMLGraphNode, nil] Next node in the chain
       def initialize(node_data, next_node)
+        raise CommandGraphException, 'Node Name is required' unless node_data['Name']
+
+        name = node_data['Name']
         type = node_data['Type'].to_sym
         obj_class = get_class(node_data['Class'])
         options = node_data['Options']
-        super(underlying: obj_class.new, type: type, next_node: next_node, options: options)
+        super(underlying: obj_class.new, name: name, type: type, next_node: next_node, options: options)
       end
 
       # Dynamically loads a class by name

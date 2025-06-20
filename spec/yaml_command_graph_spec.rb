@@ -15,6 +15,7 @@ describe DAF::YAMLCommandGraph do
           'Graph' => [
             {
               'Type' => 'monitor',
+              'Name' => 'file_monitor',
               'Class' => 'DAF::FileUpdateMonitor',
               'Options' => {
                 'path' => '/tmp/test_file',
@@ -22,12 +23,13 @@ describe DAF::YAMLCommandGraph do
               }
             },
             {
-              'Type' => 'action', 
+              'Type' => 'action',
+              'Name' => 'sms_action', 
               'Class' => 'DAF::SMSAction',
               'Options' => {
                 'to' => '+1234567890',
                 'from' => '+0987654321',
-                'message' => 'File updated at {{time}}',
+                'message' => 'File updated at {{file_monitor.time}}',
                 'sid' => 'test_sid',
                 'token' => 'test_token'
               }
@@ -65,7 +67,7 @@ describe DAF::YAMLCommandGraph do
         current_node = graph.instance_variable_get(:@current_node)
         
         expect(current_node.options).to include('path' => '/tmp/test_file', 'frequency' => 5)
-        expect(current_node.next.options).to include('to' => '+1234567890', 'message' => 'File updated at {{time}}')
+        expect(current_node.next.options).to include('to' => '+1234567890', 'message' => 'File updated at {{file_monitor.time}}')
       end
     end
     
@@ -76,6 +78,7 @@ describe DAF::YAMLCommandGraph do
           'Graph' => [
             {
               'Type' => 'monitor',
+              'Name' => 'invalid_monitor',
               'Class' => 'DAF::NonExistentMonitor',
               'Options' => {}
             }
@@ -102,6 +105,7 @@ describe DAF::YAMLCommandGraph do
           'Graph' => [
             {
               'Type' => 'monitor',
+              'Name' => 'source_file_monitor',
               'Class' => 'DAF::FileUpdateMonitor',
               'Options' => {
                 'path' => '/tmp/source_file',
@@ -110,18 +114,20 @@ describe DAF::YAMLCommandGraph do
             },
             {
               'Type' => 'monitor',
+              'Name' => 'webhook_socket_monitor',
               'Class' => 'DAF::UnixSocketMonitor', 
               'Options' => {
-                'socket_path' => '/tmp/webhook_{{time}}'
+                'socket_path' => '/tmp/webhook_{{source_file_monitor.time}}'
               }
             },
             {
               'Type' => 'action',
+              'Name' => 'notification_sms',
               'Class' => 'DAF::SMSAction',
               'Options' => {
                 'to' => '+1234567890',
                 'from' => '+0987654321',
-                'message' => 'File modified at {{time}}, webhook data: {{data}}',
+                'message' => 'File modified at {{source_file_monitor.time}}, webhook data: {{webhook_socket_monitor.data}}',
                 'sid' => 'test_sid',
                 'token' => 'test_token'
               }
@@ -154,10 +160,10 @@ describe DAF::YAMLCommandGraph do
         current_node = graph.instance_variable_get(:@current_node)
         
         socket_monitor_options = current_node.next.options
-        expect(socket_monitor_options['socket_path']).to eq('/tmp/webhook_{{time}}')
+        expect(socket_monitor_options['socket_path']).to eq('/tmp/webhook_{{source_file_monitor.time}}')
         
         sms_action_options = current_node.next.next.options
-        expect(sms_action_options['message']).to eq('File modified at {{time}}, webhook data: {{data}}')
+        expect(sms_action_options['message']).to eq('File modified at {{source_file_monitor.time}}, webhook data: {{webhook_socket_monitor.data}}')
       end
     end
     
@@ -168,6 +174,7 @@ describe DAF::YAMLCommandGraph do
           'Graph' => [
             {
               'Type' => 'monitor',
+              'Name' => 'watched_file_monitor',
               'Class' => 'DAF::FileUpdateMonitor',
               'Options' => {
                 'path' => '/tmp/watched_file',
@@ -176,22 +183,24 @@ describe DAF::YAMLCommandGraph do
             },
             {
               'Type' => 'action',
+              'Name' => 'email_alert',
               'Class' => 'DAF::EmailAction',
               'Options' => {
                 'to' => 'admin@example.com',
                 'from' => 'system@example.com',
                 'subject' => 'File Alert',
-                'body' => 'File changed at {{time}}',
+                'body' => 'File changed at {{watched_file_monitor.time}}',
                 'server' => 'smtp.example.com'
               }
             },
             {
               'Type' => 'action',
+              'Name' => 'sms_alert',
               'Class' => 'DAF::SMSAction',
               'Options' => {
                 'to' => '+1234567890',
                 'from' => '+0987654321',
-                'message' => 'Email sent, file changed at {{time}}',
+                'message' => 'Email sent, file changed at {{watched_file_monitor.time}}',
                 'sid' => 'test_sid',
                 'token' => 'test_token'
               }
@@ -227,6 +236,7 @@ describe DAF::YAMLCommandGraph do
           'Graph' => [
             {
               'Type' => 'monitor',
+              'Name' => 'trigger_file_monitor',
               'Class' => 'DAF::FileUpdateMonitor',
               'Options' => {
                 'path' => '/tmp/trigger_file',
@@ -235,13 +245,15 @@ describe DAF::YAMLCommandGraph do
             },
             {
               'Type' => 'action',
+              'Name' => 'shell_processor',
               'Class' => 'DAF::ShellAction',
               'Options' => {
-                'command' => 'echo "{{time}}" > /tmp/processed_{{time}}'
+                'command' => 'echo "{{trigger_file_monitor.time}}" > /tmp/processed_{{trigger_file_monitor.time}}'
               }
             },
             {
               'Type' => 'monitor',
+              'Name' => 'final_socket_monitor',
               'Class' => 'DAF::UnixSocketMonitor',
               'Options' => {
                 'socket_path' => '/tmp/final_socket'
@@ -278,6 +290,7 @@ describe DAF::YAMLCommandGraph do
           'Graph' => [
             {
               'Type' => 'action',
+              'Name' => 'startup_trigger',
               'Class' => 'DAF::ShellAction',
               'Options' => {
                 'command' => 'touch /tmp/startup_trigger'
@@ -285,6 +298,7 @@ describe DAF::YAMLCommandGraph do
             },
             {
               'Type' => 'monitor',
+              'Name' => 'response_file_monitor',
               'Class' => 'DAF::FileUpdateMonitor',
               'Options' => {
                 'path' => '/tmp/response_file',
@@ -293,11 +307,12 @@ describe DAF::YAMLCommandGraph do
             },
             {
               'Type' => 'action',
+              'Name' => 'response_sms',
               'Class' => 'DAF::SMSAction',
               'Options' => {
                 'to' => '+1234567890',
                 'from' => '+0987654321',
-                'message' => 'Response received at {{time}}',
+                'message' => 'Response received at {{response_file_monitor.time}}',
                 'sid' => 'test_sid',
                 'token' => 'test_token'
               }
@@ -332,6 +347,7 @@ describe DAF::YAMLCommandGraph do
     let(:node_data) do
       {
         'Type' => 'monitor',
+        'Name' => 'test_monitor',
         'Class' => 'DAF::FileUpdateMonitor',
         'Options' => {
           'path' => '/tmp/test',
@@ -351,6 +367,7 @@ describe DAF::YAMLCommandGraph do
     it 'should handle action type nodes' do
       action_data = {
         'Type' => 'action',
+        'Name' => 'test_sms_action',
         'Class' => 'DAF::SMSAction',
         'Options' => {
           'to' => '+1234567890',
@@ -370,6 +387,7 @@ describe DAF::YAMLCommandGraph do
     it 'should raise exception for invalid class names' do
       invalid_data = {
         'Type' => 'monitor',
+        'Name' => 'invalid_test_monitor',
         'Class' => 'NonExistent::Class',
         'Options' => {}
       }

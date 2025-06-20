@@ -14,6 +14,7 @@ describe DAF::JSONCommandGraph do
           'Name' => 'Test Command Graph',
           'Graph' => [
             {
+              'Name' => 'file_monitor',
               'Type' => 'monitor',
               'Class' => 'DAF::FileUpdateMonitor',
               'Options' => {
@@ -22,12 +23,13 @@ describe DAF::JSONCommandGraph do
               }
             },
             {
+              'Name' => 'sms_alert',
               'Type' => 'action', 
               'Class' => 'DAF::SMSAction',
               'Options' => {
                 'to' => '+1234567890',
                 'from' => '+0987654321',
-                'message' => 'File updated at {{time}}',
+                'message' => 'File updated at {{file_monitor.time}}',
                 'sid' => 'test_sid',
                 'token' => 'test_token'
               }
@@ -65,7 +67,7 @@ describe DAF::JSONCommandGraph do
         current_node = graph.instance_variable_get(:@current_node)
         
         expect(current_node.options).to include('path' => '/tmp/test_file', 'frequency' => 5)
-        expect(current_node.next.options).to include('to' => '+1234567890', 'message' => 'File updated at {{time}}')
+        expect(current_node.next.options).to include('to' => '+1234567890', 'message' => 'File updated at {{file_monitor.time}}')
       end
     end
     
@@ -75,6 +77,7 @@ describe DAF::JSONCommandGraph do
           'Name' => 'Invalid Graph',
           'Graph' => [
             {
+              'Name' => 'invalid_monitor',
               'Type' => 'monitor',
               'Class' => 'DAF::NonExistentMonitor',
               'Options' => {}
@@ -101,6 +104,7 @@ describe DAF::JSONCommandGraph do
           'Name' => 'Monitor-Monitor-Action Chain',
           'Graph' => [
             {
+              'Name' => 'file_watcher',
               'Type' => 'monitor',
               'Class' => 'DAF::FileUpdateMonitor',
               'Options' => {
@@ -109,19 +113,21 @@ describe DAF::JSONCommandGraph do
               }
             },
             {
+              'Name' => 'socket_listener',
               'Type' => 'monitor',
               'Class' => 'DAF::UnixSocketMonitor', 
               'Options' => {
-                'socket_path' => '/tmp/webhook_{{time}}'
+                'socket_path' => '/tmp/webhook_{{file_watcher.time}}'
               }
             },
             {
+              'Name' => 'notification_sender',
               'Type' => 'action',
               'Class' => 'DAF::SMSAction',
               'Options' => {
                 'to' => '+1234567890',
                 'from' => '+0987654321',
-                'message' => 'File modified at {{time}}, webhook data: {{data}}',
+                'message' => 'File modified at {{file_watcher.time}}, webhook data: {{socket_listener.data}}',
                 'sid' => 'test_sid',
                 'token' => 'test_token'
               }
@@ -154,10 +160,10 @@ describe DAF::JSONCommandGraph do
         current_node = graph.instance_variable_get(:@current_node)
         
         socket_monitor_options = current_node.next.options
-        expect(socket_monitor_options['socket_path']).to eq('/tmp/webhook_{{time}}')
+        expect(socket_monitor_options['socket_path']).to eq('/tmp/webhook_{{file_watcher.time}}')
         
         sms_action_options = current_node.next.next.options
-        expect(sms_action_options['message']).to eq('File modified at {{time}}, webhook data: {{data}}')
+        expect(sms_action_options['message']).to eq('File modified at {{file_watcher.time}}, webhook data: {{socket_listener.data}}')
       end
     end
     
@@ -167,6 +173,7 @@ describe DAF::JSONCommandGraph do
           'Name' => 'Monitor-Action-Action Chain',
           'Graph' => [
             {
+              'Name' => 'file_observer',
               'Type' => 'monitor',
               'Class' => 'DAF::FileUpdateMonitor',
               'Options' => {
@@ -175,23 +182,25 @@ describe DAF::JSONCommandGraph do
               }
             },
             {
+              'Name' => 'email_notifier',
               'Type' => 'action',
               'Class' => 'DAF::EmailAction',
               'Options' => {
                 'to' => 'admin@example.com',
                 'from' => 'system@example.com',
                 'subject' => 'File Alert',
-                'body' => 'File changed at {{time}}',
+                'body' => 'File changed at {{file_observer.time}}',
                 'server' => 'smtp.example.com'
               }
             },
             {
+              'Name' => 'sms_backup',
               'Type' => 'action',
               'Class' => 'DAF::SMSAction',
               'Options' => {
                 'to' => '+1234567890',
                 'from' => '+0987654321',
-                'message' => 'Email sent, file changed at {{time}}',
+                'message' => 'Email sent, file changed at {{file_observer.time}}',
                 'sid' => 'test_sid',
                 'token' => 'test_token'
               }
@@ -226,6 +235,7 @@ describe DAF::JSONCommandGraph do
           'Name' => 'Monitor-Action-Monitor Chain',
           'Graph' => [
             {
+              'Name' => 'trigger_monitor',
               'Type' => 'monitor',
               'Class' => 'DAF::FileUpdateMonitor',
               'Options' => {
@@ -234,13 +244,15 @@ describe DAF::JSONCommandGraph do
               }
             },
             {
+              'Name' => 'processor',
               'Type' => 'action',
               'Class' => 'DAF::ShellAction',
               'Options' => {
-                'command' => 'echo "{{time}}" > /tmp/processed_{{time}}'
+                'command' => 'echo "{{trigger_monitor.time}}" > /tmp/processed_{{trigger_monitor.time}}'
               }
             },
             {
+              'Name' => 'final_monitor',
               'Type' => 'monitor',
               'Class' => 'DAF::UnixSocketMonitor',
               'Options' => {
@@ -277,6 +289,7 @@ describe DAF::JSONCommandGraph do
           'Name' => 'Action-Monitor-Action Chain',
           'Graph' => [
             {
+              'Name' => 'startup_action',
               'Type' => 'action',
               'Class' => 'DAF::ShellAction',
               'Options' => {
@@ -284,6 +297,7 @@ describe DAF::JSONCommandGraph do
               }
             },
             {
+              'Name' => 'response_monitor',
               'Type' => 'monitor',
               'Class' => 'DAF::FileUpdateMonitor',
               'Options' => {
@@ -292,12 +306,13 @@ describe DAF::JSONCommandGraph do
               }
             },
             {
+              'Name' => 'final_notification',
               'Type' => 'action',
               'Class' => 'DAF::SMSAction',
               'Options' => {
                 'to' => '+1234567890',
                 'from' => '+0987654321',
-                'message' => 'Response received at {{time}}',
+                'message' => 'Response received at {{response_monitor.time}}',
                 'sid' => 'test_sid',
                 'token' => 'test_token'
               }
@@ -331,6 +346,7 @@ describe DAF::JSONCommandGraph do
   describe 'JSONGraphNode' do
     let(:node_data) do
       {
+        'Name' => 'test_monitor',
         'Type' => 'monitor',
         'Class' => 'DAF::FileUpdateMonitor',
         'Options' => {
@@ -350,6 +366,7 @@ describe DAF::JSONCommandGraph do
     
     it 'should handle action type nodes' do
       action_data = {
+        'Name' => 'test_action',
         'Type' => 'action',
         'Class' => 'DAF::SMSAction',
         'Options' => {
@@ -369,6 +386,7 @@ describe DAF::JSONCommandGraph do
     
     it 'should raise exception for invalid class names' do
       invalid_data = {
+        'Name' => 'invalid_node',
         'Type' => 'monitor',
         'Class' => 'NonExistent::Class',
         'Options' => {}

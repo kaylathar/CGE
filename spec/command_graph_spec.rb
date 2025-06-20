@@ -171,6 +171,9 @@ describe DAF::CommandGraph do
         allow(mock_file_monitor).to receive(:time).and_return(Time.parse('2023-12-01 15:30:00'))
         allow(mock_file_monitor).to receive(:contents).and_return('file content')
         
+        # Set up return values for action
+        allow(mock_sms_action).to receive(:message_id).and_return('msg_12345')
+        
         # Mock the monitor trigger behavior to call the block
         allow(mock_file_monitor).to receive(:on_trigger) do |options, &block|
           block.call if block_given?

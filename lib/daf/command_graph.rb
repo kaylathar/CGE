@@ -22,7 +22,7 @@ module DAF
       @current_node.underlying.on_trigger(apply_outputs(@current_node.options, @outputs)) do
         @current_node.underlying.class.outputs.each_key do |output_name|
           output_value = @current_node.underlying.send(output_name)
-          @outputs[output_name] = output_value
+          @outputs["#{@current_node.name}.#{output_name}"] = output_value
         end
       end
     end
@@ -30,6 +30,12 @@ module DAF
     # Execute the provided action node
     def execute_action_node(_node)
       @current_node.underlying.activate(apply_outputs(@current_node.options, @outputs))
+
+      # Store action outputs with node name prefix
+      @current_node.underlying.class.outputs.each_key do |output_name|
+        output_value = @current_node.underlying.send(output_name)
+        @outputs["#{@current_node.name}.#{output_name}"] = output_value
+      end
     end
 
     # Begins executing the command by starting the monitor specified in
@@ -88,12 +94,14 @@ module DAF
     # @param type [Symbol] Denotes the type of node - :monitor or :action
     # @param next_node [CommandGraphNode] May be nil - represents the next node to be processed, if any
     # @param options [Hash] Options to be populated to this node, or nil if none
-    def initialize(underlying: underlying, type: type, next_node: next_node, options: options)
+    # @param name [String] Unique name for this node
+    def initialize(underlying: nil, name: nil, type: nil, next_node: nil, options: nil)
       @type = type
       @next = next_node
       @underlying = underlying
       @options = options
+      @name = name
     end
-    attr_reader :type, :next, :underlying, :options
+    attr_reader :type, :next, :underlying, :options, :name
   end
 end

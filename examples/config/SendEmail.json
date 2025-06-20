@@ -2,6 +2,7 @@
   "Name": "File Update Email Notification",
   "Graph": [
     {
+      "Name": "file_watcher",
       "Type": "monitor",
       "Class": "DAF::FileUpdateMonitor",
       "Options": {
@@ -10,13 +11,14 @@
       }
     },
     {
+      "Name": "email_notifier",
       "Type": "action",
       "Class": "DAF::EmailAction",
       "Options": {
         "to": "test@example.com",
         "from": "test@example.com",
-        "subject": "File updated at {{time}}",
-        "body": "Contents of File: {{contents}}",
+        "subject": "File updated at {{file_watcher.time}}",
+        "body": "Contents of File: {{file_watcher.contents}}",
         "server": "localhost"
       }
     }

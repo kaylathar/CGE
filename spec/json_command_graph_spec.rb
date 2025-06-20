@@ -396,6 +396,216 @@ describe DAF::JSONCommandGraph do
     end
   end
   
+  describe 'Constants functionality' do
+    context 'with Constants defined in JSON' do
+      let(:constants_config) do
+        {
+          'Name' => 'Constants Test Graph',
+          'Constants' => {
+            'admin_email' => 'admin@example.com',
+            'base_path' => '/tmp/test',
+            'api_key' => 'test_api_key_123',
+            'phone_number' => '+1234567890'
+          },
+          'Graph' => [
+            {
+              'Name' => 'file_monitor',
+              'Type' => 'monitor',
+              'Class' => 'DAF::FileUpdateMonitor',
+              'Options' => {
+                'path' => '{{graph.base_path}}/monitored_file',
+                'frequency' => 3
+              }
+            },
+            {
+              'Name' => 'email_action',
+              'Type' => 'action',
+              'Class' => 'DAF::EmailAction',
+              'Options' => {
+                'to' => '{{graph.admin_email}}',
+                'from' => 'system@example.com',
+                'subject' => 'File Update Alert',
+                'body' => 'File updated at {{file_monitor.time}} in {{graph.base_path}}',
+                'server' => 'smtp.example.com'
+              }
+            }
+          ]
+        }
+      end
+      
+      before do
+        temp_file.write(constants_config.to_json)
+        temp_file.close
+      end
+      
+      it 'should parse constants from JSON configuration' do
+        graph = DAF::JSONCommandGraph.new(temp_file.path)
+        outputs = graph.instance_variable_get(:@outputs)
+        
+        expect(outputs).to include('graph.admin_email' => 'admin@example.com')
+        expect(outputs).to include('graph.base_path' => '/tmp/test')
+        expect(outputs).to include('graph.api_key' => 'test_api_key_123')
+        expect(outputs).to include('graph.phone_number' => '+1234567890')
+      end
+      
+      it 'should preserve {{graph.constant_name}} patterns in node options' do
+        graph = DAF::JSONCommandGraph.new(temp_file.path)
+        current_node = graph.instance_variable_get(:@current_node)
+        
+        # Check monitor options contain the template patterns
+        monitor_options = current_node.options
+        expect(monitor_options['path']).to eq('{{graph.base_path}}/monitored_file')
+        
+        # Check action options contain the template patterns
+        action_options = current_node.next.options
+        expect(action_options['to']).to eq('{{graph.admin_email}}')
+        expect(action_options['body']).to eq('File updated at {{file_monitor.time}} in {{graph.base_path}}')
+      end
+      
+      it 'should correctly substitute constants when applying outputs' do
+        graph = DAF::JSONCommandGraph.new(temp_file.path)
+        current_node = graph.instance_variable_get(:@current_node)
+        outputs = graph.instance_variable_get(:@outputs)
+        
+        # Test constant substitution in monitor options
+        monitor_options = current_node.options
+        substituted_monitor_options = graph.send(:apply_outputs, monitor_options, outputs)
+        expect(substituted_monitor_options['path']).to eq('/tmp/test/monitored_file')
+        
+        # Test constant substitution in action options
+        action_options = current_node.next.options
+        substituted_action_options = graph.send(:apply_outputs, action_options, outputs)
+        expect(substituted_action_options['to']).to eq('admin@example.com')
+        expect(substituted_action_options['body']).to eq('File updated at {{file_monitor.time}} in /tmp/test')
+      end
+    end
+    
+    context 'with complex workflow using constants' do
+      let(:complex_constants_config) do
+        {
+          'Name' => 'Complex Constants Workflow',
+          'Constants' => {
+            'notification_phone' => '+1987654321',
+            'sms_sender' => '+1234567890',
+            'twilio_sid' => 'test_sid_from_constants',
+            'twilio_token' => 'test_token_from_constants',
+            'watch_directory' => '/var/log/app',
+            'backup_directory' => '/backup/logs'
+          },
+          'Graph' => [
+            {
+              'Name' => 'log_file_monitor',
+              'Type' => 'monitor',
+              'Class' => 'DAF::FileUpdateMonitor',
+              'Options' => {
+                'path' => '{{graph.watch_directory}}/application.log',
+                'frequency' => 1
+              }
+            },
+            {
+              'Name' => 'backup_action',
+              'Type' => 'action',
+              'Class' => 'DAF::ShellAction',
+              'Options' => {
+                'command' => 'cp {{graph.watch_directory}}/application.log {{graph.backup_directory}}/app_{{log_file_monitor.time}}.log'
+              }
+            },
+            {
+              'Name' => 'notification_sms',
+              'Type' => 'action',
+              'Class' => 'DAF::SMSAction',
+              'Options' => {
+                'to' => '{{graph.notification_phone}}',
+                'from' => '{{graph.sms_sender}}',
+                'message' => 'Log file updated at {{log_file_monitor.time}}, backed up to {{graph.backup_directory}}',
+                'sid' => '{{graph.twilio_sid}}',
+                'token' => '{{graph.twilio_token}}'
+              }
+            }
+          ]
+        }
+      end
+      
+      before do
+        temp_file.write(complex_constants_config.to_json)
+        temp_file.close
+      end
+      
+      it 'should create correct chain structure with constants' do
+        graph = DAF::JSONCommandGraph.new(temp_file.path)
+        current_node = graph.instance_variable_get(:@current_node)
+        
+        expect(current_node.type).to eq(:monitor)
+        expect(current_node.underlying).to be_a(DAF::FileUpdateMonitor)
+        
+        expect(current_node.next.type).to eq(:action)
+        expect(current_node.next.underlying).to be_a(DAF::ShellAction)
+        
+        expect(current_node.next.next.type).to eq(:action)
+        expect(current_node.next.next.underlying).to be_a(DAF::SMSAction)
+      end
+      
+      it 'should substitute all constants correctly in complex workflow' do
+        graph = DAF::JSONCommandGraph.new(temp_file.path)
+        current_node = graph.instance_variable_get(:@current_node)
+        outputs = graph.instance_variable_get(:@outputs)
+        
+        # Test monitor options substitution
+        monitor_options = graph.send(:apply_outputs, current_node.options, outputs)
+        expect(monitor_options['path']).to eq('/var/log/app/application.log')
+        
+        # Test first action (backup) options substitution
+        backup_options = graph.send(:apply_outputs, current_node.next.options, outputs)
+        expect(backup_options['command']).to eq('cp /var/log/app/application.log /backup/logs/app_{{log_file_monitor.time}}.log')
+        
+        # Test second action (SMS) options substitution
+        sms_options = graph.send(:apply_outputs, current_node.next.next.options, outputs)
+        expect(sms_options['to']).to eq('+1987654321')
+        expect(sms_options['from']).to eq('+1234567890')
+        expect(sms_options['message']).to eq('Log file updated at {{log_file_monitor.time}}, backed up to /backup/logs')
+        expect(sms_options['sid']).to eq('test_sid_from_constants')
+        expect(sms_options['token']).to eq('test_token_from_constants')
+      end
+    end
+    
+    context 'without Constants section' do
+      let(:no_constants_config) do
+        {
+          'Name' => 'No Constants Graph',
+          'Graph' => [
+            {
+              'Name' => 'simple_monitor',
+              'Type' => 'monitor',
+              'Class' => 'DAF::FileUpdateMonitor',
+              'Options' => {
+                'path' => '/tmp/simple_file',
+                'frequency' => 5
+              }
+            }
+          ]
+        }
+      end
+      
+      before do
+        temp_file.write(no_constants_config.to_json)
+        temp_file.close
+      end
+      
+      it 'should handle missing Constants section gracefully' do
+        expect { DAF::JSONCommandGraph.new(temp_file.path) }.not_to raise_error
+      end
+      
+      it 'should have empty graph constants when no Constants section exists' do
+        graph = DAF::JSONCommandGraph.new(temp_file.path)
+        outputs = graph.instance_variable_get(:@outputs)
+        
+        # Should not have any graph.* keys
+        graph_constants = outputs.select { |key, _| key.start_with?('graph.') }
+        expect(graph_constants).to be_empty
+      end
+    end
+  end
+  
   
   describe 'JSONGraphNode' do
     let(:node_data) do

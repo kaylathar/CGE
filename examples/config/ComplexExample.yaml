@@ -1,18 +1,26 @@
 ---
 Name: "File Monitor with Email and SMS Alerts"
+Constants:
+  admin_email: "admin@example.com"
+  system_email: "system@example.com"
+  watch_path: "/tmp/watched_file"
+  phone_number: "+1234567890"
+  from_number: "+0987654321"
+  twilio_sid: "your_twilio_sid"
+  twilio_token: "your_twilio_token"
 Graph:
   - Name: "file_monitor"
     Type: "monitor"
     Class: "DAF::FileUpdateMonitor"
     Options:
-      path: "/tmp/watched_file"
+      path: "{{graph.watch_path}}"
       frequency: 3
   - Name: "email_alert"
     Type: "action"
     Class: "DAF::EmailAction"
     Options:
-      to: "admin@example.com"
-      from: "system@example.com"
+      to: "{{graph.admin_email}}"
+      from: "{{graph.system_email}}"
       subject: "File Alert"
       body: "File changed at {{file_monitor.time}}"
       server: "smtp.example.com"
@@ -20,9 +28,9 @@ Graph:
     Type: "action"
     Class: "DAF::SMSAction"
     Options:
-      to: "+1234567890"
-      from: "+0987654321"
+      to: "{{graph.phone_number}}"
+      from: "{{graph.from_number}}"
       message: "Follow-up: File changed at {{file_monitor.time}}"
-      sid: "your_twilio_sid"
-      token: "your_twilio_token"
+      sid: "{{graph.twilio_sid}}"
+      token: "{{graph.twilio_token}}"
 ---

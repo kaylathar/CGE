@@ -1,12 +1,17 @@
 {
   "Name": "File Update Email Notification",
+  "Constants": {
+    "watch_file": "/tmp/test1",
+    "admin_email": "test@example.com",
+    "mail_server": "localhost"
+  },
   "Graph": [
     {
       "Name": "file_watcher",
       "Type": "monitor",
       "Class": "DAF::FileUpdateMonitor",
       "Options": {
-        "path": "/tmp/test1",
+        "path": "{{graph.watch_file}}",
         "frequency": 2
       }
     },
@@ -15,11 +20,11 @@
       "Type": "action",
       "Class": "DAF::EmailAction",
       "Options": {
-        "to": "test@example.com",
-        "from": "test@example.com",
+        "to": "{{graph.admin_email}}",
+        "from": "{{graph.admin_email}}",
         "subject": "File updated at {{file_watcher.time}}",
         "body": "Contents of File: {{file_watcher.contents}}",
-        "server": "localhost"
+        "server": "{{graph.mail_server}}"
       }
     }
   ]

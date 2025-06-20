@@ -12,10 +12,15 @@ module DAF
   class CommandGraph
     # Create a new command object from a data source
     # @param graph_node [CommandGraphNode] The first node of the command graph
-    # command object
-    def initialize(graph_node)
+    # @param constants [Hash] Optional hash of graph-level constants
+    def initialize(graph_node, constants = {})
       @current_node = graph_node
       @outputs = {}
+
+      # Store constants under the 'graph' namespace
+      constants.each do |key, value|
+        @outputs["graph.#{key}"] = value
+      end
     end
 
     # Execute the provided monitor node

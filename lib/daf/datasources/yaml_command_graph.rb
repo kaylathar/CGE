@@ -10,18 +10,21 @@ module DAF
   #
   # YAML Structure:
   #   Name: "Graph Name"
+  #   Constants:
+  #     admin_email: "admin@example.com"
+  #     base_path: "/tmp"
   #   Graph:
   #     - Name: "mymonitor"
   #       Type: "monitor"
   #       Class: "DAF::FileUpdateMonitor"
   #       Options:
-  #         path: "/tmp/file"
+  #         path: "{{graph.base_path}}/file"
   #         frequency: 5
   #     - Name: "myaction"
   #       Type: "action"
   #       Class: "DAF::EmailAction"
   #       Options:
-  #         to: "admin@example.com"
+  #         to: "{{graph.admin_email}}"
   #
   # @example
   #   graph = YAMLCommandGraph.new("/path/to/config.yml")
@@ -64,12 +67,14 @@ module DAF
       configuration = YAML.load_file(file_path)
       @name = configuration['Name']
       node_list = configuration['Graph']
+      constants = configuration['Constants'] || {}
+
       current_node = nil
       node_list.reverse.each do |node_data|
         node = YAMLGraphNode.new(node_data, current_node)
         current_node = node
       end
-      super(current_node)
+      super(current_node, constants)
     end
   end
 end

@@ -28,6 +28,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rubocop'
   spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'webmock'
+  spec.add_dependency 'google-apis-docs_v1', '~> 0.33'
   spec.add_dependency 'net-smtp'
   spec.add_dependency 'twilio-ruby'
   spec.add_dependency 'washbullet'

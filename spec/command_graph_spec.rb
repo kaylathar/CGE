@@ -5,12 +5,14 @@ describe DAF::CommandGraph do
   let(:mock_action) { double('Action') }
   let(:mock_monitor_class) { double('MonitorClass') }
   let(:mock_action_class) { double('ActionClass') }
+  let(:mock_global_config) { double('GlobalConfiguration') }
   
   before do
     allow(mock_monitor).to receive(:class).and_return(mock_monitor_class)
     allow(mock_action).to receive(:class).and_return(mock_action_class)
     allow(mock_monitor_class).to receive(:outputs).and_return({})
     allow(mock_action_class).to receive(:outputs).and_return({})
+    allow(mock_global_config).to receive(:outputs).and_return({})
   end
   
   describe 'initialization' do
@@ -25,6 +27,20 @@ describe DAF::CommandGraph do
       graph = DAF::CommandGraph.new(node)
       expect(graph.instance_variable_get(:@current_node)).to eq(node)
       expect(graph.instance_variable_get(:@outputs)).to eq({})
+    end
+    
+    it 'should initialize with a graph node and global configuration' do
+      node = DAF::CommandGraphNode.new(
+        underlying: mock_monitor,
+        type: :monitor,
+        next_node: nil,
+        options: {}
+      )
+      
+      graph = DAF::CommandGraph.new(node, mock_global_config)
+      expect(graph.instance_variable_get(:@current_node)).to eq(node)
+      expect(graph.instance_variable_get(:@outputs)).to eq({})
+      expect(graph.instance_variable_get(:@global_configuration)).to eq(mock_global_config)
     end
   end
   
@@ -121,6 +137,143 @@ describe DAF::CommandGraph do
         
         expect(input_options).to eq(original_options)
         expect(result['message']).to eq('Original 2023-12-01 message')
+      end
+    end
+    
+    context 'global configuration substitution' do
+      let(:mock_heartbeat_option) { double('HeartbeatOption') }
+      let(:mock_global_config_class) { double('GlobalConfigurationClass') }
+      let(:graph_with_global_config) do
+        node = DAF::CommandGraphNode.new(
+          underlying: mock_monitor,
+          type: :monitor,
+          next_node: nil,
+          options: {}
+        )
+        DAF::CommandGraph.new(node, mock_global_config)
+      end
+      
+      before do
+        allow(mock_global_config).to receive(:class).and_return(mock_global_config_class)
+        allow(mock_global_config_class).to receive(:options).and_return({'heartbeat' => {}})
+        allow(mock_global_config).to receive(:outputs).and_return({'heartbeat' => {}})
+        allow(mock_heartbeat_option).to receive(:value).and_return(60)
+        allow(mock_global_config).to receive(:heartbeat).and_return(60)
+      end
+      
+      it 'should substitute global configuration values using global namespace' do
+        # Create an action node that uses global configuration values
+        mock_action_with_global = double('ActionWithGlobal')
+        mock_action_class_with_global = double('ActionClassWithGlobal')
+        allow(mock_action_with_global).to receive(:class).and_return(mock_action_class_with_global)
+        allow(mock_action_class_with_global).to receive(:outputs).and_return({})
+        
+        action_node = DAF::CommandGraphNode.new(
+          underlying: mock_action_with_global,
+          type: :action,
+          next_node: nil,
+          options: {
+            'message' => 'Heartbeat interval: {{global.heartbeat}} seconds',
+            'timeout' => '{{global.heartbeat}}'
+          }
+        )
+        
+        # Create graph with global configuration
+        graph = DAF::CommandGraph.new(action_node, mock_global_config)
+        
+        # Set the current node to the action node
+        graph.instance_variable_set(:@current_node, action_node)
+        
+        # Mock the action's activate method to capture the substituted options
+        expected_options = {
+          'message' => 'Heartbeat interval: 60 seconds',
+          'timeout' => '60'
+        }
+        expect(mock_action_with_global).to receive(:activate).with(expected_options)
+        
+        # Execute the action node
+        graph.send(:execute_action_node, action_node)
+      end
+      
+      it 'should handle both global and node output substitutions' do
+        # Create an action node that uses both global and node outputs
+        mock_action_with_mixed = double('ActionWithMixed')
+        mock_action_class_with_mixed = double('ActionClassWithMixed')
+        allow(mock_action_with_mixed).to receive(:class).and_return(mock_action_class_with_mixed)
+        allow(mock_action_class_with_mixed).to receive(:outputs).and_return({})
+        
+        action_node = DAF::CommandGraphNode.new(
+          underlying: mock_action_with_mixed,
+          type: :action,
+          next_node: nil,
+          options: {
+            'message' => 'Time: {{current_time}}, Heartbeat: {{global.heartbeat}}s'
+          }
+        )
+        
+        # Create graph with global configuration
+        graph = DAF::CommandGraph.new(action_node, mock_global_config)
+        
+        # Set up some node outputs (simulating previous monitor output)
+        graph.instance_variable_get(:@outputs)['current_time'] = '2023-12-01 15:30:00'
+        
+        # Set the current node to the action node
+        graph.instance_variable_set(:@current_node, action_node)
+        
+        # Mock the action's activate method to capture the substituted options
+        expected_options = {
+          'message' => 'Time: 2023-12-01 15:30:00, Heartbeat: 60s'
+        }
+        expect(mock_action_with_mixed).to receive(:activate).with(expected_options)
+        
+        # Execute the action node
+        graph.send(:execute_action_node, action_node)
+      end
+      
+      it 'should handle missing global configuration gracefully' do
+        allow(mock_global_config).to receive(:heartbeat).and_return(nil)
+        
+        # Create an action node that uses global configuration values
+        mock_action_with_nil_global = double('ActionWithNilGlobal')
+        mock_action_class_with_nil_global = double('ActionClassWithNilGlobal')
+        allow(mock_action_with_nil_global).to receive(:class).and_return(mock_action_class_with_nil_global)
+        allow(mock_action_class_with_nil_global).to receive(:outputs).and_return({})
+        
+        action_node = DAF::CommandGraphNode.new(
+          underlying: mock_action_with_nil_global,
+          type: :action,
+          next_node: nil,
+          options: {
+            'message' => 'Heartbeat: {{global.heartbeat}} seconds'
+          }
+        )
+        
+        # Create graph with global configuration that has nil values
+        graph = DAF::CommandGraph.new(action_node, mock_global_config)
+        
+        # Set the current node to the action node
+        graph.instance_variable_set(:@current_node, action_node)
+        
+        # Mock the action's activate method to capture the unsubstituted options
+        expected_options = {
+          'message' => 'Heartbeat: {{global.heartbeat}} seconds'
+        }
+        expect(mock_action_with_nil_global).to receive(:activate).with(expected_options)
+        
+        # Execute the action node
+        graph.send(:execute_action_node, action_node)
+      end
+      
+      it 'should work without global configuration' do
+        outputs = { 'time' => '2023-12-01' }
+        
+        input_options = {
+          'message' => 'Time: {{time}}, Heartbeat: {{global.heartbeat}}'
+        }
+        
+        result = graph.send(:apply_outputs, input_options, outputs)
+        
+        expect(result['message']).to eq('Time: 2023-12-01, Heartbeat: {{global.heartbeat}}')
       end
     end
   end

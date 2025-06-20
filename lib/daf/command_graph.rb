@@ -12,14 +12,23 @@ module DAF
   class CommandGraph
     # Create a new command object from a data source
     # @param graph_node [CommandGraphNode] The first node of the command graph
+    # @param global_configuration [GlobalConfiguration] Optional global configuration instance
     # @param constants [Hash] Optional hash of graph-level constants
-    def initialize(graph_node, constants = {})
+    def initialize(graph_node, global_configuration = nil, constants = {})
       @current_node = graph_node
+      @global_configuration = global_configuration
       @outputs = {}
 
       # Store constants under the 'graph' namespace
       constants.each do |key, value|
         @outputs["graph.#{key}"] = value
+      end
+
+      return unless global_configuration
+
+      global_configuration.outputs.each_key do |output_name|
+        output_value = global_configuration.send(output_name)
+        @outputs["global.#{output_name}"] = output_value unless output_value.nil?
       end
     end
 
@@ -49,7 +58,7 @@ module DAF
       @current_node.underlying.process(apply_outputs(@current_node.options, @outputs))
       @current_node.underlying.class.outputs.each_key do |output_name|
         output_value = @current_node.underlying.send(output_name)
-        @outputs[output_name] = output_value
+        @outputs["#{@current_node.name}.#{output_name}"] = output_value
       end
     end
 
@@ -76,11 +85,12 @@ module DAF
     end
 
     # Apply in place subsitutions over a set of input options using a set
-    # of output options
+    # of output options and global configuration
     # @param input_options [Hash] The set of inputs that should have values substituted in
-    # @param input_options [Hash] The set of outputs in key/value format that are used for subs
+    # @param outputs [Hash] The set of outputs in key/value format that are used for subs
     def apply_outputs(input_options, outputs)
       options = input_options.clone
+      # Apply node output substitutions
       outputs.each do |output_name, output_value|
         options.each do |option_key, option_value|
           if option_value.is_a?(String)

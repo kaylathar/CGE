@@ -73,7 +73,8 @@ module DAF
     end
 
     # @param file_path [String] Path to JSON configuration file
-    def initialize(file_path)
+    # @param global_configuration [GlobalConfiguration] Optional global configuration instance
+    def initialize(file_path, global_configuration = nil)
       configuration = JSON.parse(File.read(file_path))
       @name = configuration['Name']
       node_list = configuration['Graph']
@@ -85,7 +86,7 @@ module DAF
         current_node = node
       end
 
-      super(current_node, constants)
+      super(current_node, global_configuration, constants)
     end
   end
 end

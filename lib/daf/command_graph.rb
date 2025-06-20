@@ -1,6 +1,7 @@
 require 'thread'
 Dir["#{File.dirname(__FILE__)}/monitors/*"].sort.each { |file| require file }
 Dir["#{File.dirname(__FILE__)}/actions/*"].sort.each { |file| require file }
+Dir["#{File.dirname(__FILE__)}/inputs/*"].sort.each { |file| require file }
 
 module DAF
   # Represents a graph of Monitor and Action objects
@@ -38,6 +39,15 @@ module DAF
       end
     end
 
+    # Execute the provided input node
+    def execute_input_node(_node)
+      @current_node.underlying.process(apply_outputs(@current_node.options, @outputs))
+      @current_node.underlying.class.outputs.each_key do |output_name|
+        output_value = @current_node.underlying.send(output_name)
+        @outputs[output_name] = output_value
+      end
+    end
+
     # Begins executing the command by starting the monitor specified in
     # the data source - will return immediately
     def execute
@@ -46,10 +56,13 @@ module DAF
           loop do
             break if @current_node.nil?
 
-            if @current_node.type == :monitor
+            case @current_node.type
+            when :monitor
               execute_monitor_node(@current_node)
-            elsif @current_node.type == :action
+            when :action
               execute_action_node(@current_node)
+            when :input
+              execute_input_node(@current_node)
             end
             @current_node = @current_node.next
           end
@@ -79,7 +92,7 @@ module DAF
       @thread.kill
     end
 
-    protected :apply_outputs, :execute_action_node, :execute_monitor_node
+    protected :apply_outputs, :execute_action_node, :execute_monitor_node, :execute_input_node
   end
 
   # Exception generated during loading or execution of command
@@ -91,7 +104,7 @@ module DAF
     # Creates a new CommandGraphNode
     #
     # @param underlying [Configurable] The underlying object the node encapsulates
-    # @param type [Symbol] Denotes the type of node - :monitor or :action
+    # @param type [Symbol] Denotes the type of node - :monitor, :action, or :input
     # @param next_node [CommandGraphNode] May be nil - represents the next node to be processed, if any
     # @param options [Hash] Options to be populated to this node, or nil if none
     # @param name [String] Unique name for this node

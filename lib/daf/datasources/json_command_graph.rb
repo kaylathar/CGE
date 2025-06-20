@@ -64,7 +64,7 @@ module DAF
       def get_class(class_name)
         Object.const_get(class_name)
       rescue StandardError
-        raise CommandGraphException, 'Invalid Action or Monitor type'
+        raise CommandGraphException, 'Invalid Action, Monitor, or Input type'
       end
     end
 

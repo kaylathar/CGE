@@ -92,7 +92,7 @@ describe DAF::JSONCommandGraph do
       end
       
       it 'should raise CommandGraphException for invalid class' do
-        expect { DAF::JSONCommandGraph.new(temp_file.path) }.to raise_error(DAF::CommandGraphException, 'Invalid Action or Monitor type')
+        expect { DAF::JSONCommandGraph.new(temp_file.path) }.to raise_error(DAF::CommandGraphException, 'Invalid Action, Monitor, or Input type')
       end
     end
   end
@@ -340,6 +340,60 @@ describe DAF::JSONCommandGraph do
         expect(current_node.next.next.underlying).to be_a(DAF::SMSAction)
       end
     end
+    
+    context 'Input -> Action chain' do
+      let(:input_action_config) do
+        {
+          'Name' => 'Input-Action Chain',
+          'Graph' => [
+            {
+              'Name' => 'myinput',
+              'Type' => 'input',
+              'Class' => 'DAF::ConstantInput',
+              'Options' => {
+                'constant' => 'Hello World'
+              }
+            },
+            {
+              'Name' => 'myaction',
+              'Type' => 'action',
+              'Class' => 'DAF::SMSAction',
+              'Options' => {
+                'to' => '+1234567890',
+                'from' => '+0987654321',
+                'message' => 'Message: {{output}}',
+                'sid' => 'test_sid',
+                'token' => 'test_token'
+              }
+            }
+          ]
+        }
+      end
+      
+      before do
+        temp_file.write(input_action_config.to_json)
+        temp_file.close
+      end
+      
+      it 'should create the correct chain structure' do
+        graph = DAF::JSONCommandGraph.new(temp_file.path)
+        current_node = graph.instance_variable_get(:@current_node)
+        
+        expect(current_node.type).to eq(:input)
+        expect(current_node.underlying).to be_a(DAF::ConstantInput)
+        
+        expect(current_node.next.type).to eq(:action)
+        expect(current_node.next.underlying).to be_a(DAF::SMSAction)
+      end
+      
+      it 'should preserve template substitution for input outputs' do
+        graph = DAF::JSONCommandGraph.new(temp_file.path)
+        current_node = graph.instance_variable_get(:@current_node)
+        
+        sms_action_options = current_node.next.options
+        expect(sms_action_options['message']).to eq('Message: {{output}}')
+      end
+    end
   end
   
   
@@ -384,6 +438,22 @@ describe DAF::JSONCommandGraph do
       expect(node.underlying).to be_a(DAF::SMSAction)
     end
     
+    it 'should handle input type nodes' do
+      input_data = {
+        'Name' => 'myinput',
+        'Type' => 'input',
+        'Class' => 'DAF::ConstantInput',
+        'Options' => {
+          'constant' => 'test value'
+        }
+      }
+      
+      node = DAF::JSONCommandGraph::JSONGraphNode.new(input_data, nil)
+      
+      expect(node.type).to eq(:input)
+      expect(node.underlying).to be_a(DAF::ConstantInput)
+    end
+    
     it 'should raise exception for invalid class names' do
       invalid_data = {
         'Name' => 'invalid_node',
@@ -392,7 +462,7 @@ describe DAF::JSONCommandGraph do
         'Options' => {}
       }
       
-      expect { DAF::JSONCommandGraph::JSONGraphNode.new(invalid_data, nil) }.to raise_error(DAF::CommandGraphException, 'Invalid Action or Monitor type')
+      expect { DAF::JSONCommandGraph::JSONGraphNode.new(invalid_data, nil) }.to raise_error(DAF::CommandGraphException, 'Invalid Action, Monitor, or Input type')
     end
   end
 end

@@ -1,0 +1,21 @@
+{
+  "Name": "Constant Input JSON Example",
+  "Graph": [
+    {
+      "Name": "myinput",
+      "Type": "input",
+      "Class": "DAF::ConstantInput",
+      "Options": {
+        "constant": "Hello from JSON constant input!"
+      }
+    },
+    {
+      "Name": "myaction",
+      "Type": "action",
+      "Class": "DAF::ShellAction",
+      "Options": {
+        "command": "echo 'JSON Received: {{output}}'"
+      }
+    }
+  ]
+}

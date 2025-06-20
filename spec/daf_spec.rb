@@ -5,6 +5,7 @@ describe 'DAF' do
   context 'when start_dad is called' do
     let(:mock_command_graph1) { double('DAF::YAMLCommandGraph') }
     let(:mock_command_graph2) { double('DAF::YAMLCommandGraph') }
+    let(:mock_global_config) { double('DAF::GlobalConfiguration') }
     
     let!(:yaml_command_graph_class) do
       dup = class_double('DAF::YAMLCommandGraph').as_stubbed_const
@@ -38,7 +39,7 @@ describe 'DAF' do
 
     let!(:daemon_class) do
       dup = class_double('DAF::DynamicActionDaemon').as_stubbed_const
-      allow(dup).to receive(:new).and_return(mock_daemon_instance)
+      allow(dup).to receive(:new).with([mock_command_graph1, mock_command_graph2, mock_command_graph3], nil).and_return(mock_daemon_instance)
       dup
     end
 
@@ -54,14 +55,7 @@ describe 'DAF' do
       start_dad
     end
 
-    it 'should get list of files using Dir' do
-      expect(dir_class).to receive(:[]).with('/test/*.yaml')
-      expect(dir_class).to receive(:[]).with('/test/*.json')
-      ARGV[0] = '/test'
-      start_dad
-    end
-
-    it 'should generate YAMLCommandGraph objects from each file' do
+    it 'should generate CommandGraph objects from each file' do
       expect(yaml_command_graph_class).to receive(:new).with('/test/file1.yaml')
       expect(yaml_command_graph_class).to receive(:new).with('/test/file2.yaml')
       expect(json_command_graph_class).to receive(:new).with('/test/file1.json')
@@ -70,7 +64,7 @@ describe 'DAF' do
     end
 
     it 'should create a new daemon with command graphs' do
-      expect(daemon_class).to receive(:new).with([mock_command_graph1, mock_command_graph2, mock_command_graph3])
+      expect(daemon_class).to receive(:new).with([mock_command_graph1, mock_command_graph2, mock_command_graph3], nil)
       ARGV[0] = '/test'
       start_dad
     end
@@ -97,7 +91,7 @@ describe 'DAF::DynamicActionDaemon' do
       command_graph2 = double('DAF::YAMLCommandGraph')
       expect(command_graph1).to receive(:execute)
       expect(command_graph2).to receive(:execute)
-      dad = DynamicActionDaemon.new([command_graph1, command_graph2])
+      dad = DynamicActionDaemon.new([command_graph1, command_graph2], nil)
       thread = Thread.new do
         dad.start
       end

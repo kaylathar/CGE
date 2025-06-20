@@ -1,7 +1,8 @@
 require 'daf/datasources/yaml_command_graph'
+require 'daf/datasources/json_command_graph'
 
 # Starts the DAF daemon (DAD) - takes a directory
-# containing the YAML files for monitor/action pairs
+# containing the YAML and JSON files for monitor/action pairs
 # After parsing configuration, will daemonize and continue
 # monitoring until SIGTERM is received
 #
@@ -12,6 +13,10 @@ module DAF
     if ARGV[0] && File.directory?(ARGV[0])
       command_graphs = Dir["#{ARGV[0]}/*.yaml"].map do |file|
         YAMLCommandGraph.new(file)
+      end
+
+      Dir["#{ARGV[0]}/*.json"].each do |file|
+        command_graphs << JSONCommandGraph.new(file)
       end
 
       dad = DynamicActionDaemon.new(command_graphs)
@@ -25,7 +30,7 @@ module DAF
     puts 'DAF not started - please see below'
     puts 'Usage: daf [path to config folder]'
     puts 'Directory must contain one or more config'
-    puts 'files with a .yaml extension'
+    puts 'files with a .yaml or .json extension'
   end
 
   # This class represents the Dynamic Action Daemon

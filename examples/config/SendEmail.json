@@ -1,0 +1,24 @@
+{
+  "Name": "File Update Email Notification",
+  "Graph": [
+    {
+      "Type": "monitor",
+      "Class": "DAF::FileUpdateMonitor",
+      "Options": {
+        "path": "/tmp/test1",
+        "frequency": 2
+      }
+    },
+    {
+      "Type": "action",
+      "Class": "DAF::EmailAction",
+      "Options": {
+        "to": "test@example.com",
+        "from": "test@example.com",
+        "subject": "File updated at {{time}}",
+        "body": "Contents of File: {{contents}}",
+        "server": "localhost"
+      }
+    }
+  ]
+}

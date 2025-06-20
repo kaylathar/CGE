@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    daf (0.3.0)
+    daf (0.4.0)
       net-smtp
       twilio-ruby
       washbullet

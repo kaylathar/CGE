@@ -1,0 +1,25 @@
+---
+Name: "File Monitor with Email and SMS Alerts"
+Graph:
+  - Type: "monitor"
+    Class: "DAF::FileUpdateMonitor"
+    Options:
+      path: "/tmp/watched_file"
+      frequency: 3
+  - Type: "action"
+    Class: "DAF::EmailAction"
+    Options:
+      to: "admin@example.com"
+      from: "system@example.com"
+      subject: "File Alert"
+      body: "File changed at {{time}}"
+      server: "smtp.example.com"
+  - Type: "action"
+    Class: "DAF::SMSAction"
+    Options:
+      to: "+1234567890"
+      from: "+0987654321"
+      message: "Follow-up: File changed at {{time}}"
+      sid: "your_twilio_sid"
+      token: "your_twilio_token"
+---

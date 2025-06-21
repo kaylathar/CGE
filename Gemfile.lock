@@ -3,7 +3,9 @@ PATH
   specs:
     daf (0.4.0)
       google-apis-docs_v1 (~> 0.33)
+      net-http (~> 0.4)
       net-smtp
+      nokogiri (~> 1.15)
       twilio-ruby
       washbullet
 

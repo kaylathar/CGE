@@ -87,24 +87,24 @@ describe DAF::GoogleDocInput do
     allow(mock_service).to receive(:get_document).and_raise(Google::Apis::ClientError.new('Not found'))
 
     expect { google_doc_input.process(options) }
-      .to raise_error(DAF::OptionError, /Google API error/)
+      .to raise_error(DAF::GoogleDocError, /Google API error/)
   end
 
   it 'should handle network errors' do
     allow(mock_service).to receive(:get_document).and_raise(StandardError.new('Network error'))
 
     expect { google_doc_input.process(options) }
-      .to raise_error(DAF::OptionError, /Failed to fetch document/)
+      .to raise_error(DAF::GoogleDocError, /Failed to fetch document/)
   end
 
   it 'should validate document_id format' do
     expect { google_doc_input.process({ 'document_id' => 'invalid' }) }
-      .to raise_error(DAF::OptionError, /Invalid document_id format/)
+      .to raise_error(DAF::OptionError, /Bad value for option document_id/)
   end
 
   it 'should validate credentials_path exists' do
     expect { google_doc_input.process({ 'document_id' => document_id, 'credentials_path' => '/nonexistent/path' }) }
-      .to raise_error(DAF::OptionError, /Credentials file not found/)
+      .to raise_error(DAF::OptionError, /Bad value for option credentials_path/)
   end
 
   it 'should use service account credentials when credentials_path is provided' do

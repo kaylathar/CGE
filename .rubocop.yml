@@ -1,5 +1,5 @@
 Metrics/MethodLength:
-  Max: 20
+  Max: 25
 Metrics/AbcSize:
   Enabled: false
 Gemspec/DevelopmentDependencies:

@@ -1,11 +1,9 @@
 require 'json'
 
 module CGE
-  # A command graph that is parsed out of a JSON file
+  # A command graph that is parsed out of jSON
   #
-  # Loads and constructs a command graph from JSON configuration files.
-  # The JSON file should contain a Name and Graph structure defining
-  # the sequence of monitors and actions to execute.
+  # Loads and constructs a command graph from JSON configuration
   #
   # JSON Structure:
   #   {
@@ -17,7 +15,6 @@ module CGE
   #     "Graph": [
   #       {
   #         "Name": "MyMonitor"
-  #         "Type": "monitor",
   #         "Class": "CGE::FileUpdateMonitor",
   #         "Options": {
   #           "path": "{{graph.base_path}}/file",
@@ -26,7 +23,6 @@ module CGE
   #       },
   #       {
   #         "Name": "MyAction"
-  #         "Type": "action",
   #         "Class": "CGE::EmailAction",
   #         "Options": {
   #           "to": "{{graph.admin_email}}"
@@ -40,13 +36,17 @@ module CGE
   #   graph.name # => "My Command Graph"
   #   graph.execute
   class JSONCommandGraph < CommandGraph
-    attr_reader :name
-
     # @param file_path [String] Path to JSON configuration file
     # @param global_configuration [GlobalConfiguration] Optional global configuration instance
-    def initialize(file_path, global_configuration = nil)
-      configuration = JSON.parse(File.read(file_path))
-      @name = configuration['Name']
+    def self.from_file(file_path, global_configuration = nil)
+      new(File.read(file_path), global_configuration)
+    end
+
+    # @param json_data [String] JSON data to parse command graph from
+    # @param global_configuration [GlobalConfiguration] Optional global configuration instance
+    def initialize(json_data, global_configuration = nil)
+      configuration = JSON.parse(json_data)
+      name = configuration['Name']
       command_list = configuration['Graph']
       constants = configuration['Constants'] || {}
 
@@ -56,7 +56,7 @@ module CGE
         current_command = command
       end
 
-      super(current_command, global_configuration, constants)
+      super(name, current_command, global_configuration, constants)
     end
 
     def get_class(class_name)

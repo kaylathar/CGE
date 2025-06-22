@@ -42,16 +42,16 @@ describe CGE::YAMLCommandGraph do
       end
       
       it 'should load the YAML configuration correctly' do
-        expect { CGE::YAMLCommandGraph.new(temp_file.path) }.not_to raise_error
+        expect { CGE::YAMLCommandGraph.from_file(temp_file.path) }.not_to raise_error
       end
       
       it 'should set the name from YAML configuration' do
-        graph = CGE::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.from_file(temp_file.path)
         expect(graph.name).to eq('Test Command Graph')
       end
       
       it 'should create commands with correct types' do
-        graph = CGE::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         expect(current_command).to be_a(CGE::FileUpdateMonitor)
@@ -61,7 +61,7 @@ describe CGE::YAMLCommandGraph do
       end
       
       it 'should preserve options for each command' do
-        graph = CGE::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         expect(current_command.options).to include('path' => '/tmp/test_file', 'frequency' => 5)
@@ -89,7 +89,7 @@ describe CGE::YAMLCommandGraph do
       end
       
       it 'should raise CommandGraphException for invalid class' do
-        expect { CGE::YAMLCommandGraph.new(temp_file.path) }.to raise_error(CGE::CommandGraphException, 'Invalid Action, Monitor, or Input type')
+        expect { CGE::YAMLCommandGraph.from_file(temp_file.path) }.to raise_error(CGE::CommandGraphException, 'Invalid Action, Monitor, or Input type')
       end
     end
   end
@@ -136,7 +136,7 @@ describe CGE::YAMLCommandGraph do
       end
       
       it 'should create the correct chain structure' do
-        graph = CGE::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         expect(current_command).to be_a(CGE::FileUpdateMonitor)
@@ -145,7 +145,7 @@ describe CGE::YAMLCommandGraph do
       end
       
       it 'should preserve template substitution patterns' do
-        graph = CGE::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         socket_monitor_options = current_command.next_command.options
@@ -201,7 +201,7 @@ describe CGE::YAMLCommandGraph do
       end
       
       it 'should create the correct chain structure' do
-        graph = CGE::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         expect(current_command).to be_a(CGE::FileUpdateMonitor)
@@ -249,7 +249,7 @@ describe CGE::YAMLCommandGraph do
       end
       
       it 'should create the correct chain structure' do
-        graph = CGE::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         expect(current_command).to be_a(CGE::FileUpdateMonitor)
@@ -300,7 +300,7 @@ describe CGE::YAMLCommandGraph do
       end
       
       it 'should create the correct chain structure' do
-        graph = CGE::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         expect(current_command).to be_a(CGE::ShellAction)
@@ -342,7 +342,7 @@ describe CGE::YAMLCommandGraph do
       end
       
       it 'should create the correct chain structure' do
-        graph = CGE::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         expect(current_command).to be_a(CGE::WebInput)
@@ -350,7 +350,7 @@ describe CGE::YAMLCommandGraph do
       end
       
       it 'should preserve template substitution for input outputs' do
-        graph = CGE::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         sms_action_options = current_command.next_command.options
@@ -398,7 +398,7 @@ describe CGE::YAMLCommandGraph do
       end
       
       it 'should preserve {{graph.constant_name}} patterns in command options' do
-        graph = CGE::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         monitor_options = current_command.options
@@ -410,7 +410,7 @@ describe CGE::YAMLCommandGraph do
       end
       
       it 'should correctly substitute constants when applying outputs' do
-        graph = CGE::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         # Get the outputs which should include the constants
@@ -468,7 +468,7 @@ describe CGE::YAMLCommandGraph do
       end
       
       it 'should create correct chain structure with constants' do
-        graph = CGE::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         expect(current_command).to be_a(CGE::FileUpdateMonitor)
@@ -476,7 +476,7 @@ describe CGE::YAMLCommandGraph do
       end
       
       it 'should substitute all constants correctly in complex workflow' do
-        graph = CGE::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         # Create some mock outputs for file monitor

@@ -11,11 +11,14 @@ module CGE
   # default Command continues monitoring forever
   # though subclasses may override this behavior
   class CommandGraph
+    attr_reader :name
+
     # Create a new command object from a data source
     # @param initial_command [Command] The first command of the command graph
     # @param global_configuration [GlobalConfiguration] Optional global configuration instance
     # @param constants [Hash] Optional hash of graph-level constants
-    def initialize(initial_command, global_configuration = nil, constants = {})
+    def initialize(name, initial_command, global_configuration = nil, constants = {})
+      @name = name
       @current_command = initial_command
       @variables = {}
 

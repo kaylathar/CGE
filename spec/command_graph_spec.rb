@@ -28,7 +28,7 @@ describe CGE::CommandGraph do
   
   
   describe 'template substitution' do
-    let(:graph) { CGE::CommandGraph.new(mock_monitor) }
+    let(:graph) { CGE::CommandGraph.new('test',mock_monitor) }
     
     context 'substitute_variables method' do
       it 'should apply template substitutions correctly in options' do
@@ -118,7 +118,7 @@ describe CGE::CommandGraph do
     context 'global configuration substitution' do
       let(:mock_heartbeat_option) { double('HeartbeatOption') }
       let(:mock_global_config_class) { double('GlobalConfigurationClass') }
-      let(:graph_with_global_config) { CGE::CommandGraph.new(mock_monitor, mock_global_config) }
+      let(:graph_with_global_config) { CGE::CommandGraph.new('test',mock_monitor, mock_global_config) }
       
       before do
         allow(mock_global_config).to receive(:class).and_return(mock_global_config_class)

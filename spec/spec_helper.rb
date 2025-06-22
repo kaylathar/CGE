@@ -4,6 +4,8 @@ SimpleCov.start do
   add_group 'Actions', 'lib/cge/actions/'
   add_group 'Monitors', 'lib/cge/monitors/'
   add_group 'Inputs', 'lib/cge/inputs/'
+  add_group 'Conditionals', 'lib/cge/conditionals/'
+  add_group 'Parsers', 'lib/cge/graphs/'
   minimum_coverage 95
   refuse_coverage_drop
 end
@@ -24,5 +26,5 @@ require 'cge/inputs/google_doc_input'
 require 'cge/inputs/ocr_input'
 require 'cge/inputs/web_input'
 require 'cge/conditionals/comparison_conditional'
-require 'cge/datasources/yaml_command_graph'
+require 'cge/graphs/yaml_command_graph'
 require 'cge/global_configuration'

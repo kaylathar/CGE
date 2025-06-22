@@ -42,16 +42,16 @@ describe CGE::JSONCommandGraph do
       end
       
       it 'should load the JSON configuration correctly' do
-        expect { CGE::JSONCommandGraph.new(temp_file.path) }.not_to raise_error
+        expect { CGE::JSONCommandGraph.from_file(temp_file.path) }.not_to raise_error
       end
       
       it 'should set the name from JSON configuration' do
-        graph = CGE::JSONCommandGraph.new(temp_file.path)
+        graph = CGE::JSONCommandGraph.from_file(temp_file.path)
         expect(graph.name).to eq('Test Command Graph')
       end
       
       it 'should create commands with correct types' do
-        graph = CGE::JSONCommandGraph.new(temp_file.path)
+        graph = CGE::JSONCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         expect(current_command).to be_a(CGE::FileUpdateMonitor)
@@ -61,7 +61,7 @@ describe CGE::JSONCommandGraph do
       end
       
       it 'should preserve options for each command' do
-        graph = CGE::JSONCommandGraph.new(temp_file.path)
+        graph = CGE::JSONCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         expect(current_command.options).to include('path' => '/tmp/test_file', 'frequency' => 5)
@@ -89,7 +89,7 @@ describe CGE::JSONCommandGraph do
       end
       
       it 'should raise CommandGraphException for invalid class' do
-        expect { CGE::JSONCommandGraph.new(temp_file.path) }.to raise_error(CGE::CommandGraphException, 'Invalid Action, Monitor, or Input type')
+        expect { CGE::JSONCommandGraph.from_file(temp_file.path) }.to raise_error(CGE::CommandGraphException, 'Invalid Action, Monitor, or Input type')
       end
     end
   end
@@ -136,7 +136,7 @@ describe CGE::JSONCommandGraph do
       end
       
       it 'should create the correct chain structure' do
-        graph = CGE::JSONCommandGraph.new(temp_file.path)
+        graph = CGE::JSONCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         expect(current_command).to be_a(CGE::FileUpdateMonitor)
@@ -145,7 +145,7 @@ describe CGE::JSONCommandGraph do
       end
       
       it 'should preserve template substitution patterns' do
-        graph = CGE::JSONCommandGraph.new(temp_file.path)
+        graph = CGE::JSONCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         socket_monitor_options = current_command.next_command.options
@@ -201,7 +201,7 @@ describe CGE::JSONCommandGraph do
       end
       
       it 'should create the correct chain structure' do
-        graph = CGE::JSONCommandGraph.new(temp_file.path)
+        graph = CGE::JSONCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         expect(current_command).to be_a(CGE::FileUpdateMonitor)
@@ -250,7 +250,7 @@ describe CGE::JSONCommandGraph do
       end
       
       it 'should preserve {{graph.constant_name}} patterns in command options' do
-        graph = CGE::JSONCommandGraph.new(temp_file.path)
+        graph = CGE::JSONCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         monitor_options = current_command.options
@@ -262,7 +262,7 @@ describe CGE::JSONCommandGraph do
       end
       
       it 'should correctly substitute constants when applying outputs' do
-        graph = CGE::JSONCommandGraph.new(temp_file.path)
+        graph = CGE::JSONCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         # Get the outputs which should include the constants

@@ -1,6 +1,6 @@
 require 'cge/command'
-require 'cge/datasources/yaml_command_graph'
-require 'cge/datasources/json_command_graph'
+require 'cge/graphs/yaml_command_graph'
+require 'cge/graphs/json_command_graph'
 require 'cge/global_configuration'
 
 # Starts the CGE daemon (CGD) - takes a directory

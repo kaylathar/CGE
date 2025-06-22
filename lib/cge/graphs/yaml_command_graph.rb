@@ -31,13 +31,17 @@ module CGE
   #   graph.name # => "My Command Graph"
   #   graph.execute
   class YAMLCommandGraph < CommandGraph
-    attr_reader :name
-
-    # @param file_path [String] Path to YAML configuration file
+    # @param file_path [String] Path to YAML file
     # @param global_configuration [GlobalConfiguration] Optional global configuration instance
-    def initialize(file_path, global_configuration = nil)
-      configuration = YAML.load_file(file_path)
-      @name = configuration['Name']
+    def self.from_file(file_path, global_configuration = nil)
+      new(File.read(file_path), global_configuration)
+    end
+
+    # @param yaml_string [String] YAML string
+    # @param global_configuration [GlobalConfiguration] Optional global configuration instance
+    def initialize(yaml_string, global_configuration = nil)
+      configuration = YAML.safe_load(yaml_string)
+      name = configuration['Name']
       command_list = configuration['Graph']
       constants = configuration['Constants'] || {}
 
@@ -46,7 +50,7 @@ module CGE
         command = command_from_data(command_data, current_command)
         current_command = command
       end
-      super(current_command, global_configuration, constants)
+      super(name, current_command, global_configuration, constants)
     end
 
     def get_class(class_name)

@@ -1,19 +1,17 @@
-require 'daf/configurable'
+require 'daf/command'
 
 module DAF
   # Base class for conditional nodes that allow altering flow of graph execution
-  class Conditional
-    include Configurable
-
-    # Evaluates the condition and determines the next node to execute
+  class Conditional < Command
+    # Execute this conditional - evaluates condition and determines next command
     #
     # @param options [Hash] A hash of options with name/value pairs, must
     # match types expected for each option or will raise an exception
-    # @param next_node [CommandGraphNode] The next node that would normally execute
-    # @return [CommandGraphNode, nil] The next node to execute, or nil to halt execution
-    def evaluate(options, next_node)
+    # @param next_command [Command] The next command that would normally execute
+    # @return [Command, nil] The next command to execute, or nil to halt execution
+    def execute(options, next_command)
       process_options(options)
-      determine_next_node(next_node)
+      determine_next_node(next_command)
     end
   end
 end

@@ -1,20 +1,19 @@
-require 'daf/configurable'
+require 'daf/command'
 
 module DAF
   # Stores information related to actions that can
   # be taken as a result of a Monitor firing
-  # Exposes only one method, and is a Configurable
-  class Action
-    include Configurable
-
-    # Activate this action using given options
+  class Action < Command
+    # Execute this action using given options
     #
     # @param options [Hash] A hash of options with name/value pairs, must
     # match types expected for each option or will raise an exception
-    # @return The output from the action
-    def activate(options)
+    # @param next_command [Command] The next command to execute after this one
+    # @return [Command] The next command to execute
+    def execute(options, next_command)
       process_options(options)
       invoke
+      next_command
     end
   end
 end

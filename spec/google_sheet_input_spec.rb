@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'webmock/rspec'
 
 describe DAF::GoogleSheetInput do
-  let(:google_sheet_input) { DAF::GoogleSheetInput.new }
+  let(:google_sheet_input) { DAF::GoogleSheetInput.new("test_input", {}) }
   let(:spreadsheet_id) { '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms' }
   let(:options) { { 'spreadsheet_id' => spreadsheet_id } }
   let(:options_with_credentials) do
@@ -30,7 +30,7 @@ describe DAF::GoogleSheetInput do
   end
 
   it 'should fetch and set spreadsheet content when processed' do
-    google_sheet_input.process(options)
+    google_sheet_input.execute(options, nil)
     expect(google_sheet_input.content).to eq("Name\tAge\nJohn\t25\nJane\t30")
   end
 
@@ -39,7 +39,7 @@ describe DAF::GoogleSheetInput do
       .with(spreadsheet_id, 'A1:B5')
       .and_return(mock_response)
 
-    google_sheet_input.process(options_with_range)
+    google_sheet_input.execute(options_with_range, nil)
     expect(google_sheet_input.content).to eq("Name\tAge\nJohn\t25\nJane\t30")
   end
 
@@ -48,43 +48,43 @@ describe DAF::GoogleSheetInput do
       .with(spreadsheet_id, 'A:ZZ')
       .and_return(mock_response)
 
-    google_sheet_input.process(options)
+    google_sheet_input.execute(options, nil)
   end
 
   it 'should handle empty spreadsheets' do
     empty_response = double('response', values: nil)
     allow(mock_service).to receive(:get_spreadsheet_values).and_return(empty_response)
 
-    google_sheet_input.process(options)
+    google_sheet_input.execute(options, nil)
     expect(google_sheet_input.content).to eq('')
   end
 
   it 'should raise an error when spreadsheet_id is not provided' do
-    expect { google_sheet_input.process({}) }
+    expect { google_sheet_input.execute({}, nil) }
       .to raise_error(DAF::OptionError, /Required option spreadsheet_id missing/)
   end
 
   it 'should validate spreadsheet_id format' do
-    expect { google_sheet_input.process({ 'spreadsheet_id' => 'invalid' }) }
+    expect { google_sheet_input.execute({ 'spreadsheet_id' => 'invalid' }, nil) }
       .to raise_error(DAF::OptionError, /Bad value for option spreadsheet_id/)
   end
 
   it 'should validate credentials_path exists' do
-    expect { google_sheet_input.process({ 'spreadsheet_id' => spreadsheet_id, 'credentials_path' => '/nonexistent/path' }) }
+    expect { google_sheet_input.execute({ 'spreadsheet_id' => spreadsheet_id, 'credentials_path' => '/nonexistent/path' }, nil) }
       .to raise_error(DAF::OptionError, /Bad value for option credentials_path/)
   end
 
   it 'should handle Google API errors' do
     allow(mock_service).to receive(:get_spreadsheet_values).and_raise(Google::Apis::ClientError.new('Not found'))
 
-    expect { google_sheet_input.process(options) }
+    expect { google_sheet_input.execute(options, nil) }
       .to raise_error(DAF::GoogleSheetError, /Google API error/)
   end
 
   it 'should handle network errors' do
     allow(mock_service).to receive(:get_spreadsheet_values).and_raise(StandardError.new('Network error'))
 
-    expect { google_sheet_input.process(options) }
+    expect { google_sheet_input.execute(options, nil) }
       .to raise_error(DAF::GoogleSheetError, /Failed to fetch spreadsheet/)
   end
 
@@ -98,7 +98,7 @@ describe DAF::GoogleSheetInput do
       .with(json_key_io: mock_file, scope: ['https://www.googleapis.com/auth/spreadsheets.readonly'])
       .and_return(mock_credentials)
 
-    google_sheet_input.process(options_with_credentials)
+    google_sheet_input.execute(options_with_credentials, nil)
     expect(google_sheet_input.content).to eq("Name\tAge\nJohn\t25\nJane\t30")
   end
 end

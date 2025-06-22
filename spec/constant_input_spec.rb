@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe DAF::ConstantInput do
-  let(:constant_input) { DAF::ConstantInput.new }
+  let(:constant_input) { DAF::ConstantInput.new('constant_input', {}) }
   let(:options) { { 'constant' => 'hello world' } }
 
   it 'should inherit from Input' do
@@ -23,17 +23,17 @@ describe DAF::ConstantInput do
   end
 
   it 'should set the output to the constant value when processed' do
-    constant_input.process(options)
+    constant_input.execute(options, nil)
     expect(constant_input.output).to eq('hello world')
   end
 
   it 'should raise an error when constant is not provided' do
-    expect { constant_input.process({}) }
+    expect { constant_input.execute({}, nil) }
       .to raise_error(DAF::OptionError, /Required option constant missing/)
   end
 
   it 'should raise an error when constant is not a string' do
-    expect { constant_input.process({ 'constant' => 123 }) }
+    expect { constant_input.execute({ 'constant' => 123 }, nil) }
       .to raise_error(DAF::OptionError, /Bad value for option constant/)
   end
 end

@@ -1,12 +1,12 @@
 require 'spec_helper'
 
 describe DAF::ComparisonConditional do
-  let(:comparison_conditional) { DAF::ComparisonConditional.new }
+  let(:comparison_conditional) { DAF::ComparisonConditional.new('comparison_conditional', {}) }
   let(:dummy_next_node) { double('next_node') }
   
   # Helper method to check if condition passes (returns next_node vs nil)
   def evaluate_as_boolean(options)
-    result = comparison_conditional.evaluate(options, dummy_next_node)
+    result = comparison_conditional.execute(options, dummy_next_node)
     # Returns next_node if condition is true, nil if false
     result == dummy_next_node
   end
@@ -83,7 +83,7 @@ describe DAF::ComparisonConditional do
 
     it 'should raise error for non-numeric values in numeric comparison' do
       options = { 'value1' => 'not_a_number', 'value2' => '10', 'operator' => 'gt' }
-      expect { comparison_conditional.evaluate(options, dummy_next_node) }
+      expect { comparison_conditional.execute(options, dummy_next_node) }
         .to raise_error(ArgumentError)
     end
   end
@@ -91,12 +91,12 @@ describe DAF::ComparisonConditional do
   describe 'error handling' do
     it 'should raise error for unsupported operator' do
       options = { 'value1' => 'test', 'value2' => 'test', 'operator' => 'invalid_op' }
-      expect { comparison_conditional.evaluate(options, dummy_next_node) }
+      expect { comparison_conditional.execute(options, dummy_next_node) }
         .to raise_error(DAF::OptionError, /Bad value for option operator/)
     end
 
     it 'should raise error when required values are missing' do
-      expect { comparison_conditional.evaluate({}, dummy_next_node) }
+      expect { comparison_conditional.execute({}, dummy_next_node) }
         .to raise_error(DAF::OptionError, /Required option value1 missing/)
     end
   end

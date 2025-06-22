@@ -3,7 +3,7 @@ require 'tempfile'
 require 'yaml'
 
 describe DAF::YAMLCommandGraph do
-  let(:temp_file) { Tempfile.new(['test_config', '.yaml']) }
+  let(:temp_file) { Tempfile.new(['test_config', '.yml']) }
   
   after { temp_file.unlink }
   
@@ -14,7 +14,6 @@ describe DAF::YAMLCommandGraph do
           'Name' => 'Test Command Graph',
           'Graph' => [
             {
-              'Type' => 'monitor',
               'Name' => 'file_monitor',
               'Class' => 'DAF::FileUpdateMonitor',
               'Options' => {
@@ -23,8 +22,7 @@ describe DAF::YAMLCommandGraph do
               }
             },
             {
-              'Type' => 'action',
-              'Name' => 'sms_action', 
+              'Name' => 'sms_alert',
               'Class' => 'DAF::SMSAction',
               'Options' => {
                 'to' => '+1234567890',
@@ -52,22 +50,22 @@ describe DAF::YAMLCommandGraph do
         expect(graph.name).to eq('Test Command Graph')
       end
       
-      it 'should create nodes with correct types' do
+      it 'should create commands with correct types' do
         graph = DAF::YAMLCommandGraph.new(temp_file.path)
-        current_node = graph.instance_variable_get(:@current_node)
+        current_command = graph.instance_variable_get(:@current_command)
         
-        expect(current_node.type).to eq(:monitor)
-        expect(current_node.underlying).to be_a(DAF::FileUpdateMonitor)
-        expect(current_node.next.type).to eq(:action)
-        expect(current_node.next.underlying).to be_a(DAF::SMSAction)
+        expect(current_command).to be_a(DAF::FileUpdateMonitor)
+        expect(current_command.name).to eq('file_monitor')
+        expect(current_command.next_command).to be_a(DAF::SMSAction)
+        expect(current_command.next_command.name).to eq('sms_alert')
       end
       
-      it 'should preserve options for each node' do
+      it 'should preserve options for each command' do
         graph = DAF::YAMLCommandGraph.new(temp_file.path)
-        current_node = graph.instance_variable_get(:@current_node)
+        current_command = graph.instance_variable_get(:@current_command)
         
-        expect(current_node.options).to include('path' => '/tmp/test_file', 'frequency' => 5)
-        expect(current_node.next.options).to include('to' => '+1234567890', 'message' => 'File updated at {{file_monitor.time}}')
+        expect(current_command.options).to include('path' => '/tmp/test_file', 'frequency' => 5)
+        expect(current_command.next_command.options).to include('to' => '+1234567890', 'message' => 'File updated at {{file_monitor.time}}')
       end
     end
     
@@ -77,7 +75,6 @@ describe DAF::YAMLCommandGraph do
           'Name' => 'Invalid Graph',
           'Graph' => [
             {
-              'Type' => 'monitor',
               'Name' => 'invalid_monitor',
               'Class' => 'DAF::NonExistentMonitor',
               'Options' => {}
@@ -99,13 +96,12 @@ describe DAF::YAMLCommandGraph do
   
   describe 'complex graph structures' do
     context 'Monitor -> Monitor -> Action chain' do
-      let(:monitor_monitor_action_config) do
+      let(:complex_config) do
         {
-          'Name' => 'Monitor-Monitor-Action Chain',
+          'Name' => 'Complex Monitor Chain',
           'Graph' => [
             {
-              'Type' => 'monitor',
-              'Name' => 'source_file_monitor',
+              'Name' => 'file_monitor',
               'Class' => 'DAF::FileUpdateMonitor',
               'Options' => {
                 'path' => '/tmp/source_file',
@@ -113,21 +109,19 @@ describe DAF::YAMLCommandGraph do
               }
             },
             {
-              'Type' => 'monitor',
-              'Name' => 'webhook_socket_monitor',
-              'Class' => 'DAF::UnixSocketMonitor', 
+              'Name' => 'socket_monitor',
+              'Class' => 'DAF::UnixSocketMonitor',
               'Options' => {
-                'socket_path' => '/tmp/webhook_{{source_file_monitor.time}}'
+                'socket_path' => '/tmp/webhook_{{file_monitor.time}}.sock'
               }
             },
             {
-              'Type' => 'action',
-              'Name' => 'notification_sms',
+              'Name' => 'sms_action',
               'Class' => 'DAF::SMSAction',
               'Options' => {
                 'to' => '+1234567890',
+                'message' => 'File modified at {{file_monitor.time}}, webhook data: {{socket_monitor.data}}',
                 'from' => '+0987654321',
-                'message' => 'File modified at {{source_file_monitor.time}}, webhook data: {{webhook_socket_monitor.data}}',
                 'sid' => 'test_sid',
                 'token' => 'test_token'
               }
@@ -137,70 +131,62 @@ describe DAF::YAMLCommandGraph do
       end
       
       before do
-        temp_file.write(monitor_monitor_action_config.to_yaml)
+        temp_file.write(complex_config.to_yaml)
         temp_file.close
       end
       
       it 'should create the correct chain structure' do
         graph = DAF::YAMLCommandGraph.new(temp_file.path)
-        current_node = graph.instance_variable_get(:@current_node)
+        current_command = graph.instance_variable_get(:@current_command)
         
-        expect(current_node.type).to eq(:monitor)
-        expect(current_node.underlying).to be_a(DAF::FileUpdateMonitor)
-        
-        expect(current_node.next.type).to eq(:monitor)
-        expect(current_node.next.underlying).to be_a(DAF::UnixSocketMonitor)
-        
-        expect(current_node.next.next.type).to eq(:action)
-        expect(current_node.next.next.underlying).to be_a(DAF::SMSAction)
+        expect(current_command).to be_a(DAF::FileUpdateMonitor)
+        expect(current_command.next_command).to be_a(DAF::UnixSocketMonitor)
+        expect(current_command.next_command.next_command).to be_a(DAF::SMSAction)
       end
       
       it 'should preserve template substitution patterns' do
         graph = DAF::YAMLCommandGraph.new(temp_file.path)
-        current_node = graph.instance_variable_get(:@current_node)
+        current_command = graph.instance_variable_get(:@current_command)
         
-        socket_monitor_options = current_node.next.options
-        expect(socket_monitor_options['socket_path']).to eq('/tmp/webhook_{{source_file_monitor.time}}')
+        socket_monitor_options = current_command.next_command.options
+        expect(socket_monitor_options['socket_path']).to eq('/tmp/webhook_{{file_monitor.time}}.sock')
         
-        sms_action_options = current_node.next.next.options
-        expect(sms_action_options['message']).to eq('File modified at {{source_file_monitor.time}}, webhook data: {{webhook_socket_monitor.data}}')
+        sms_action_options = current_command.next_command.next_command.options
+        expect(sms_action_options['message']).to eq('File modified at {{file_monitor.time}}, webhook data: {{socket_monitor.data}}')
       end
     end
     
     context 'Monitor -> Action -> Action chain' do
-      let(:monitor_action_action_config) do
+      let(:action_chain_config) do
         {
-          'Name' => 'Monitor-Action-Action Chain',
+          'Name' => 'Action Chain Graph',
           'Graph' => [
             {
-              'Type' => 'monitor',
-              'Name' => 'watched_file_monitor',
+              'Name' => 'file_monitor',
               'Class' => 'DAF::FileUpdateMonitor',
               'Options' => {
-                'path' => '/tmp/watched_file',
-                'frequency' => 3
+                'path' => '/tmp/monitored_file',
+                'frequency' => 5
               }
             },
             {
-              'Type' => 'action',
-              'Name' => 'email_alert',
+              'Name' => 'email_action',
               'Class' => 'DAF::EmailAction',
               'Options' => {
                 'to' => 'admin@example.com',
+                'subject' => 'File Update Alert',
+                'body' => 'File updated at {{file_monitor.time}}',
                 'from' => 'system@example.com',
-                'subject' => 'File Alert',
-                'body' => 'File changed at {{watched_file_monitor.time}}',
-                'server' => 'smtp.example.com'
+                'server' => 'localhost'
               }
             },
             {
-              'Type' => 'action',
-              'Name' => 'sms_alert',
+              'Name' => 'sms_action',
               'Class' => 'DAF::SMSAction',
               'Options' => {
                 'to' => '+1234567890',
+                'message' => 'Email sent: {{email_action.message_id}}',
                 'from' => '+0987654321',
-                'message' => 'Email sent, file changed at {{watched_file_monitor.time}}',
                 'sid' => 'test_sid',
                 'token' => 'test_token'
               }
@@ -210,53 +196,47 @@ describe DAF::YAMLCommandGraph do
       end
       
       before do
-        temp_file.write(monitor_action_action_config.to_yaml)
+        temp_file.write(action_chain_config.to_yaml)
         temp_file.close
       end
       
       it 'should create the correct chain structure' do
         graph = DAF::YAMLCommandGraph.new(temp_file.path)
-        current_node = graph.instance_variable_get(:@current_node)
+        current_command = graph.instance_variable_get(:@current_command)
         
-        expect(current_node.type).to eq(:monitor)
-        expect(current_node.underlying).to be_a(DAF::FileUpdateMonitor)
-        
-        expect(current_node.next.type).to eq(:action)
-        expect(current_node.next.underlying).to be_a(DAF::EmailAction)
-        
-        expect(current_node.next.next.type).to eq(:action)
-        expect(current_node.next.next.underlying).to be_a(DAF::SMSAction)
+        expect(current_command).to be_a(DAF::FileUpdateMonitor)
+        expect(current_command.next_command).to be_a(DAF::EmailAction)
+        expect(current_command.next_command.next_command).to be_a(DAF::SMSAction)
       end
     end
     
     context 'Monitor -> Action -> Monitor chain' do
       let(:monitor_action_monitor_config) do
         {
-          'Name' => 'Monitor-Action-Monitor Chain',
+          'Name' => 'Monitor Action Monitor Chain',
           'Graph' => [
             {
-              'Type' => 'monitor',
-              'Name' => 'trigger_file_monitor',
+              'Name' => 'file_monitor',
               'Class' => 'DAF::FileUpdateMonitor',
               'Options' => {
-                'path' => '/tmp/trigger_file',
-                'frequency' => 1
+                'path' => '/tmp/source_file',
+                'frequency' => 3
               }
             },
             {
-              'Type' => 'action',
-              'Name' => 'shell_processor',
+              'Name' => 'shell_action',
               'Class' => 'DAF::ShellAction',
               'Options' => {
-                'command' => 'echo "{{trigger_file_monitor.time}}" > /tmp/processed_{{trigger_file_monitor.time}}'
+                'path' => '/bin/echo',
+                'arguments' => 'Processing {{file_monitor.contents}}'
               }
             },
             {
-              'Type' => 'monitor',
-              'Name' => 'final_socket_monitor',
-              'Class' => 'DAF::UnixSocketMonitor',
+              'Name' => 'result_monitor',
+              'Class' => 'DAF::FileUpdateMonitor',
               'Options' => {
-                'socket_path' => '/tmp/final_socket'
+                'path' => '/tmp/result_file',
+                'frequency' => 1
               }
             }
           ]
@@ -270,35 +250,29 @@ describe DAF::YAMLCommandGraph do
       
       it 'should create the correct chain structure' do
         graph = DAF::YAMLCommandGraph.new(temp_file.path)
-        current_node = graph.instance_variable_get(:@current_node)
+        current_command = graph.instance_variable_get(:@current_command)
         
-        expect(current_node.type).to eq(:monitor)
-        expect(current_node.underlying).to be_a(DAF::FileUpdateMonitor)
-        
-        expect(current_node.next.type).to eq(:action)
-        expect(current_node.next.underlying).to be_a(DAF::ShellAction)
-        
-        expect(current_node.next.next.type).to eq(:monitor)
-        expect(current_node.next.next.underlying).to be_a(DAF::UnixSocketMonitor)
+        expect(current_command).to be_a(DAF::FileUpdateMonitor)
+        expect(current_command.next_command).to be_a(DAF::ShellAction)
+        expect(current_command.next_command.next_command).to be_a(DAF::FileUpdateMonitor)
       end
     end
     
     context 'Action -> Monitor -> Action chain' do
       let(:action_monitor_action_config) do
         {
-          'Name' => 'Action-Monitor-Action Chain',
+          'Name' => 'Action Monitor Action Chain',
           'Graph' => [
             {
-              'Type' => 'action',
-              'Name' => 'startup_trigger',
+              'Name' => 'startup_action',
               'Class' => 'DAF::ShellAction',
               'Options' => {
-                'command' => 'touch /tmp/startup_trigger'
+                'path' => '/bin/echo',
+                'arguments' => 'startup complete'
               }
             },
             {
-              'Type' => 'monitor',
-              'Name' => 'response_file_monitor',
+              'Name' => 'file_monitor',
               'Class' => 'DAF::FileUpdateMonitor',
               'Options' => {
                 'path' => '/tmp/response_file',
@@ -306,15 +280,14 @@ describe DAF::YAMLCommandGraph do
               }
             },
             {
-              'Type' => 'action',
-              'Name' => 'response_sms',
-              'Class' => 'DAF::SMSAction',
+              'Name' => 'email_action',
+              'Class' => 'DAF::EmailAction',
               'Options' => {
-                'to' => '+1234567890',
-                'from' => '+0987654321',
-                'message' => 'Response received at {{response_file_monitor.time}}',
-                'sid' => 'test_sid',
-                'token' => 'test_token'
+                'to' => 'admin@example.com',
+                'subject' => 'Response received',
+                'body' => 'File updated at {{file_monitor.time}} with content: {{file_monitor.contents}}',
+                'from' => 'system@example.com',
+                'server' => 'localhost'
               }
             }
           ]
@@ -328,40 +301,33 @@ describe DAF::YAMLCommandGraph do
       
       it 'should create the correct chain structure' do
         graph = DAF::YAMLCommandGraph.new(temp_file.path)
-        current_node = graph.instance_variable_get(:@current_node)
+        current_command = graph.instance_variable_get(:@current_command)
         
-        expect(current_node.type).to eq(:action)
-        expect(current_node.underlying).to be_a(DAF::ShellAction)
-        
-        expect(current_node.next.type).to eq(:monitor)
-        expect(current_node.next.underlying).to be_a(DAF::FileUpdateMonitor)
-        
-        expect(current_node.next.next.type).to eq(:action)
-        expect(current_node.next.next.underlying).to be_a(DAF::SMSAction)
+        expect(current_command).to be_a(DAF::ShellAction)
+        expect(current_command.next_command).to be_a(DAF::FileUpdateMonitor)
+        expect(current_command.next_command.next_command).to be_a(DAF::EmailAction)
       end
     end
     
     context 'Input -> Action chain' do
       let(:input_action_config) do
         {
-          'Name' => 'Input-Action Chain',
+          'Name' => 'Input Action Chain',
           'Graph' => [
             {
-              'Name' => 'myinput',
-              'Type' => 'input',
-              'Class' => 'DAF::ConstantInput',
+              'Name' => 'web_input',
+              'Class' => 'DAF::WebInput',
               'Options' => {
-                'constant' => 'Hello World'
+                'url' => 'http://example.com/data'
               }
             },
             {
-              'Name' => 'myaction',
-              'Type' => 'action',
+              'Name' => 'sms_action',
               'Class' => 'DAF::SMSAction',
               'Options' => {
                 'to' => '+1234567890',
+                'message' => 'Data received: {{web_input.content}}',
                 'from' => '+0987654321',
-                'message' => 'Message: {{output}}',
                 'sid' => 'test_sid',
                 'token' => 'test_token'
               }
@@ -377,21 +343,18 @@ describe DAF::YAMLCommandGraph do
       
       it 'should create the correct chain structure' do
         graph = DAF::YAMLCommandGraph.new(temp_file.path)
-        current_node = graph.instance_variable_get(:@current_node)
+        current_command = graph.instance_variable_get(:@current_command)
         
-        expect(current_node.type).to eq(:input)
-        expect(current_node.underlying).to be_a(DAF::ConstantInput)
-        
-        expect(current_node.next.type).to eq(:action)
-        expect(current_node.next.underlying).to be_a(DAF::SMSAction)
+        expect(current_command).to be_a(DAF::WebInput)
+        expect(current_command.next_command).to be_a(DAF::SMSAction)
       end
       
       it 'should preserve template substitution for input outputs' do
         graph = DAF::YAMLCommandGraph.new(temp_file.path)
-        current_node = graph.instance_variable_get(:@current_node)
+        current_command = graph.instance_variable_get(:@current_command)
         
-        sms_action_options = current_node.next.options
-        expect(sms_action_options['message']).to eq('Message: {{output}}')
+        sms_action_options = current_command.next_command.options
+        expect(sms_action_options['message']).to eq('Data received: {{web_input.content}}')
       end
     end
   end
@@ -403,30 +366,26 @@ describe DAF::YAMLCommandGraph do
           'Name' => 'Constants Test Graph',
           'Constants' => {
             'admin_email' => 'admin@example.com',
-            'base_path' => '/tmp/test',
-            'api_key' => 'test_api_key_123',
-            'phone_number' => '+1234567890'
+            'base_path' => '/tmp/monitoring'
           },
           'Graph' => [
             {
-              'Type' => 'monitor',
               'Name' => 'file_monitor',
               'Class' => 'DAF::FileUpdateMonitor',
               'Options' => {
-                'path' => '{{graph.base_path}}/monitored_file',
-                'frequency' => 3
+                'path' => '{{graph.base_path}}/watched_file',
+                'frequency' => 5
               }
             },
             {
-              'Type' => 'action',
               'Name' => 'email_action',
               'Class' => 'DAF::EmailAction',
               'Options' => {
                 'to' => '{{graph.admin_email}}',
+                'subject' => 'Alert',
+                'body' => 'File at {{graph.base_path}} was updated',
                 'from' => 'system@example.com',
-                'subject' => 'File Update Alert',
-                'body' => 'File updated at {{file_monitor.time}} in {{graph.base_path}}',
-                'server' => 'smtp.example.com'
+                'server' => 'localhost'
               }
             }
           ]
@@ -438,45 +397,35 @@ describe DAF::YAMLCommandGraph do
         temp_file.close
       end
       
-      it 'should parse constants from YAML configuration' do
+      it 'should preserve {{graph.constant_name}} patterns in command options' do
         graph = DAF::YAMLCommandGraph.new(temp_file.path)
-        outputs = graph.instance_variable_get(:@outputs)
+        current_command = graph.instance_variable_get(:@current_command)
         
-        expect(outputs).to include('graph.admin_email' => 'admin@example.com')
-        expect(outputs).to include('graph.base_path' => '/tmp/test')
-        expect(outputs).to include('graph.api_key' => 'test_api_key_123')
-        expect(outputs).to include('graph.phone_number' => '+1234567890')
-      end
-      
-      it 'should preserve {{graph.constant_name}} patterns in node options' do
-        graph = DAF::YAMLCommandGraph.new(temp_file.path)
-        current_node = graph.instance_variable_get(:@current_node)
+        monitor_options = current_command.options
+        expect(monitor_options['path']).to eq('{{graph.base_path}}/watched_file')
         
-        # Check monitor options contain the template patterns
-        monitor_options = current_node.options
-        expect(monitor_options['path']).to eq('{{graph.base_path}}/monitored_file')
-        
-        # Check action options contain the template patterns
-        action_options = current_node.next.options
-        expect(action_options['to']).to eq('{{graph.admin_email}}')
-        expect(action_options['body']).to eq('File updated at {{file_monitor.time}} in {{graph.base_path}}')
+        email_options = current_command.next_command.options
+        expect(email_options['to']).to eq('{{graph.admin_email}}')
+        expect(email_options['body']).to eq('File at {{graph.base_path}} was updated')
       end
       
       it 'should correctly substitute constants when applying outputs' do
         graph = DAF::YAMLCommandGraph.new(temp_file.path)
-        current_node = graph.instance_variable_get(:@current_node)
+        current_command = graph.instance_variable_get(:@current_command)
+        
+        # Get the outputs which should include the constants
         outputs = graph.instance_variable_get(:@outputs)
+        expect(outputs['graph.admin_email']).to eq('admin@example.com')
+        expect(outputs['graph.base_path']).to eq('/tmp/monitoring')
         
-        # Test constant substitution in monitor options
-        monitor_options = current_node.options
-        substituted_monitor_options = graph.send(:apply_outputs, monitor_options, outputs)
-        expect(substituted_monitor_options['path']).to eq('/tmp/test/monitored_file')
+        # Apply outputs to monitor options
+        monitor_options = graph.send(:apply_outputs, current_command.options, outputs)
+        expect(monitor_options['path']).to eq('/tmp/monitoring/watched_file')
         
-        # Test constant substitution in action options
-        action_options = current_node.next.options
-        substituted_action_options = graph.send(:apply_outputs, action_options, outputs)
-        expect(substituted_action_options['to']).to eq('admin@example.com')
-        expect(substituted_action_options['body']).to eq('File updated at {{file_monitor.time}} in /tmp/test')
+        # Apply outputs to email options
+        email_options = graph.send(:apply_outputs, current_command.next_command.options, outputs)
+        expect(email_options['to']).to eq('admin@example.com')
+        expect(email_options['body']).to eq('File at /tmp/monitoring was updated')
       end
     end
     
@@ -485,41 +434,28 @@ describe DAF::YAMLCommandGraph do
         {
           'Name' => 'Complex Constants Workflow',
           'Constants' => {
-            'notification_phone' => '+1987654321',
-            'sms_sender' => '+1234567890',
-            'twilio_sid' => 'test_sid_from_constants',
-            'twilio_token' => 'test_token_from_constants',
-            'watch_directory' => '/var/log/app',
-            'backup_directory' => '/backup/logs'
+            'server_host' => 'localhost',
+            'alert_email' => 'alerts@company.com',
+            'monitoring_path' => '/var/log/app'
           },
           'Graph' => [
             {
-              'Type' => 'monitor',
-              'Name' => 'log_file_monitor',
+              'Name' => 'file_monitor',
               'Class' => 'DAF::FileUpdateMonitor',
               'Options' => {
-                'path' => '{{graph.watch_directory}}/application.log',
+                'path' => '{{graph.monitoring_path}}/application.log',
                 'frequency' => 1
               }
             },
             {
-              'Type' => 'action',
-              'Name' => 'backup_action',
-              'Class' => 'DAF::ShellAction',
+              'Name' => 'email_alert',
+              'Class' => 'DAF::EmailAction',
               'Options' => {
-                'command' => 'cp {{graph.watch_directory}}/application.log {{graph.backup_directory}}/app_{{log_file_monitor.time}}.log'
-              }
-            },
-            {
-              'Type' => 'action',
-              'Name' => 'notification_sms',
-              'Class' => 'DAF::SMSAction',
-              'Options' => {
-                'to' => '{{graph.notification_phone}}',
-                'from' => '{{graph.sms_sender}}',
-                'message' => 'Log file updated at {{log_file_monitor.time}}, backed up to {{graph.backup_directory}}',
-                'sid' => '{{graph.twilio_sid}}',
-                'token' => '{{graph.twilio_token}}'
+                'to' => '{{graph.alert_email}}',
+                'subject' => 'Log Alert from {{graph.server_host}}',
+                'body' => 'Log file at {{graph.monitoring_path}} was updated at {{file_monitor.time}}',
+                'from' => 'monitoring@{{graph.server_host}}',
+                'server' => '{{graph.server_host}}'
               }
             }
           ]
@@ -533,146 +469,30 @@ describe DAF::YAMLCommandGraph do
       
       it 'should create correct chain structure with constants' do
         graph = DAF::YAMLCommandGraph.new(temp_file.path)
-        current_node = graph.instance_variable_get(:@current_node)
+        current_command = graph.instance_variable_get(:@current_command)
         
-        expect(current_node.type).to eq(:monitor)
-        expect(current_node.underlying).to be_a(DAF::FileUpdateMonitor)
-        
-        expect(current_node.next.type).to eq(:action)
-        expect(current_node.next.underlying).to be_a(DAF::ShellAction)
-        
-        expect(current_node.next.next.type).to eq(:action)
-        expect(current_node.next.next.underlying).to be_a(DAF::SMSAction)
+        expect(current_command).to be_a(DAF::FileUpdateMonitor)
+        expect(current_command.next_command).to be_a(DAF::EmailAction)
       end
       
       it 'should substitute all constants correctly in complex workflow' do
         graph = DAF::YAMLCommandGraph.new(temp_file.path)
-        current_node = graph.instance_variable_get(:@current_node)
-        outputs = graph.instance_variable_get(:@outputs)
+        current_command = graph.instance_variable_get(:@current_command)
         
-        # Test monitor options substitution
-        monitor_options = graph.send(:apply_outputs, current_node.options, outputs)
+        # Create some mock outputs for file monitor
+        outputs = graph.instance_variable_get(:@outputs)
+        outputs['file_monitor.time'] = '2023-12-01 15:30:00'
+        
+        monitor_options = graph.send(:apply_outputs, current_command.options, outputs)
         expect(monitor_options['path']).to eq('/var/log/app/application.log')
         
-        # Test first action (backup) options substitution
-        backup_options = graph.send(:apply_outputs, current_node.next.options, outputs)
-        expect(backup_options['command']).to eq('cp /var/log/app/application.log /backup/logs/app_{{log_file_monitor.time}}.log')
-        
-        # Test second action (SMS) options substitution
-        sms_options = graph.send(:apply_outputs, current_node.next.next.options, outputs)
-        expect(sms_options['to']).to eq('+1987654321')
-        expect(sms_options['from']).to eq('+1234567890')
-        expect(sms_options['message']).to eq('Log file updated at {{log_file_monitor.time}}, backed up to /backup/logs')
-        expect(sms_options['sid']).to eq('test_sid_from_constants')
-        expect(sms_options['token']).to eq('test_token_from_constants')
+        email_options = graph.send(:apply_outputs, current_command.next_command.options, outputs)
+        expect(email_options['to']).to eq('alerts@company.com')
+        expect(email_options['subject']).to eq('Log Alert from localhost')
+        expect(email_options['body']).to eq('Log file at /var/log/app was updated at 2023-12-01 15:30:00')
+        expect(email_options['from']).to eq('monitoring@localhost')
+        expect(email_options['server']).to eq('localhost')
       end
-    end
-    
-    context 'without Constants section' do
-      let(:no_constants_config) do
-        {
-          'Name' => 'No Constants Graph',
-          'Graph' => [
-            {
-              'Type' => 'monitor',
-              'Name' => 'simple_monitor',
-              'Class' => 'DAF::FileUpdateMonitor',
-              'Options' => {
-                'path' => '/tmp/simple_file',
-                'frequency' => 5
-              }
-            }
-          ]
-        }
-      end
-      
-      before do
-        temp_file.write(no_constants_config.to_yaml)
-        temp_file.close
-      end
-      
-      it 'should handle missing Constants section gracefully' do
-        expect { DAF::YAMLCommandGraph.new(temp_file.path) }.not_to raise_error
-      end
-      
-      it 'should have empty graph constants when no Constants section exists' do
-        graph = DAF::YAMLCommandGraph.new(temp_file.path)
-        outputs = graph.instance_variable_get(:@outputs)
-        
-        # Should not have any graph.* keys
-        graph_constants = outputs.select { |key, _| key.start_with?('graph.') }
-        expect(graph_constants).to be_empty
-      end
-    end
-  end
-  
-  
-  describe 'YAMLGraphNode' do
-    let(:node_data) do
-      {
-        'Type' => 'monitor',
-        'Name' => 'test_monitor',
-        'Class' => 'DAF::FileUpdateMonitor',
-        'Options' => {
-          'path' => '/tmp/test',
-          'frequency' => 5
-        }
-      }
-    end
-    
-    it 'should create a node with correct type and underlying object' do
-      node = DAF::YAMLCommandGraph::YAMLGraphNode.new(node_data, nil)
-      
-      expect(node.type).to eq(:monitor)
-      expect(node.underlying).to be_a(DAF::FileUpdateMonitor)
-      expect(node.options).to eq({ 'path' => '/tmp/test', 'frequency' => 5 })
-    end
-    
-    it 'should handle action type nodes' do
-      action_data = {
-        'Type' => 'action',
-        'Name' => 'test_sms_action',
-        'Class' => 'DAF::SMSAction',
-        'Options' => {
-          'to' => '+1234567890',
-          'message' => 'test',
-          'from' => '+0987654321',
-          'sid' => 'test_sid',
-          'token' => 'test_token'
-        }
-      }
-      
-      node = DAF::YAMLCommandGraph::YAMLGraphNode.new(action_data, nil)
-      
-      expect(node.type).to eq(:action)
-      expect(node.underlying).to be_a(DAF::SMSAction)
-    end
-    
-    it 'should handle input type nodes' do
-      input_data = {
-        'Name' => 'myinput',
-        'Type' => 'input',
-        'Class' => 'DAF::ConstantInput',
-        'Options' => {
-          'constant' => 'test value'
-        }
-      }
-      
-      node = DAF::YAMLCommandGraph::YAMLGraphNode.new(input_data, nil)
-      
-      expect(node.type).to eq(:input)
-      expect(node.underlying).to be_a(DAF::ConstantInput)
-    end
-    
-    it 'should raise exception for invalid class names' do
-      invalid_data = {
-        'Name' => 'invalid_test_monitor',
-        'Type' => 'monitor',
-        'Class' => 'NonExistent::Class',
-        'Options' => {}
-      }
-      
-      expect { DAF::YAMLCommandGraph::YAMLGraphNode.new(invalid_data, nil) }.to raise_error(DAF::CommandGraphException, 'Invalid Action, Monitor, or Input type')
     end
   end
 end

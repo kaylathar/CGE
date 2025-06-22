@@ -8,7 +8,7 @@ describe DAF::EmailAction do
                  'subject' => 'Test Subject',
                  'body' => 'Test Body',
                  'server' => @server }
-    @action = DAF::EmailAction.new
+    @action = DAF::EmailAction.new("test_action", {})
   end
 
   it 'has five required options' do
@@ -25,7 +25,7 @@ describe DAF::EmailAction do
     expect(@action.class.options['port']).to eq(Integer)
   end
 
-  context 'when activate is called' do
+  context 'when execute is called' do
     before(:each) do
       @smtp_obj = double(Net::SMTP.new('mail.example.com'))
       @smtp = class_double('Net::SMTP')
@@ -35,12 +35,12 @@ describe DAF::EmailAction do
     it 'sends with the server and port passed in' do
       @options['port'] = 333
       expect(@smtp).to receive(:start).with(@server, 333)
-      @action.activate(@options)
+      @action.execute(@options, nil)
     end
 
     it 'should use a default port if none is specified' do
       expect(@smtp).to receive(:start).with(@server, 25)
-      @action.activate(@options)
+      @action.execute(@options, nil)
     end
 
     it 'should send a message' do
@@ -55,7 +55,7 @@ END
       expect(@smtp_obj).to receive(:send_message).with(
         target_message, 'test@example.com', 'test_to@example.com'
       )
-      @action.activate(@options)
+      @action.execute(@options, nil)
     end
   end
 end

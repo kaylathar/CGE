@@ -11,7 +11,7 @@ class TestMonitor < DAF::Monitor
 end
 
 describe DAF::Monitor do
-  let(:test_monitor) { TestMonitor.new }
+  let(:test_monitor) { TestMonitor.new('test_monitor', {}) }
   let(:options) {{'option' => 'test'}}
 
   it 'should be configurable' do
@@ -19,26 +19,27 @@ describe DAF::Monitor do
     expect(mixed_in).to include(DAF::Configurable)
   end
 
-  it 'should have an on_trigger method' do
-    expect(test_monitor).to respond_to(:on_trigger)
+  it 'should have an execute method' do
+    expect(test_monitor).to respond_to(:execute)
   end
 
   it 'should execute without requiring a block' do
-    expect { test_monitor.on_trigger(options) }.not_to raise_error
+    expect { test_monitor.execute(options, nil) }.not_to raise_error
   end
 
   it 'should call block_until_triggered' do
-    test_monitor.on_trigger(options)
+    test_monitor.execute(options, nil)
     expect(test_monitor.output).to eq(123)
   end
 
-  it 'should return result from block_until_triggered' do
-    result = test_monitor.on_trigger(options)
-    expect(result).to eq(123)
+  it 'should return next command' do
+    next_monitor = TestMonitor.new('next_monitor', {})
+    result = test_monitor.execute(options, next_monitor)
+    expect(result).to eq(next_monitor)
   end
 
   it 'should set option values' do
-    test_monitor.on_trigger(options)
+    test_monitor.execute(options, nil)
     expect(test_monitor.option.value).to eq('test')
   end
 end

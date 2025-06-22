@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe DAF::OCRInput do
-  let(:ocr_input) { DAF::OCRInput.new }
+  let(:ocr_input) { DAF::OCRInput.new("test_input", {}) }
   let(:test_image_path) { '/path/to/test_image.png' }
   let(:options) { { 'image_path' => test_image_path } }
   let(:mock_rtesseract) { double('RTesseract') }
@@ -22,19 +22,19 @@ describe DAF::OCRInput do
   end
 
   it 'should extract text from image using OCR' do
-    ocr_input.process(options)
+    ocr_input.execute(options, nil)
     expect(ocr_input.text).to eq('Sample OCR text')
   end
 
   it 'should raise error when image_path is empty' do
-    expect { ocr_input.process({ 'image_path' => '' }) }
+    expect { ocr_input.execute({ 'image_path' => '' }, nil) }
       .to raise_error(DAF::OptionError, /Bad value for option image_path/)
   end
 
   it 'should raise error when image file is not accessible' do
     allow(File).to receive(:readable?).with(test_image_path).and_return(false)
     
-    expect { ocr_input.process(options) }
+    expect { ocr_input.execute(options, nil) }
       .to raise_error(DAF::OptionError, /Bad value for option image_path/)
   end
 
@@ -43,14 +43,14 @@ describe DAF::OCRInput do
     
     valid_formats.each do |format|
       allow(File).to receive(:extname).with(test_image_path).and_return(format)
-      expect { ocr_input.process(options) }.not_to raise_error
+      expect { ocr_input.execute(options, nil) }.not_to raise_error
     end
   end
 
   it 'should raise error for unsupported image formats' do
     allow(File).to receive(:extname).with(test_image_path).and_return('.txt')
     
-    expect { ocr_input.process(options) }
+    expect { ocr_input.execute(options, nil) }
       .to raise_error(DAF::OptionError, /Bad value for option image_path/)
   end
 
@@ -61,27 +61,27 @@ describe DAF::OCRInput do
       hash_including(image: test_image_path, lang: 'spa')
     ).and_return(mock_rtesseract)
     
-    ocr_input.process(options_with_lang)
+    ocr_input.execute(options_with_lang, nil)
   end
 
   it 'should clean up whitespace in OCR results' do
     allow(mock_rtesseract).to receive(:to_s).and_return("  Multiple   spaces\n\nand   newlines  ")
     
-    ocr_input.process(options)
+    ocr_input.execute(options, nil)
     expect(ocr_input.text).to eq('Multiple spaces and newlines')
   end
 
   it 'should handle empty OCR results' do
     allow(mock_rtesseract).to receive(:to_s).and_return('   ')
     
-    ocr_input.process(options)
+    ocr_input.execute(options, nil)
     expect(ocr_input.text).to eq('')
   end
 
   it 'should handle RTesseract errors' do
     allow(RTesseract).to receive(:new).and_raise(StandardError.new('Tesseract error'))
     
-    expect { ocr_input.process(options) }
+    expect { ocr_input.execute(options, nil) }
       .to raise_error(DAF::OCRInputError, /OCR processing failed.*Tesseract error/)
   end
 

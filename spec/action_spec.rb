@@ -8,7 +8,7 @@ class TestAction < DAF::Action
 end
 
 describe DAF::Action do
-  let(:test_action) { TestAction.new }
+  let(:test_action) { TestAction.new('test_action', {}) }
   let(:options) { { 'option' => 'test' } }
 
   it 'should be configurable' do
@@ -16,18 +16,20 @@ describe DAF::Action do
     expect(mixed_in).to include(DAF::Configurable)
   end
 
-  it 'should have an activate method' do
-    expect(test_action).to respond_to(:activate)
+  it 'should have an execute method' do
+    expect(test_action).to respond_to(:execute)
   end
 
-  it 'should return the result of invoke' do
+  it 'should execute and return next command' do
     test_action.success = 123
-    result = test_action.activate(options)
-    expect(result).to eq(123)
+    next_action = TestAction.new('next_action', {})
+    result = test_action.execute(options, next_action)
+    expect(result).to eq(next_action)
+    expect(test_action.success).to eq(123)
   end
 
   it 'should set option values' do
-    test_action.activate(options)
+    test_action.execute(options, nil)
     expect(test_action.option.value).to eq('test')
   end
 end

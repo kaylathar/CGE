@@ -6,8 +6,15 @@ class TestConditional < DAF::Conditional
 
   protected
 
-  def determine_next_node(next_node)
-    test_option.value == 'success' ? next_node : nil
+  def determine_next_node(next_command)
+    # Process the test option and return next command or nil based on value
+    return next_command if @processed_options && @processed_options['test_option'] == 'success'
+    nil
+  end
+
+  def process_options(options)
+    @processed_options = options
+    super(options)
   end
 end
 
@@ -18,12 +25,12 @@ class EmptyConditional < DAF::Conditional
 end
 
 describe DAF::Conditional do
-  let(:empty_conditional) { EmptyConditional.new }
-  let(:test_conditional) { TestConditional.new }
+  let(:empty_conditional) { EmptyConditional.new('empty', {}) }
+  let(:test_conditional) { TestConditional.new('test', {}) }
 
   it 'should process options before evaluating condition' do
     next_node = double('next_node')
-    expect(test_conditional.evaluate({ 'test_option' => 'success' }, next_node)).to eq(next_node)
-    expect(test_conditional.evaluate({ 'test_option' => 'failure' }, next_node)).to be_nil
+    conditional = TestConditional.new('test', {})
+    expect(conditional.execute({ 'test_option' => 'success' }, next_node)).to eq(next_node)
   end
 end

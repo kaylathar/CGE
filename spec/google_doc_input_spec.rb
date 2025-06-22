@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'webmock/rspec'
 
 describe DAF::GoogleDocInput do
-  let(:google_doc_input) { DAF::GoogleDocInput.new }
+  let(:google_doc_input) { DAF::GoogleDocInput.new("test_input", {}) }
   let(:document_id) { '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms' }
   let(:options) { { 'document_id' => document_id } }
   let(:options_with_credentials) do
@@ -51,17 +51,17 @@ describe DAF::GoogleDocInput do
 
 
   it 'should fetch and set document content when processed' do
-    google_doc_input.process(options)
+    google_doc_input.execute(options, nil)
     expect(google_doc_input.content).to eq('Hello World')
   end
 
   it 'should raise an error when document_id is not provided' do
-    expect { google_doc_input.process({}) }
+    expect { google_doc_input.execute({}, nil) }
       .to raise_error(DAF::OptionError, /Required option document_id missing/)
   end
 
   it 'should raise an error when document_id is not a string' do
-    expect { google_doc_input.process({ 'document_id' => 123 }) }
+    expect { google_doc_input.execute({ 'document_id' => 123 }, nil) }
       .to raise_error(DAF::OptionError, /Bad value for option document_id/)
   end
 
@@ -71,7 +71,7 @@ describe DAF::GoogleDocInput do
 
     allow(mock_service).to receive(:get_document).with(document_id).and_return(table_document)
 
-    google_doc_input.process(options)
+    google_doc_input.execute(options, nil)
     expect(google_doc_input.content).to eq('Table Content')
   end
 
@@ -79,31 +79,31 @@ describe DAF::GoogleDocInput do
     empty_document = double('document', body: double('body', content: nil))
     allow(mock_service).to receive(:get_document).with(document_id).and_return(empty_document)
 
-    google_doc_input.process(options)
+    google_doc_input.execute(options, nil)
     expect(google_doc_input.content).to eq('')
   end
 
   it 'should handle Google API errors' do
     allow(mock_service).to receive(:get_document).and_raise(Google::Apis::ClientError.new('Not found'))
 
-    expect { google_doc_input.process(options) }
+    expect { google_doc_input.execute(options, nil) }
       .to raise_error(DAF::GoogleDocError, /Google API error/)
   end
 
   it 'should handle network errors' do
     allow(mock_service).to receive(:get_document).and_raise(StandardError.new('Network error'))
 
-    expect { google_doc_input.process(options) }
+    expect { google_doc_input.execute(options, nil) }
       .to raise_error(DAF::GoogleDocError, /Failed to fetch document/)
   end
 
   it 'should validate document_id format' do
-    expect { google_doc_input.process({ 'document_id' => 'invalid' }) }
+    expect { google_doc_input.execute({ 'document_id' => 'invalid' }, nil) }
       .to raise_error(DAF::OptionError, /Bad value for option document_id/)
   end
 
   it 'should validate credentials_path exists' do
-    expect { google_doc_input.process({ 'document_id' => document_id, 'credentials_path' => '/nonexistent/path' }) }
+    expect { google_doc_input.execute({ 'document_id' => document_id, 'credentials_path' => '/nonexistent/path' }, nil) }
       .to raise_error(DAF::OptionError, /Bad value for option credentials_path/)
   end
 
@@ -117,7 +117,7 @@ describe DAF::GoogleDocInput do
       .with(json_key_io: mock_file, scope: ['https://www.googleapis.com/auth/documents.readonly'])
       .and_return(mock_credentials)
 
-    google_doc_input.process(options_with_credentials)
+    google_doc_input.execute(options_with_credentials, nil)
     expect(google_doc_input.content).to eq('Hello World')
   end
 end

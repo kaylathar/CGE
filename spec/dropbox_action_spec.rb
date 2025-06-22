@@ -5,7 +5,7 @@ describe DAF::DropboxFileAction do
     @options = { 'access_token' => 'test_token_123',
                  'file_path' => '/test_file.txt',
                  'content' => 'Test content' }
-    @action = DAF::DropboxFileAction.new
+    @action = DAF::DropboxFileAction.new('dropbox_action', {})
   end
 
   context 'options' do
@@ -36,7 +36,7 @@ describe DAF::DropboxFileAction do
     end
   end
 
-  context 'when activate is called' do
+  context 'when execute is called' do
     before(:each) do
       @http = double('Net::HTTP')
       @response = double('Net::HTTPResponse')
@@ -60,7 +60,7 @@ describe DAF::DropboxFileAction do
       expect(Net::HTTP).to receive(:new).with('content.dropboxapi.com', 443)
       expect(@http).to receive(:use_ssl=).with(true)
 
-      @action.activate(@options)
+      @action.execute(@options, nil)
     end
 
     it 'sets correct headers for the request' do
@@ -71,7 +71,7 @@ describe DAF::DropboxFileAction do
       expect(@request).to receive(:[]=).with('Content-Type', 'application/octet-stream')
       expect(@request).to receive(:[]=).with('Dropbox-API-Arg', kind_of(String))
 
-      @action.activate(@options)
+      @action.execute(@options, nil)
     end
 
     it 'sends content as request body' do
@@ -80,7 +80,7 @@ describe DAF::DropboxFileAction do
 
       expect(@request).to receive(:body=).with('Test content')
 
-      @action.activate(@options)
+      @action.execute(@options, nil)
     end
 
     it 'uses overwrite mode when overwrite is true' do
@@ -92,7 +92,7 @@ describe DAF::DropboxFileAction do
       expect(@request).to receive(:[]=).with('Content-Type', kind_of(String))
       expect(@request).to receive(:[]=).with('Dropbox-API-Arg', kind_of(String))
 
-      @action.activate(@options)
+      @action.execute(@options, nil)
 
       expect(JSON.parse(@request_headers['Dropbox-API-Arg'])).to match(hash_including("mode" => "overwrite"))
     end
@@ -106,7 +106,7 @@ describe DAF::DropboxFileAction do
       expect(@request).to receive(:[]=).with('Content-Type', kind_of(String))
       expect(@request).to receive(:[]=).with('Dropbox-API-Arg', kind_of(String))
 
-      @action.activate(@options)
+      @action.execute(@options, nil)
 
       expect(JSON.parse(@request_headers['Dropbox-API-Arg'])).to match(hash_including("mode" => "add"))
     end
@@ -115,13 +115,13 @@ describe DAF::DropboxFileAction do
       allow(@response).to receive(:code).and_return('400')
       allow(@response).to receive(:body).and_return('{"error": "Invalid request"}')
 
-      expect {@action.activate(@options)}.to raise_error(DAF::DropboxFileActionError)
+      expect {@action.execute(@options, nil)}.to raise_error(DAF::DropboxFileActionError)
     end
 
     it 'handles network errors gracefully' do
       allow(@http).to receive(:request).and_raise(StandardError.new('Network error'))
 
-      expect {@action.activate(@options)}.to raise_error(DAF::DropboxFileActionError)
+      expect {@action.execute(@options, nil)}.to raise_error(DAF::DropboxFileActionError)
     end
   end
 end

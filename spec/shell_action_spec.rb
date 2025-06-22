@@ -3,7 +3,7 @@ require 'spec_helper'
 describe DAF::ShellAction do
   before(:each) do
     @options = { 'path' => '/bin/ls' }
-    @action = DAF::ShellAction.new
+    @action = DAF::ShellAction.new("test_action", {})
   end
 
   context 'options' do
@@ -33,22 +33,22 @@ describe DAF::ShellAction do
     expect(@action.class.outputs['results']).to eq(String)
   end
 
-  context 'when activate is called' do
+  context 'when execute is called' do
     it 'executes a shell script' do
       expect(@action).to receive(:`).with('/bin/ls')
-      @action.activate(@options)
+      @action.execute(@options, nil)
     end
 
     it 'returns the result of shell script' do
       allow(@action).to receive(:`).and_return('result!')
-      @action.activate(@options)
+      @action.execute(@options, nil)
       expect(@action.results).to eq('result!')
     end
 
     it 'passes arguments to the shell script' do
       expect(@action).to receive(:`).with('/bin/ls test')
       @options['arguments'] = 'test'
-      @action.activate(@options)
+      @action.execute(@options, nil)
     end
   end
 end

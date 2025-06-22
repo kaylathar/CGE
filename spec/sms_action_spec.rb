@@ -10,7 +10,7 @@ describe DAF::SMSAction do
       'token' => 'test_auth_token'
     }
   end
-  let(:action) { DAF::SMSAction.new }
+  let(:action) { DAF::SMSAction.new('sms_action', {}) }
   let(:mock_messages) { double('Twilio::REST::Api::V2010::AccountContext::MessageList') }
   let(:mock_client) { double('Twilio::REST::Client') }
 
@@ -51,37 +51,37 @@ describe DAF::SMSAction do
       allow(mock_client).to receive(:messages).and_return(mock_messages)
       allow(mock_messages).to receive(:create).and_return('SM123')
       
-      expect { action.activate(valid_options) }.not_to raise_error
+      expect { action.execute(valid_options, nil) }.not_to raise_error
     end
 
     it 'should raise error when to is missing' do
       invalid_options = valid_options.dup
       invalid_options.delete('to')
-      expect { action.activate(invalid_options) }.to raise_error
+      expect { action.execute(invalid_options, nil) }.to raise_error
     end
 
     it 'should raise error when message is missing' do
       invalid_options = valid_options.dup
       invalid_options.delete('message')
-      expect { action.activate(invalid_options) }.to raise_error
+      expect { action.execute(invalid_options, nil) }.to raise_error
     end
 
     it 'should raise error when from is missing' do
       invalid_options = valid_options.dup
       invalid_options.delete('from')
-      expect { action.activate(invalid_options) }.to raise_error
+      expect { action.execute(invalid_options, nil) }.to raise_error
     end
 
     it 'should raise error when sid is missing' do
       invalid_options = valid_options.dup
       invalid_options.delete('sid')
-      expect { action.activate(invalid_options) }.to raise_error
+      expect { action.execute(invalid_options, nil) }.to raise_error
     end
 
     it 'should raise error when token is missing' do
       invalid_options = valid_options.dup
       invalid_options.delete('token')
-      expect { action.activate(invalid_options) }.to raise_error
+      expect { action.execute(invalid_options, nil) }.to raise_error
     end
   end
 
@@ -99,7 +99,7 @@ describe DAF::SMSAction do
 
     it 'should call create on client.messages' do
       expect(mock_messages).to receive(:create)
-      action.activate(valid_options)
+      action.execute(valid_options, nil)
     end
 
     it 'should pass correct parameters to messages.create' do
@@ -110,11 +110,11 @@ describe DAF::SMSAction do
       }
 
       expect(mock_messages).to receive(:create).with(expected_params)
-      action.activate(valid_options)
+      action.execute(valid_options, nil)
     end
 
     it 'should set message_id output attribute' do
-      action.activate(valid_options)
+      action.execute(valid_options, nil)
       expect(action.message_id).to eq(mock_message_id)
     end
 
@@ -124,12 +124,12 @@ describe DAF::SMSAction do
       end
 
       it 'should set the returned message ID' do
-        action.activate(valid_options)
+        action.execute(valid_options, nil)
         expect(action.message_id).to eq('SM_success_id')
       end
 
       it 'should complete without error' do
-        expect { action.activate(valid_options) }.not_to raise_error
+        expect { action.execute(valid_options, nil) }.not_to raise_error
       end
     end
 
@@ -139,7 +139,7 @@ describe DAF::SMSAction do
       end
 
       it 'should propagate the error' do
-        expect { action.activate(valid_options) }.to raise_error(StandardError, 'Twilio API Error')
+        expect { action.execute(valid_options, nil) }.to raise_error(StandardError, 'Twilio API Error')
       end
     end
   end

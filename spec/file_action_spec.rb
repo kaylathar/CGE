@@ -4,7 +4,7 @@ describe DAF::FileAction do
   before(:each) do
     @options = { 'path' => '/tmp/test_file.txt',
                  'content' => 'Test content' }
-    @action = DAF::FileAction.new
+    @action = DAF::FileAction.new("test_action", {})
   end
 
   context 'options' do
@@ -21,10 +21,10 @@ describe DAF::FileAction do
     end
   end
 
-  context 'when activate is called' do
+  context 'when execute is called' do
     it 'writes content to the specified file' do
       expect(File).to receive(:write).with('/tmp/test_file.txt', 'Test content')
-      @action.activate(@options)
+      @action.execute(@options, nil)
     end
 
     it 'creates directories when create_directories is true' do
@@ -34,7 +34,7 @@ describe DAF::FileAction do
       expect(FileUtils).to receive(:mkdir_p).with('/tmp/nested/dir')
       expect(File).to receive(:write).with('/tmp/nested/dir/test_file.txt', 'Test content')
 
-      @action.activate(@options)
+      @action.execute(@options, nil)
     end
 
     it 'does not create directories when create_directories is false' do
@@ -43,12 +43,12 @@ describe DAF::FileAction do
       expect(FileUtils).not_to receive(:mkdir_p)
       expect(File).to receive(:write).with('/tmp/test_file.txt', 'Test content')
 
-      @action.activate(@options)
+      @action.execute(@options, nil)
     end
 
     it 'handles file write errors gracefully' do
       allow(File).to receive(:write).and_raise(StandardError.new('Permission denied'))
-      expect { @action.activate(@options) }.to raise_error(DAF::FileActionError)
+      expect { @action.execute(@options, nil) }.to raise_error(DAF::FileActionError)
     end
   end
 end

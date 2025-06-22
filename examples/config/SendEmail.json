@@ -8,7 +8,6 @@
   "Graph": [
     {
       "Name": "file_watcher",
-      "Type": "monitor",
       "Class": "DAF::FileUpdateMonitor",
       "Options": {
         "path": "{{graph.watch_file}}",
@@ -17,7 +16,6 @@
     },
     {
       "Name": "email_notifier",
-      "Type": "action",
       "Class": "DAF::EmailAction",
       "Options": {
         "to": "{{graph.admin_email}}",

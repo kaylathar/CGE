@@ -33,49 +33,35 @@ module DAF
   class YAMLCommandGraph < CommandGraph
     attr_reader :name
 
-    # A graph node that is parsed out of a YAML file
-    #
-    # Represents a single node in the command graph, instantiated
-    # from YAML configuration data. Handles dynamic class loading
-    # and proper node linking.
-    class YAMLGraphNode < CommandGraphNode
-      # @param node_data [Hash] YAML node configuration
-      # @param next_node [YAMLGraphNode, nil] Next node in the chain
-      def initialize(node_data, next_node)
-        raise CommandGraphException, 'Node Name is required' unless node_data['Name']
-
-        name = node_data['Name']
-        type = node_data['Type'].to_sym
-        obj_class = get_class(node_data['Class'])
-        options = node_data['Options']
-        super(underlying: obj_class.new, name: name, type: type, next_node: next_node, options: options)
-      end
-
-      # Dynamically loads a class by name
-      # @param class_name [String] Fully qualified class name
-      # @return [Class] The loaded class
-      # @raise [CommandGraphException] If class cannot be found
-      def get_class(class_name)
-        Object.const_get(class_name)
-      rescue StandardError
-        raise CommandGraphException, 'Invalid Action, Monitor, or Input type'
-      end
-    end
-
     # @param file_path [String] Path to YAML configuration file
     # @param global_configuration [GlobalConfiguration] Optional global configuration instance
     def initialize(file_path, global_configuration = nil)
       configuration = YAML.load_file(file_path)
       @name = configuration['Name']
-      node_list = configuration['Graph']
+      command_list = configuration['Graph']
       constants = configuration['Constants'] || {}
 
-      current_node = nil
-      node_list.reverse.each do |node_data|
-        node = YAMLGraphNode.new(node_data, current_node)
-        current_node = node
+      current_command = nil
+      command_list.reverse.each do |command_data|
+        command = command_from_data(command_data, current_command)
+        current_command = command
       end
-      super(current_node, global_configuration, constants)
+      super(current_command, global_configuration, constants)
     end
+
+    def get_class(class_name)
+      Object.const_get(class_name)
+    rescue StandardError
+      raise CommandGraphException, 'Invalid Action, Monitor, or Input type'
+    end
+
+    def command_from_data(command_data, next_command)
+      name = command_data['Name']
+      obj_class = get_class(command_data['Class'])
+      options = command_data['Options'] || {}
+      obj_class.new(name, options, next_command)
+    end
+
+    private :command_from_data, :get_class
   end
 end

@@ -1,3 +1,4 @@
+require 'daf/command'
 require 'daf/datasources/yaml_command_graph'
 require 'daf/datasources/json_command_graph'
 require 'daf/global_configuration'

@@ -17,19 +17,18 @@ module CGE
     # @param constants [Hash] Optional hash of graph-level constants
     def initialize(initial_command, global_configuration = nil, constants = {})
       @current_command = initial_command
-      @global_configuration = global_configuration
-      @outputs = {}
+      @variables = {}
 
       # Store constants under the 'graph' namespace
       constants.each do |key, value|
-        @outputs["graph.#{key}"] = value
+        @variables["graph.#{key}"] = value
       end
 
       return unless global_configuration
 
       global_configuration.outputs.each_key do |output_name|
         output_value = global_configuration.send(output_name)
-        @outputs["global.#{output_name}"] = output_value unless output_value.nil?
+        @variables["global.#{output_name}"] = output_value unless output_value.nil?
       end
     end
 
@@ -41,11 +40,11 @@ module CGE
           loop do
             break if @current_command.nil?
 
-            next_command = @current_command.execute(apply_outputs(@current_command.options, @outputs),
+            next_command = @current_command.execute(apply_variables(@current_command.options, @variables),
                                                     @current_command.next)
-            @current_command.class.outputs.each_key do |output_name|
+            @current_command.class.variables.each_key do |output_name|
               output_value = @current_command.send(output_name)
-              @outputs["#{@current_command.name}.#{output_name}"] = output_value
+              @variables["#{@current_command.name}.#{output_name}"] = output_value
             end
             @current_command = next_command
           end
@@ -56,15 +55,16 @@ module CGE
     # Apply in place subsitutions over a set of input options using a set
     # of output options and global configuration
     # @param input_options [Hash] The set of inputs that should have values substituted in
-    # @param outputs [Hash] The set of outputs in key/value format that are used for subs
-    def apply_outputs(input_options, outputs)
+    # @param variables [Hash] The set of variables in key/value format that are used for subs
+    def substitute_variables(input_options, variables)
+      # Copy so we don't squash the original options
       options = input_options.clone
       # Apply Command output substitutions
-      outputs.each do |output_name, output_value|
+      variables.each do |variable_name, variable_value|
         options.each do |option_key, option_value|
           if option_value.is_a?(String)
             options[option_key] =
-              option_value.gsub("{{#{output_name}}}", output_value.to_s)
+              option_value.gsub("{{#{variable_name}}}", variable_value.to_s)
           end
         end
       end
@@ -76,7 +76,7 @@ module CGE
       @thread.kill
     end
 
-    protected :apply_outputs
+    protected :substitute_variables
   end
 
   # Exception generated during loading or execution of command

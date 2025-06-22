@@ -414,16 +414,16 @@ describe CGE::YAMLCommandGraph do
         current_command = graph.instance_variable_get(:@current_command)
         
         # Get the outputs which should include the constants
-        outputs = graph.instance_variable_get(:@outputs)
+        outputs = graph.instance_variable_get(:@variables)
         expect(outputs['graph.admin_email']).to eq('admin@example.com')
         expect(outputs['graph.base_path']).to eq('/tmp/monitoring')
         
         # Apply outputs to monitor options
-        monitor_options = graph.send(:apply_outputs, current_command.options, outputs)
+        monitor_options = graph.send(:substitute_variables, current_command.options, outputs)
         expect(monitor_options['path']).to eq('/tmp/monitoring/watched_file')
         
         # Apply outputs to email options
-        email_options = graph.send(:apply_outputs, current_command.next_command.options, outputs)
+        email_options = graph.send(:substitute_variables, current_command.next_command.options, outputs)
         expect(email_options['to']).to eq('admin@example.com')
         expect(email_options['body']).to eq('File at /tmp/monitoring was updated')
       end
@@ -480,13 +480,13 @@ describe CGE::YAMLCommandGraph do
         current_command = graph.instance_variable_get(:@current_command)
         
         # Create some mock outputs for file monitor
-        outputs = graph.instance_variable_get(:@outputs)
+        outputs = graph.instance_variable_get(:@variables)
         outputs['file_monitor.time'] = '2023-12-01 15:30:00'
         
-        monitor_options = graph.send(:apply_outputs, current_command.options, outputs)
+        monitor_options = graph.send(:substitute_variables, current_command.options, outputs)
         expect(monitor_options['path']).to eq('/var/log/app/application.log')
         
-        email_options = graph.send(:apply_outputs, current_command.next_command.options, outputs)
+        email_options = graph.send(:substitute_variables, current_command.next_command.options, outputs)
         expect(email_options['to']).to eq('alerts@company.com')
         expect(email_options['subject']).to eq('Log Alert from localhost')
         expect(email_options['body']).to eq('Log file at /var/log/app was updated at 2023-12-01 15:30:00')

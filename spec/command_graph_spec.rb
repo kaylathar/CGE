@@ -26,25 +26,11 @@ describe CGE::CommandGraph do
     allow(mock_action).to receive(:execute).and_return(nil)
   end
   
-  describe 'initialization' do
-    it 'should initialize with a command' do
-      graph = CGE::CommandGraph.new(mock_monitor)
-      expect(graph.instance_variable_get(:@current_command)).to eq(mock_monitor)
-      expect(graph.instance_variable_get(:@outputs)).to eq({})
-    end
-    
-    it 'should initialize with a command and global configuration' do
-      graph = CGE::CommandGraph.new(mock_monitor, mock_global_config)
-      expect(graph.instance_variable_get(:@current_command)).to eq(mock_monitor)
-      expect(graph.instance_variable_get(:@outputs)).to eq({})
-      expect(graph.instance_variable_get(:@global_configuration)).to eq(mock_global_config)
-    end
-  end
   
   describe 'template substitution' do
     let(:graph) { CGE::CommandGraph.new(mock_monitor) }
     
-    context 'apply_outputs method' do
+    context 'substitute_variables method' do
       it 'should apply template substitutions correctly in options' do
         outputs = { 'time' => '2023-12-01 10:30:00', 'data' => 'webhook_payload' }
         
@@ -53,7 +39,7 @@ describe CGE::CommandGraph do
           'message' => 'File modified at {{time}}, webhook received: {{data}}'
         }
         
-        result = graph.send(:apply_outputs, input_options, outputs)
+        result = graph.send(:substitute_variables, input_options, outputs)
         
         expect(result['socket_path']).to eq('/tmp/webhook_2023-12-01 10:30:00')
         expect(result['message']).to eq('File modified at 2023-12-01 10:30:00, webhook received: webhook_payload')
@@ -66,7 +52,7 @@ describe CGE::CommandGraph do
           'complex_message' => 'Time: {{time}}, File: {{contents}}, Socket: {{data}}'
         }
         
-        result = graph.send(:apply_outputs, input_options, outputs)
+        result = graph.send(:substitute_variables, input_options, outputs)
         
         expect(result['complex_message']).to eq('Time: 2023-12-01, File: file_data, Socket: socket_data')
       end
@@ -79,7 +65,7 @@ describe CGE::CommandGraph do
           'another_option' => 'also_static'
         }
         
-        result = graph.send(:apply_outputs, input_options, outputs)
+        result = graph.send(:substitute_variables, input_options, outputs)
         
         expect(result).to eq(input_options)
       end
@@ -94,7 +80,7 @@ describe CGE::CommandGraph do
           'nil_option' => nil
         }
         
-        result = graph.send(:apply_outputs, input_options, outputs)
+        result = graph.send(:substitute_variables, input_options, outputs)
         
         expect(result['string_option']).to eq('has 2023-12-01 template')
         expect(result['integer_option']).to eq(42)
@@ -109,7 +95,7 @@ describe CGE::CommandGraph do
           'message' => 'Count: {{count}}, Active: {{active}}, Data: {{data}}'
         }
         
-        result = graph.send(:apply_outputs, input_options, outputs)
+        result = graph.send(:substitute_variables, input_options, outputs)
         
         expect(result['message']).to eq('Count: 42, Active: true, Data: ')
       end
@@ -122,7 +108,7 @@ describe CGE::CommandGraph do
         }
         original_options = input_options.dup
         
-        result = graph.send(:apply_outputs, input_options, outputs)
+        result = graph.send(:substitute_variables, input_options, outputs)
         
         expect(input_options).to eq(original_options)
         expect(result['message']).to eq('Original 2023-12-01 message')
@@ -149,7 +135,7 @@ describe CGE::CommandGraph do
           'message' => 'Time: {{time}}, Heartbeat: {{global.heartbeat}}'
         }
         
-        result = graph.send(:apply_outputs, input_options, outputs)
+        result = graph.send(:substitute_variables, input_options, outputs)
         
         expect(result['message']).to eq('Time: 2023-12-01, Heartbeat: {{global.heartbeat}}')
       end

@@ -50,9 +50,9 @@ describe CGE::CommandGraph do
     it 'should apply output substitutions to conditional options' do
       substitution_conditional = TestConditional.new('test_conditional', { 'value1' => '{{previous.output}}', 'value2' => 'expected' }, action_command)
       command_graph = CGE::CommandGraph.new(substitution_conditional)
-      command_graph.instance_variable_get(:@outputs)['previous.output'] = 'expected'
+      command_graph.instance_variable_get(:@variables)['previous.output'] = 'expected'
       
-      substituted_options = command_graph.send(:apply_outputs, substitution_conditional.options, command_graph.instance_variable_get(:@outputs))
+      substituted_options = command_graph.send(:substitute_variables, substitution_conditional.options, command_graph.instance_variable_get(:@variables))
       expect(substituted_options).to eq({ 'value1' => 'expected', 'value2' => 'expected' })
     end
   end

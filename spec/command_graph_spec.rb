@@ -141,4 +141,97 @@ describe CGE::CommandGraph do
       end
     end
   end
+  
+  describe 'reset functionality' do
+    let(:mock_initial_command) { double('InitialCommand') }
+    let(:mock_next_command) { double('NextCommand') }
+    let(:mock_initial_class) { double('InitialClass') }
+    let(:mock_next_class) { double('NextClass') }
+    let(:constants) { { 'base_path' => '/tmp', 'admin_email' => 'admin@test.com' } }
+    let(:graph) { CGE::CommandGraph.new('test_graph', mock_initial_command, nil, constants) }
+    
+    before do
+      allow(mock_initial_command).to receive(:class).and_return(mock_initial_class)
+      allow(mock_next_command).to receive(:class).and_return(mock_next_class)
+      allow(mock_initial_class).to receive(:outputs).and_return({'time' => String})
+      allow(mock_next_class).to receive(:outputs).and_return({'result' => String})
+      
+      allow(mock_initial_command).to receive(:name).and_return('initial_command')
+      allow(mock_initial_command).to receive(:inputs).and_return({})
+      allow(mock_initial_command).to receive(:next).and_return(mock_next_command)
+      allow(mock_initial_command).to receive(:execute).and_return(mock_next_command)
+      allow(mock_initial_command).to receive(:time).and_return('2023-12-01')
+      
+      allow(mock_next_command).to receive(:name).and_return('next_command')
+      allow(mock_next_command).to receive(:inputs).and_return({})
+      allow(mock_next_command).to receive(:next).and_return(nil)
+      allow(mock_next_command).to receive(:execute).and_return(nil)
+      allow(mock_next_command).to receive(:result).and_return('completed')
+    end
+    
+    it 'should reset current command to initial command' do
+      # Simulate execution advancing to next command
+      graph.instance_variable_set(:@current_command, mock_next_command)
+      
+      graph.reset
+      
+      expect(graph.instance_variable_get(:@current_command)).to eq(mock_initial_command)
+    end
+    
+    it 'should preserve graph constants after reset' do
+      # Add some command output variables
+      variables = graph.instance_variable_get(:@variables)
+      variables['initial_command.time'] = '2023-12-01'
+      variables['next_command.result'] = 'completed'
+      
+      graph.reset
+      
+      reset_variables = graph.instance_variable_get(:@variables)
+      expect(reset_variables['graph.base_path']).to eq('/tmp')
+      expect(reset_variables['graph.admin_email']).to eq('admin@test.com')
+    end
+    
+    it 'should clear variables after reset' do
+      # Add some output variables
+      variables = graph.instance_variable_get(:@variables)
+      variables['initial_command.time'] = '2023-12-01'
+      variables['next_command.result'] = 'completed'
+      
+      graph.reset
+      
+      reset_variables = graph.instance_variable_get(:@variables)
+      expect(reset_variables).not_to have_key('initial_command.time')
+      expect(reset_variables).not_to have_key('next_command.result')
+    end
+    
+    it 'should preserve global configuration variables after reset' do
+      mock_global_config = double('GlobalConfiguration')
+      allow(mock_global_config).to receive(:outputs).and_return({'heartbeat' => Integer})
+      allow(mock_global_config).to receive(:heartbeat).and_return(60)
+      
+      graph_with_global = CGE::CommandGraph.new('test', mock_initial_command, mock_global_config, constants)
+      
+      # Add command output variables
+      variables = graph_with_global.instance_variable_get(:@variables)
+      variables['initial_command.time'] = '2023-12-01'
+      
+      graph_with_global.reset
+      
+      reset_variables = graph_with_global.instance_variable_get(:@variables)
+      expect(reset_variables['global.heartbeat']).to eq(60)
+      expect(reset_variables).not_to have_key('initial_command.time')
+    end
+    
+    it 'should cancel execution thread during reset' do
+      mock_thread = double('Thread')
+      expect(mock_thread).to receive(:kill)
+      
+      graph.instance_variable_set(:@thread, mock_thread)
+      graph.reset
+    end
+    
+    it 'should handle reset when no thread is running' do
+      expect { graph.reset }.not_to raise_error
+    end
+  end
 end

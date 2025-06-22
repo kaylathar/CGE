@@ -19,19 +19,25 @@ module CGE
     # @param constants [Hash] Optional hash of graph-level constants
     def initialize(name, initial_command, global_configuration = nil, constants = {})
       @name = name
+      @initial_command = initial_command
       @current_command = initial_command
       @variables = {}
+      @initial_variables = {}
 
       # Store constants under the 'graph' namespace
       constants.each do |key, value|
         @variables["graph.#{key}"] = value
+        @initial_variables["graph.#{key}"] = value
       end
 
       return unless global_configuration
 
       global_configuration.outputs.each_key do |output_name|
         output_value = global_configuration.send(output_name)
-        @variables["global.#{output_name}"] = output_value unless output_value.nil?
+        unless output_value.nil?
+          @variables["global.#{output_name}"] = output_value
+          @initial_variables["global.#{output_name}"] = output_value
+        end
       end
     end
 
@@ -76,7 +82,16 @@ module CGE
 
     # Immediately cancels command graph execution
     def cancel
-      @thread.kill
+      @thread.kill if @thread
+    end
+
+    # Resets the command graph to its initial state by cancelling
+    # execution if it is going on and clearing all stored variables
+    # in the graph
+    def reset
+      cancel
+      @current_command = @initial_command
+      @variables = @initial_variables.dup
     end
 
     protected :substitute_variables

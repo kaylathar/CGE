@@ -6,10 +6,10 @@ require 'json'
 module CGE
   # An action that writes to a Dropbox file
   class DropboxFileAction < Action
-    attr_option :access_token, String, :required
-    attr_option :file_path, String, :required
-    attr_option :content, String, :required
-    attr_option :overwrite, Object
+    attr_input :access_token, String, :required
+    attr_input :file_path, String, :required
+    attr_input :content, String, :required
+    attr_input :overwrite, Object
 
     def request_body(uri)
       request = Net::HTTP::Post.new(uri)

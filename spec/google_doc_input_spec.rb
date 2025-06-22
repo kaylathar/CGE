@@ -4,8 +4,8 @@ require 'webmock/rspec'
 describe CGE::GoogleDocInput do
   let(:google_doc_input) { CGE::GoogleDocInput.new("test_input", {}) }
   let(:document_id) { '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms' }
-  let(:options) { { 'document_id' => document_id } }
-  let(:options_with_credentials) do
+  let(:inputs) { { 'document_id' => document_id } }
+  let(:inputs_with_credentials) do
     { 'document_id' => document_id, 'credentials_path' => '/path/to/credentials.json' }
   end
 
@@ -51,18 +51,18 @@ describe CGE::GoogleDocInput do
 
 
   it 'should fetch and set document content when processed' do
-    google_doc_input.execute(options, nil)
+    google_doc_input.execute(inputs, nil)
     expect(google_doc_input.content).to eq('Hello World')
   end
 
   it 'should raise an error when document_id is not provided' do
     expect { google_doc_input.execute({}, nil) }
-      .to raise_error(CGE::OptionError, /Required option document_id missing/)
+      .to raise_error(CGE::InputError, /Required input document_id missing/)
   end
 
   it 'should raise an error when document_id is not a string' do
     expect { google_doc_input.execute({ 'document_id' => 123 }, nil) }
-      .to raise_error(CGE::OptionError, /Bad value for option document_id/)
+      .to raise_error(CGE::InputError, /Bad value for input document_id/)
   end
 
   it 'should handle documents with tables' do
@@ -71,7 +71,7 @@ describe CGE::GoogleDocInput do
 
     allow(mock_service).to receive(:get_document).with(document_id).and_return(table_document)
 
-    google_doc_input.execute(options, nil)
+    google_doc_input.execute(inputs, nil)
     expect(google_doc_input.content).to eq('Table Content')
   end
 
@@ -79,32 +79,32 @@ describe CGE::GoogleDocInput do
     empty_document = double('document', body: double('body', content: nil))
     allow(mock_service).to receive(:get_document).with(document_id).and_return(empty_document)
 
-    google_doc_input.execute(options, nil)
+    google_doc_input.execute(inputs, nil)
     expect(google_doc_input.content).to eq('')
   end
 
   it 'should handle Google API errors' do
     allow(mock_service).to receive(:get_document).and_raise(Google::Apis::ClientError.new('Not found'))
 
-    expect { google_doc_input.execute(options, nil) }
+    expect { google_doc_input.execute(inputs, nil) }
       .to raise_error(CGE::GoogleDocError, /Google API error/)
   end
 
   it 'should handle network errors' do
     allow(mock_service).to receive(:get_document).and_raise(StandardError.new('Network error'))
 
-    expect { google_doc_input.execute(options, nil) }
+    expect { google_doc_input.execute(inputs, nil) }
       .to raise_error(CGE::GoogleDocError, /Failed to fetch document/)
   end
 
   it 'should validate document_id format' do
     expect { google_doc_input.execute({ 'document_id' => 'invalid' }, nil) }
-      .to raise_error(CGE::OptionError, /Bad value for option document_id/)
+      .to raise_error(CGE::InputError, /Bad value for input document_id/)
   end
 
   it 'should validate credentials_path exists' do
     expect { google_doc_input.execute({ 'document_id' => document_id, 'credentials_path' => '/nonexistent/path' }, nil) }
-      .to raise_error(CGE::OptionError, /Bad value for option credentials_path/)
+      .to raise_error(CGE::InputError, /Bad value for input credentials_path/)
   end
 
   it 'should use service account credentials when credentials_path is provided' do
@@ -117,7 +117,7 @@ describe CGE::GoogleDocInput do
       .with(json_key_io: mock_file, scope: ['https://www.googleapis.com/auth/documents.readonly'])
       .and_return(mock_credentials)
 
-    google_doc_input.execute(options_with_credentials, nil)
+    google_doc_input.execute(inputs_with_credentials, nil)
     expect(google_doc_input.content).to eq('Hello World')
   end
 end

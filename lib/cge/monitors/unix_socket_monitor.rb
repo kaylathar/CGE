@@ -4,7 +4,7 @@ require 'socket'
 module CGE
   # Monitor that watches a Unix domain socket for incoming connections/data
   class UnixSocketMonitor < Monitor
-    attr_option :socket_path, String, :required do |val|
+    attr_input :socket_path, String, :required do |val|
       !val.empty?
     end
 

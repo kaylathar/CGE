@@ -3,7 +3,7 @@ require 'spec_helper'
 describe CGE::EmailAction do
   before(:each) do
     @server = 'mail.example.com'
-    @options = { 'from' => 'test@example.com',
+    @inputs = { 'from' => 'test@example.com',
                  'to' => 'test_to@example.com',
                  'subject' => 'Test Subject',
                  'body' => 'Test Body',
@@ -11,18 +11,18 @@ describe CGE::EmailAction do
     @action = CGE::EmailAction.new("test_action", {})
   end
 
-  it 'has five required options' do
-    expect { @action.class.required_options }.not_to raise_error
-    expect(@action.class.required_options.length).to eq(5)
+  it 'has five required inputs' do
+    expect { @action.class.required_inputs }.not_to raise_error
+    expect(@action.class.required_inputs.length).to eq(5)
   end
 
-  it 'has six options' do
-    expect { @action.class.options }.not_to raise_error
-    expect(@action.class.options.length).to eq(6)
+  it 'has six inputs' do
+    expect { @action.class.inputs }.not_to raise_error
+    expect(@action.class.inputs.length).to eq(6)
   end
 
-  it 'has a port option of type Integer' do
-    expect(@action.class.options['port']).to eq(Integer)
+  it 'has a port input of type Integer' do
+    expect(@action.class.inputs['port']).to eq(Integer)
   end
 
   context 'when execute is called' do
@@ -33,14 +33,14 @@ describe CGE::EmailAction do
     end
 
     it 'sends with the server and port passed in' do
-      @options['port'] = 333
+      @inputs['port'] = 333
       expect(@smtp).to receive(:start).with(@server, 333)
-      @action.execute(@options, nil)
+      @action.execute(@inputs, nil)
     end
 
     it 'should use a default port if none is specified' do
       expect(@smtp).to receive(:start).with(@server, 25)
-      @action.execute(@options, nil)
+      @action.execute(@inputs, nil)
     end
 
     it 'should send a message' do
@@ -55,7 +55,7 @@ END
       expect(@smtp_obj).to receive(:send_message).with(
         target_message, 'test@example.com', 'test_to@example.com'
       )
-      @action.execute(@options, nil)
+      @action.execute(@inputs, nil)
     end
   end
 end

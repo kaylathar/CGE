@@ -6,14 +6,14 @@ require 'nokogiri'
 module CGE
   # An input node that gets text from a webpage
   class WebInput < Input
-    attr_option 'uri', String, :required do |val|
+    attr_input 'uri', String, :required do |val|
       parsed_uri = URI.parse(val)
       parsed_uri && %w[http https].include?(parsed_uri.scheme)
     end
-    attr_option 'timeout', Integer do |val|
+    attr_input 'timeout', Integer do |val|
       val > 0
     end
-    attr_option 'user_agent', String
+    attr_input 'user_agent', String
 
     attr_output 'content', String
 

@@ -4,11 +4,11 @@ require 'English'
 module CGE
   # An action that executes a shell script
   class ShellAction < Action
-    attr_option :path, String, :required do |value|
+    attr_input :path, String, :required do |value|
       File.executable?(value)
     end
 
-    attr_option :arguments, String
+    attr_input :arguments, String
 
     attr_output :results, String
 

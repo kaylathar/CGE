@@ -49,7 +49,7 @@ describe CGE::GlobalConfiguration do
     end
   end
 
-  describe 'heartbeat option' do
+  describe 'heartbeat input' do
     it 'accepts valid heartbeat values' do
       config = CGE::GlobalConfiguration.new
       config.heartbeat.value = 60
@@ -76,13 +76,13 @@ describe CGE::GlobalConfiguration do
   end
 
   describe 'validation' do
-    it 'validates options during initialization' do
+    it 'validates inputs during initialization' do
       Tempfile.create(['config', '.yml']) do |file|
         file.write(invalid_yaml)
         file.rewind
         
         expect { CGE::GlobalConfiguration.new(file.path) }
-          .to raise_error(CGE::OptionError, /Bad value for option heartbeat/)
+          .to raise_error(CGE::InputError, /Bad value for input heartbeat/)
       end
     end
   end

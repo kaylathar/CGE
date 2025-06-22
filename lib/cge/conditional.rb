@@ -5,12 +5,12 @@ module CGE
   class Conditional < Command
     # Execute this conditional - evaluates condition and determines next command
     #
-    # @param options [Hash] A hash of options with name/value pairs, must
-    # match types expected for each option or will raise an exception
+    # @param inputs [Hash] A hash of inputs with name/value pairs, must
+    # match types expected for each input or will raise an exception
     # @param next_command [Command] The next command that would normally execute
     # @return [Command, nil] The next command to execute, or nil to halt execution
-    def execute(options, next_command)
-      process_options(options)
+    def execute(inputs, next_command)
+      process_inputs(inputs)
       determine_next_node(next_command)
     end
   end

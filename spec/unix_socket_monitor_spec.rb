@@ -4,21 +4,21 @@ require 'tempfile'
 
 describe CGE::UnixSocketMonitor do
   let(:temp_socket_path) { "/tmp/test_socket_#{SecureRandom.hex(8)}" }
-  let(:options) { { 'socket_path' => temp_socket_path } }
+  let(:inputs) { { 'socket_path' => temp_socket_path } }
   let(:monitor) { CGE::UnixSocketMonitor.new('monitor', {}) }
 
   after do
     File.unlink(temp_socket_path) if File.exist?(temp_socket_path)
   end
 
-  context 'monitor options' do
-    it 'should require a socket_path option' do
-      expect(CGE::UnixSocketMonitor.required_options).to include('socket_path')
+  context 'monitor inputs' do
+    it 'should require a socket_path input' do
+      expect(CGE::UnixSocketMonitor.required_inputs).to include('socket_path')
     end
 
     it 'should validate socket_path is not empty' do
-      invalid_options = { 'socket_path' => '' }
-      expect { monitor.execute(invalid_options, nil) }.to raise_error(CGE::OptionError)
+      invalid_inputs = { 'socket_path' => '' }
+      expect { monitor.execute(invalid_inputs, nil) }.to raise_error(CGE::InputError)
     end
   end
 
@@ -40,38 +40,38 @@ describe CGE::UnixSocketMonitor do
 
       it 'should create unix server with specified path' do
         expect(UNIXServer).to receive(:new).with(temp_socket_path)
-        monitor.execute(options, nil)
+        monitor.execute(inputs, nil)
       end
 
       it 'should accept client connections' do
         expect(mock_server).to receive(:accept).and_return(mock_client)
-        monitor.execute(options, nil)
+        monitor.execute(inputs, nil)
       end
 
       it 'should read data from client' do
         expect(mock_client).to receive(:read).and_return(test_data)
-        monitor.execute(options, nil)
+        monitor.execute(inputs, nil)
       end
 
       it 'should set data output attribute' do
-        monitor.execute(options, nil)
+        monitor.execute(inputs, nil)
         expect(monitor.data).to eq(test_data)
       end
 
       it 'should close client connection' do
         expect(mock_client).to receive(:close)
-        monitor.execute(options, nil)
+        monitor.execute(inputs, nil)
       end
 
       it 'should close server socket' do
         expect(mock_server).to receive(:close)
-        monitor.execute(options, nil)
+        monitor.execute(inputs, nil)
       end
 
       it 'should clean up socket file after completion' do
         allow(File).to receive(:exist?).with(temp_socket_path).and_return(true)
         expect(File).to receive(:unlink).with(temp_socket_path)
-        monitor.execute(options, nil)
+        monitor.execute(inputs, nil)
       end
 
       it 'should clean up socket file even if error occurs' do
@@ -79,7 +79,7 @@ describe CGE::UnixSocketMonitor do
         allow(File).to receive(:exist?).with(temp_socket_path).and_return(true)
         expect(File).to receive(:unlink).with(temp_socket_path)
 
-        expect { monitor.execute(options, nil) }.to raise_error(StandardError, 'test error')
+        expect { monitor.execute(inputs, nil) }.to raise_error(StandardError, 'test error')
       end
     end
   end

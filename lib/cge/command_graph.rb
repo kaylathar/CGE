@@ -43,9 +43,9 @@ module CGE
           loop do
             break if @current_command.nil?
 
-            next_command = @current_command.execute(apply_variables(@current_command.options, @variables),
+            next_command = @current_command.execute(substitute_variables(@current_command.inputs, @variables),
                                                     @current_command.next)
-            @current_command.class.variables.each_key do |output_name|
+            @current_command.class.outputs.each_key do |output_name|
               output_value = @current_command.send(output_name)
               @variables["#{@current_command.name}.#{output_name}"] = output_value
             end
@@ -55,23 +55,23 @@ module CGE
       end
     end
 
-    # Apply in place subsitutions over a set of input options using a set
-    # of output options and global configuration
-    # @param input_options [Hash] The set of inputs that should have values substituted in
+    # Apply in place subsitutions over a set of inputs using a set
+    # of output variables and global configuration
+    # @param inputs [Hash] The set of inputs that should have values substituted in
     # @param variables [Hash] The set of variables in key/value format that are used for subs
-    def substitute_variables(input_options, variables)
-      # Copy so we don't squash the original options
-      options = input_options.clone
+    def substitute_variables(inputs, variables)
+      # Copy so we don't squash the original inputs
+      processed_inputs = inputs.clone
       # Apply Command output substitutions
       variables.each do |variable_name, variable_value|
-        options.each do |option_key, option_value|
-          if option_value.is_a?(String)
-            options[option_key] =
-              option_value.gsub("{{#{variable_name}}}", variable_value.to_s)
+        processed_inputs.each do |input_key, input_value|
+          if input_value.is_a?(String)
+            processed_inputs[input_key] =
+              input_value.gsub("{{#{variable_name}}}", variable_value.to_s)
           end
         end
       end
-      options
+      processed_inputs
     end
 
     # Immediately cancels command graph execution

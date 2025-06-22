@@ -4,7 +4,7 @@ require 'time'
 module CGE
   # Monitor that fires once at a specific time, then stops
   class CronMonitor < Monitor
-    attr_option :time, String, :required do |val|
+    attr_input :time, String, :required do |val|
       begin
         Time.parse(val)
         true

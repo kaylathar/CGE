@@ -5,12 +5,12 @@ module CGE
   class Input < Command
     # Execute this input - processes input and inserts it into the graph data
     #
-    # @param options [Hash] A hash of options with name/value pairs, must
-    # match types expected for each option or will raise an exception
+    # @param inputs [Hash] A hash of inputs with name/value pairs, must
+    # match types expected for each input or will raise an exception
     # @param next_command [Command] The next command to execute after this one
     # @return [Command] The next command to execute
-    def execute(options, next_command)
-      process_options(options)
+    def execute(inputs, next_command)
+      process_inputs(inputs)
       invoke
       next_command
     end

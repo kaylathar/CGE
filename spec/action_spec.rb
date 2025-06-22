@@ -4,12 +4,12 @@ require 'spec_helper'
 class TestAction < CGE::Action
   attr_accessor :success
   alias invoke success
-  attr_option :option, String
+  attr_input :input, String
 end
 
 describe CGE::Action do
   let(:test_action) { TestAction.new('test_action', {}) }
-  let(:options) { { 'option' => 'test' } }
+  let(:inputs) { { 'input' => 'test' } }
 
   it 'should be configurable' do
     mixed_in = CGE::Action.ancestors.select { |o| o.instance_of?(Module) }
@@ -23,13 +23,13 @@ describe CGE::Action do
   it 'should execute and return next command' do
     test_action.success = 123
     next_action = TestAction.new('next_action', {})
-    result = test_action.execute(options, next_action)
+    result = test_action.execute(inputs, next_action)
     expect(result).to eq(next_action)
     expect(test_action.success).to eq(123)
   end
 
-  it 'should set option values' do
-    test_action.execute(options, nil)
-    expect(test_action.option.value).to eq('test')
+  it 'should set input values' do
+    test_action.execute(inputs, nil)
+    expect(test_action.input.value).to eq('test')
   end
 end

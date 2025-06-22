@@ -4,9 +4,9 @@ module CGE
   # A conditional that compares two values using various operators
   # Halts execution if the condition is not met
   class ComparisonConditional < Conditional
-    attr_option 'value1', String, :required
-    attr_option 'value2', String, :required
-    attr_option 'operator', String do |val|
+    attr_input 'value1', String, :required
+    attr_input 'value2', String, :required
+    attr_input 'operator', String do |val|
       %w[eq ne gt lt gte lte].include?(val)
     end
 

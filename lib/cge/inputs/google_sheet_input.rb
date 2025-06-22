@@ -6,14 +6,14 @@ module CGE
   # An input that fetches the contents of a Google Sheet as raw text
   # Returns content as tab-separated values with rows separated by newlines
   class GoogleSheetInput < Input
-    attr_option 'spreadsheet_id', String, :required do |val|
+    attr_input 'spreadsheet_id', String, :required do |val|
       # Google Sheets ID format: 44 characters, alphanumeric with hyphens and underscores
       val.length >= 40 && val.match(/^[a-zA-Z0-9_-]{40,}$/)
     end
-    attr_option 'credentials_path', String do |val|
+    attr_input 'credentials_path', String do |val|
       File.exist?(val)
     end
-    attr_option 'range', String
+    attr_input 'range', String
     attr_output 'content', String
 
     protected

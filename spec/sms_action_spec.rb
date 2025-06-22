@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe CGE::SMSAction do
-  let(:valid_options) do
+  let(:valid_inputs) do
     {
       'to' => '+1234567890',
       'message' => 'Test SMS message',
@@ -24,64 +24,64 @@ describe CGE::SMSAction do
   end
 
   context 'when new action is created' do
-    it 'should require a to option' do
-      expect(CGE::SMSAction.required_options).to include('to')
+    it 'should require a to input' do
+      expect(CGE::SMSAction.required_inputs).to include('to')
     end
 
-    it 'should require a message option' do
-      expect(CGE::SMSAction.required_options).to include('message')
+    it 'should require a message input' do
+      expect(CGE::SMSAction.required_inputs).to include('message')
     end
 
-    it 'should require a from option' do
-      expect(CGE::SMSAction.required_options).to include('from')
+    it 'should require a from input' do
+      expect(CGE::SMSAction.required_inputs).to include('from')
     end
 
-    it 'should require a sid option' do
-      expect(CGE::SMSAction.required_options).to include('sid')
+    it 'should require a sid input' do
+      expect(CGE::SMSAction.required_inputs).to include('sid')
     end
 
-    it 'should require a token option' do
-      expect(CGE::SMSAction.required_options).to include('token')
+    it 'should require a token input' do
+      expect(CGE::SMSAction.required_inputs).to include('token')
     end
 
-    it 'should accept valid options' do
+    it 'should accept valid inputs' do
       mock_client = double('Twilio::REST::Client')
       mock_messages = double('Messages')
       allow(Twilio::REST::Client).to receive(:new).and_return(mock_client)
       allow(mock_client).to receive(:messages).and_return(mock_messages)
       allow(mock_messages).to receive(:create).and_return('SM123')
       
-      expect { action.execute(valid_options, nil) }.not_to raise_error
+      expect { action.execute(valid_inputs, nil) }.not_to raise_error
     end
 
     it 'should raise error when to is missing' do
-      invalid_options = valid_options.dup
-      invalid_options.delete('to')
-      expect { action.execute(invalid_options, nil) }.to raise_error
+      invalid_inputs = valid_inputs.dup
+      invalid_inputs.delete('to')
+      expect { action.execute(invalid_inputs, nil) }.to raise_error
     end
 
     it 'should raise error when message is missing' do
-      invalid_options = valid_options.dup
-      invalid_options.delete('message')
-      expect { action.execute(invalid_options, nil) }.to raise_error
+      invalid_inputs = valid_inputs.dup
+      invalid_inputs.delete('message')
+      expect { action.execute(invalid_inputs, nil) }.to raise_error
     end
 
     it 'should raise error when from is missing' do
-      invalid_options = valid_options.dup
-      invalid_options.delete('from')
-      expect { action.execute(invalid_options, nil) }.to raise_error
+      invalid_inputs = valid_inputs.dup
+      invalid_inputs.delete('from')
+      expect { action.execute(invalid_inputs, nil) }.to raise_error
     end
 
     it 'should raise error when sid is missing' do
-      invalid_options = valid_options.dup
-      invalid_options.delete('sid')
-      expect { action.execute(invalid_options, nil) }.to raise_error
+      invalid_inputs = valid_inputs.dup
+      invalid_inputs.delete('sid')
+      expect { action.execute(invalid_inputs, nil) }.to raise_error
     end
 
     it 'should raise error when token is missing' do
-      invalid_options = valid_options.dup
-      invalid_options.delete('token')
-      expect { action.execute(invalid_options, nil) }.to raise_error
+      invalid_inputs = valid_inputs.dup
+      invalid_inputs.delete('token')
+      expect { action.execute(invalid_inputs, nil) }.to raise_error
     end
   end
 
@@ -91,7 +91,7 @@ describe CGE::SMSAction do
     let(:mock_message_id) { 'SM1234567890abcdef' }
 
     before do
-      action.send(:process_options, valid_options)
+      action.send(:process_inputs, valid_inputs)
       allow(Twilio::REST::Client).to receive(:new).and_return(mock_client)
       allow(mock_client).to receive(:messages).and_return(mock_messages)
       allow(mock_messages).to receive(:create).and_return(mock_message_id)
@@ -99,7 +99,7 @@ describe CGE::SMSAction do
 
     it 'should call create on client.messages' do
       expect(mock_messages).to receive(:create)
-      action.execute(valid_options, nil)
+      action.execute(valid_inputs, nil)
     end
 
     it 'should pass correct parameters to messages.create' do
@@ -110,11 +110,11 @@ describe CGE::SMSAction do
       }
 
       expect(mock_messages).to receive(:create).with(expected_params)
-      action.execute(valid_options, nil)
+      action.execute(valid_inputs, nil)
     end
 
     it 'should set message_id output attribute' do
-      action.execute(valid_options, nil)
+      action.execute(valid_inputs, nil)
       expect(action.message_id).to eq(mock_message_id)
     end
 
@@ -124,12 +124,12 @@ describe CGE::SMSAction do
       end
 
       it 'should set the returned message ID' do
-        action.execute(valid_options, nil)
+        action.execute(valid_inputs, nil)
         expect(action.message_id).to eq('SM_success_id')
       end
 
       it 'should complete without error' do
-        expect { action.execute(valid_options, nil) }.not_to raise_error
+        expect { action.execute(valid_inputs, nil) }.not_to raise_error
       end
     end
 
@@ -139,7 +139,7 @@ describe CGE::SMSAction do
       end
 
       it 'should propagate the error' do
-        expect { action.execute(valid_options, nil) }.to raise_error(StandardError, 'Twilio API Error')
+        expect { action.execute(valid_inputs, nil) }.to raise_error(StandardError, 'Twilio API Error')
       end
     end
   end

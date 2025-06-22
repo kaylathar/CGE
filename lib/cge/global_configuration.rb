@@ -15,7 +15,7 @@ module CGE
   class GlobalConfiguration
     include Configurable
 
-    attr_option :heartbeat, Integer, :optional do |value|
+    attr_input :heartbeat, Integer, :optional do |value|
       value > 0
     end
 
@@ -26,7 +26,7 @@ module CGE
       configuration = parse_configuration_file(file_path)
       raise GlobalConfigurationError('Failed to parse configuration file') unless configuration
 
-      process_options(configuration)
+      process_inputs(configuration)
     end
 
     # Parses configuration file based on extension

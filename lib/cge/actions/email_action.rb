@@ -4,12 +4,12 @@ require 'net/smtp'
 module CGE
   # An action that sends an email based on parameters
   class EmailAction < Action
-    attr_option :to, String, :required
-    attr_option :from, String, :required
-    attr_option :subject, String, :required
-    attr_option :body, String, :required
-    attr_option :server, String, :required
-    attr_option :port, Integer
+    attr_input :to, String, :required
+    attr_input :from, String, :required
+    attr_input :subject, String, :required
+    attr_input :body, String, :required
+    attr_input :server, String, :required
+    attr_input :port, Integer
 
     def invoke
       message = format_email(@to.value, @from.value,

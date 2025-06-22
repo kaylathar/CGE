@@ -6,10 +6,10 @@ module CGE
   class OCRInput < Input
     IMAGE_EXTENSIONS = %w[.png .jpg .jpeg .tiff .bmp .gif .pdf].freeze
 
-    attr_option 'image_path', String, :required do |val|
+    attr_input 'image_path', String, :required do |val|
       !val.nil? && !val.empty? && File.readable?(val) && IMAGE_EXTENSIONS.include?(File.extname(val).downcase)
     end
-    attr_option 'language', String
+    attr_input 'language', String
     attr_output 'text', String
 
     protected

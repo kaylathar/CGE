@@ -5,8 +5,8 @@ describe CGE::Configurable do
   class MockClass
     include CGE::Configurable
 
-    attr_option :test, String, :required
-    attr_option :test2, Integer, :optional do |val|
+    attr_input :test, String, :required
+    attr_input :test2, Integer, :optional do |val|
       val > 2
     end
 
@@ -18,16 +18,16 @@ describe CGE::Configurable do
     @under_test = MockClass.new
   end
 
-  it 'has required option' do
-    expect { MockClass.required_options }.to_not raise_error
-    expect(MockClass.required_options).not_to be_empty
-    expect(MockClass.required_options.length).to eq(1)
+  it 'has required input' do
+    expect { MockClass.required_inputs }.to_not raise_error
+    expect(MockClass.required_inputs).not_to be_empty
+    expect(MockClass.required_inputs.length).to eq(1)
   end
 
-  it 'has options' do
-    expect { MockClass.options }.to_not raise_error
-    expect(MockClass.options).not_to be_empty
-    expect(MockClass.options.length).to eq(2)
+  it 'has inputs' do
+    expect { MockClass.inputs }.to_not raise_error
+    expect(MockClass.inputs).not_to be_empty
+    expect(MockClass.inputs.length).to eq(2)
   end
 
   it 'has outputs' do

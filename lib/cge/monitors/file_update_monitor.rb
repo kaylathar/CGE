@@ -4,11 +4,11 @@ module CGE
   # Monitor that watches a file's last update time, and triggers when it changes
   # includes several return outputs that can be used as well
   class FileUpdateMonitor < Monitor
-    attr_option :path, String, :required do |val|
+    attr_input :path, String, :required do |val|
       File.exist? val
     end
 
-    attr_option :frequency, Integer, :required do |val|
+    attr_input :frequency, Integer, :required do |val|
       val >= 1
     end
 

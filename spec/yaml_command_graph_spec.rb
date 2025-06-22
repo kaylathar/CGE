@@ -16,7 +16,7 @@ describe CGE::YAMLCommandGraph do
             {
               'Name' => 'file_monitor',
               'Class' => 'CGE::FileUpdateMonitor',
-              'Options' => {
+              'Inputs' => {
                 'path' => '/tmp/test_file',
                 'frequency' => 5
               }
@@ -24,7 +24,7 @@ describe CGE::YAMLCommandGraph do
             {
               'Name' => 'sms_alert',
               'Class' => 'CGE::SMSAction',
-              'Options' => {
+              'Inputs' => {
                 'to' => '+1234567890',
                 'from' => '+0987654321',
                 'message' => 'File updated at {{file_monitor.time}}',
@@ -60,12 +60,12 @@ describe CGE::YAMLCommandGraph do
         expect(current_command.next_command.name).to eq('sms_alert')
       end
       
-      it 'should preserve options for each command' do
+      it 'should preserve inputs for each command' do
         graph = CGE::YAMLCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
-        expect(current_command.options).to include('path' => '/tmp/test_file', 'frequency' => 5)
-        expect(current_command.next_command.options).to include('to' => '+1234567890', 'message' => 'File updated at {{file_monitor.time}}')
+        expect(current_command.inputs).to include('path' => '/tmp/test_file', 'frequency' => 5)
+        expect(current_command.next_command.inputs).to include('to' => '+1234567890', 'message' => 'File updated at {{file_monitor.time}}')
       end
     end
     
@@ -77,7 +77,7 @@ describe CGE::YAMLCommandGraph do
             {
               'Name' => 'invalid_monitor',
               'Class' => 'CGE::NonExistentMonitor',
-              'Options' => {}
+              'Inputs' => {}
             }
           ]
         }
@@ -103,7 +103,7 @@ describe CGE::YAMLCommandGraph do
             {
               'Name' => 'file_monitor',
               'Class' => 'CGE::FileUpdateMonitor',
-              'Options' => {
+              'Inputs' => {
                 'path' => '/tmp/source_file',
                 'frequency' => 2
               }
@@ -111,14 +111,14 @@ describe CGE::YAMLCommandGraph do
             {
               'Name' => 'socket_monitor',
               'Class' => 'CGE::UnixSocketMonitor',
-              'Options' => {
+              'Inputs' => {
                 'socket_path' => '/tmp/webhook_{{file_monitor.time}}.sock'
               }
             },
             {
               'Name' => 'sms_action',
               'Class' => 'CGE::SMSAction',
-              'Options' => {
+              'Inputs' => {
                 'to' => '+1234567890',
                 'message' => 'File modified at {{file_monitor.time}}, webhook data: {{socket_monitor.data}}',
                 'from' => '+0987654321',
@@ -148,11 +148,11 @@ describe CGE::YAMLCommandGraph do
         graph = CGE::YAMLCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
-        socket_monitor_options = current_command.next_command.options
-        expect(socket_monitor_options['socket_path']).to eq('/tmp/webhook_{{file_monitor.time}}.sock')
+        socket_monitor_inputs = current_command.next_command.inputs
+        expect(socket_monitor_inputs['socket_path']).to eq('/tmp/webhook_{{file_monitor.time}}.sock')
         
-        sms_action_options = current_command.next_command.next_command.options
-        expect(sms_action_options['message']).to eq('File modified at {{file_monitor.time}}, webhook data: {{socket_monitor.data}}')
+        sms_action_inputs = current_command.next_command.next_command.inputs
+        expect(sms_action_inputs['message']).to eq('File modified at {{file_monitor.time}}, webhook data: {{socket_monitor.data}}')
       end
     end
     
@@ -164,7 +164,7 @@ describe CGE::YAMLCommandGraph do
             {
               'Name' => 'file_monitor',
               'Class' => 'CGE::FileUpdateMonitor',
-              'Options' => {
+              'Inputs' => {
                 'path' => '/tmp/monitored_file',
                 'frequency' => 5
               }
@@ -172,7 +172,7 @@ describe CGE::YAMLCommandGraph do
             {
               'Name' => 'email_action',
               'Class' => 'CGE::EmailAction',
-              'Options' => {
+              'Inputs' => {
                 'to' => 'admin@example.com',
                 'subject' => 'File Update Alert',
                 'body' => 'File updated at {{file_monitor.time}}',
@@ -183,7 +183,7 @@ describe CGE::YAMLCommandGraph do
             {
               'Name' => 'sms_action',
               'Class' => 'CGE::SMSAction',
-              'Options' => {
+              'Inputs' => {
                 'to' => '+1234567890',
                 'message' => 'Email sent: {{email_action.message_id}}',
                 'from' => '+0987654321',
@@ -218,7 +218,7 @@ describe CGE::YAMLCommandGraph do
             {
               'Name' => 'file_monitor',
               'Class' => 'CGE::FileUpdateMonitor',
-              'Options' => {
+              'Inputs' => {
                 'path' => '/tmp/source_file',
                 'frequency' => 3
               }
@@ -226,7 +226,7 @@ describe CGE::YAMLCommandGraph do
             {
               'Name' => 'shell_action',
               'Class' => 'CGE::ShellAction',
-              'Options' => {
+              'Inputs' => {
                 'path' => '/bin/echo',
                 'arguments' => 'Processing {{file_monitor.contents}}'
               }
@@ -234,7 +234,7 @@ describe CGE::YAMLCommandGraph do
             {
               'Name' => 'result_monitor',
               'Class' => 'CGE::FileUpdateMonitor',
-              'Options' => {
+              'Inputs' => {
                 'path' => '/tmp/result_file',
                 'frequency' => 1
               }
@@ -266,7 +266,7 @@ describe CGE::YAMLCommandGraph do
             {
               'Name' => 'startup_action',
               'Class' => 'CGE::ShellAction',
-              'Options' => {
+              'Inputs' => {
                 'path' => '/bin/echo',
                 'arguments' => 'startup complete'
               }
@@ -274,7 +274,7 @@ describe CGE::YAMLCommandGraph do
             {
               'Name' => 'file_monitor',
               'Class' => 'CGE::FileUpdateMonitor',
-              'Options' => {
+              'Inputs' => {
                 'path' => '/tmp/response_file',
                 'frequency' => 2
               }
@@ -282,7 +282,7 @@ describe CGE::YAMLCommandGraph do
             {
               'Name' => 'email_action',
               'Class' => 'CGE::EmailAction',
-              'Options' => {
+              'Inputs' => {
                 'to' => 'admin@example.com',
                 'subject' => 'Response received',
                 'body' => 'File updated at {{file_monitor.time}} with content: {{file_monitor.contents}}',
@@ -317,14 +317,14 @@ describe CGE::YAMLCommandGraph do
             {
               'Name' => 'web_input',
               'Class' => 'CGE::WebInput',
-              'Options' => {
+              'Inputs' => {
                 'url' => 'http://example.com/data'
               }
             },
             {
               'Name' => 'sms_action',
               'Class' => 'CGE::SMSAction',
-              'Options' => {
+              'Inputs' => {
                 'to' => '+1234567890',
                 'message' => 'Data received: {{web_input.content}}',
                 'from' => '+0987654321',
@@ -353,8 +353,8 @@ describe CGE::YAMLCommandGraph do
         graph = CGE::YAMLCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
-        sms_action_options = current_command.next_command.options
-        expect(sms_action_options['message']).to eq('Data received: {{web_input.content}}')
+        sms_action_inputs = current_command.next_command.inputs
+        expect(sms_action_inputs['message']).to eq('Data received: {{web_input.content}}')
       end
     end
   end
@@ -372,7 +372,7 @@ describe CGE::YAMLCommandGraph do
             {
               'Name' => 'file_monitor',
               'Class' => 'CGE::FileUpdateMonitor',
-              'Options' => {
+              'Inputs' => {
                 'path' => '{{graph.base_path}}/watched_file',
                 'frequency' => 5
               }
@@ -380,7 +380,7 @@ describe CGE::YAMLCommandGraph do
             {
               'Name' => 'email_action',
               'Class' => 'CGE::EmailAction',
-              'Options' => {
+              'Inputs' => {
                 'to' => '{{graph.admin_email}}',
                 'subject' => 'Alert',
                 'body' => 'File at {{graph.base_path}} was updated',
@@ -397,16 +397,16 @@ describe CGE::YAMLCommandGraph do
         temp_file.close
       end
       
-      it 'should preserve {{graph.constant_name}} patterns in command options' do
+      it 'should preserve {{graph.constant_name}} patterns in command inputs' do
         graph = CGE::YAMLCommandGraph.from_file(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
-        monitor_options = current_command.options
-        expect(monitor_options['path']).to eq('{{graph.base_path}}/watched_file')
+        monitor_inputs = current_command.inputs
+        expect(monitor_inputs['path']).to eq('{{graph.base_path}}/watched_file')
         
-        email_options = current_command.next_command.options
-        expect(email_options['to']).to eq('{{graph.admin_email}}')
-        expect(email_options['body']).to eq('File at {{graph.base_path}} was updated')
+        email_inputs = current_command.next_command.inputs
+        expect(email_inputs['to']).to eq('{{graph.admin_email}}')
+        expect(email_inputs['body']).to eq('File at {{graph.base_path}} was updated')
       end
       
       it 'should correctly substitute constants when applying outputs' do
@@ -418,14 +418,14 @@ describe CGE::YAMLCommandGraph do
         expect(outputs['graph.admin_email']).to eq('admin@example.com')
         expect(outputs['graph.base_path']).to eq('/tmp/monitoring')
         
-        # Apply outputs to monitor options
-        monitor_options = graph.send(:substitute_variables, current_command.options, outputs)
-        expect(monitor_options['path']).to eq('/tmp/monitoring/watched_file')
+        # Apply outputs to monitor inputs
+        monitor_inputs = graph.send(:substitute_variables, current_command.inputs, outputs)
+        expect(monitor_inputs['path']).to eq('/tmp/monitoring/watched_file')
         
-        # Apply outputs to email options
-        email_options = graph.send(:substitute_variables, current_command.next_command.options, outputs)
-        expect(email_options['to']).to eq('admin@example.com')
-        expect(email_options['body']).to eq('File at /tmp/monitoring was updated')
+        # Apply outputs to email inputs
+        email_inputs = graph.send(:substitute_variables, current_command.next_command.inputs, outputs)
+        expect(email_inputs['to']).to eq('admin@example.com')
+        expect(email_inputs['body']).to eq('File at /tmp/monitoring was updated')
       end
     end
     
@@ -442,7 +442,7 @@ describe CGE::YAMLCommandGraph do
             {
               'Name' => 'file_monitor',
               'Class' => 'CGE::FileUpdateMonitor',
-              'Options' => {
+              'Inputs' => {
                 'path' => '{{graph.monitoring_path}}/application.log',
                 'frequency' => 1
               }
@@ -450,7 +450,7 @@ describe CGE::YAMLCommandGraph do
             {
               'Name' => 'email_alert',
               'Class' => 'CGE::EmailAction',
-              'Options' => {
+              'Inputs' => {
                 'to' => '{{graph.alert_email}}',
                 'subject' => 'Log Alert from {{graph.server_host}}',
                 'body' => 'Log file at {{graph.monitoring_path}} was updated at {{file_monitor.time}}',
@@ -483,15 +483,15 @@ describe CGE::YAMLCommandGraph do
         outputs = graph.instance_variable_get(:@variables)
         outputs['file_monitor.time'] = '2023-12-01 15:30:00'
         
-        monitor_options = graph.send(:substitute_variables, current_command.options, outputs)
-        expect(monitor_options['path']).to eq('/var/log/app/application.log')
+        monitor_inputs = graph.send(:substitute_variables, current_command.inputs, outputs)
+        expect(monitor_inputs['path']).to eq('/var/log/app/application.log')
         
-        email_options = graph.send(:substitute_variables, current_command.next_command.options, outputs)
-        expect(email_options['to']).to eq('alerts@company.com')
-        expect(email_options['subject']).to eq('Log Alert from localhost')
-        expect(email_options['body']).to eq('Log file at /var/log/app was updated at 2023-12-01 15:30:00')
-        expect(email_options['from']).to eq('monitoring@localhost')
-        expect(email_options['server']).to eq('localhost')
+        email_inputs = graph.send(:substitute_variables, current_command.next_command.inputs, outputs)
+        expect(email_inputs['to']).to eq('alerts@company.com')
+        expect(email_inputs['subject']).to eq('Log Alert from localhost')
+        expect(email_inputs['body']).to eq('Log file at /var/log/app was updated at 2023-12-01 15:30:00')
+        expect(email_inputs['from']).to eq('monitoring@localhost')
+        expect(email_inputs['server']).to eq('localhost')
       end
     end
   end

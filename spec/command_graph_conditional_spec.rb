@@ -2,9 +2,9 @@ require 'spec_helper'
 
 # Test conditional class for testing
 class TestConditional < CGE::Conditional
-  def execute(options, next_command)
+  def execute(inputs, next_command)
     # Simple test logic - if values match, continue to next command
-    return next_command if options['value1'] == options['value2']
+    return next_command if inputs['value1'] == inputs['value2']
     nil
   end
   
@@ -47,13 +47,13 @@ describe CGE::CommandGraph do
       expect(result).to be_nil
     end
 
-    it 'should apply output substitutions to conditional options' do
+    it 'should apply output substitutions to conditional inputs' do
       substitution_conditional = TestConditional.new('test_conditional', { 'value1' => '{{previous.output}}', 'value2' => 'expected' }, action_command)
       command_graph = CGE::CommandGraph.new('test',substitution_conditional)
       command_graph.instance_variable_get(:@variables)['previous.output'] = 'expected'
       
-      substituted_options = command_graph.send(:substitute_variables, substitution_conditional.options, command_graph.instance_variable_get(:@variables))
-      expect(substituted_options).to eq({ 'value1' => 'expected', 'value2' => 'expected' })
+      substituted_inputs = command_graph.send(:substitute_variables, substitution_conditional.inputs, command_graph.instance_variable_get(:@variables))
+      expect(substituted_inputs).to eq({ 'value1' => 'expected', 'value2' => 'expected' })
     end
   end
 end

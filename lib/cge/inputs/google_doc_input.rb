@@ -5,10 +5,10 @@ require 'googleauth'
 module CGE
   # An input that fetches the contents of a Google Doc as raw text
   class GoogleDocInput < Input
-    attr_option 'document_id', String, :required do |val|
+    attr_input 'document_id', String, :required do |val|
       val.length > 10 && val.match(/^[a-zA-Z0-9_-]+$/)
     end
-    attr_option 'credentials_path', String, :optional do |val|
+    attr_input 'credentials_path', String, :optional do |val|
       File.exist?(val)
     end
     attr_output 'content', String

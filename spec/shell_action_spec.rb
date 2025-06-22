@@ -2,14 +2,14 @@ require 'spec_helper'
 
 describe CGE::ShellAction do
   before(:each) do
-    @options = { 'path' => '/bin/ls' }
+    @inputs = { 'path' => '/bin/ls' }
     @action = CGE::ShellAction.new("test_action", {})
   end
 
-  context 'options' do
-    it 'has a required path option of type String' do
-      expect { @action.class.required_options }.not_to raise_error
-      expect(@action.class.required_options.length).to eq(1)
+  context 'inputs' do
+    it 'has a required path input of type String' do
+      expect { @action.class.required_inputs }.not_to raise_error
+      expect(@action.class.required_inputs.length).to eq(1)
     end
 
     it 'validates the path is executable and exists' do
@@ -21,9 +21,9 @@ describe CGE::ShellAction do
       expect(@action.path.valid?).to eq(false)
     end
 
-    it 'has an optional arguments option of type String' do
-      expect { @action.class.options }.not_to raise_error
-      expect(@action.class.options.length).to eq(2)
+    it 'has an optional arguments input of type String' do
+      expect { @action.class.inputs }.not_to raise_error
+      expect(@action.class.inputs.length).to eq(2)
     end
   end
 
@@ -36,19 +36,19 @@ describe CGE::ShellAction do
   context 'when execute is called' do
     it 'executes a shell script' do
       expect(@action).to receive(:`).with('/bin/ls')
-      @action.execute(@options, nil)
+      @action.execute(@inputs, nil)
     end
 
     it 'returns the result of shell script' do
       allow(@action).to receive(:`).and_return('result!')
-      @action.execute(@options, nil)
+      @action.execute(@inputs, nil)
       expect(@action.results).to eq('result!')
     end
 
     it 'passes arguments to the shell script' do
       expect(@action).to receive(:`).with('/bin/ls test')
-      @options['arguments'] = 'test'
-      @action.execute(@options, nil)
+      @inputs['arguments'] = 'test'
+      @action.execute(@inputs, nil)
     end
   end
 end

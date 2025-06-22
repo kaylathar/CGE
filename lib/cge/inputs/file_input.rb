@@ -3,7 +3,7 @@ require 'cge/input'
 module CGE
   # An input that reads the contents of a file at a given path
   class FileInput < Input
-    attr_option 'file_path', String, :required do |val|
+    attr_input 'file_path', String, :required do |val|
       File.file?(val) && File.readable?(val)
     end
     attr_output 'content', String

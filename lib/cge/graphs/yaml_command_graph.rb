@@ -17,13 +17,13 @@ module CGE
   #     - Name: "mymonitor"
   #       Type: "monitor"
   #       Class: "CGE::FileUpdateMonitor"
-  #       Options:
+  #       Inputs:
   #         path: "{{graph.base_path}}/file"
   #         frequency: 5
   #     - Name: "myaction"
   #       Type: "action"
   #       Class: "CGE::EmailAction"
-  #       Options:
+  #       Inputs:
   #         to: "{{graph.admin_email}}"
   #
   # @example
@@ -62,8 +62,8 @@ module CGE
     def command_from_data(command_data, next_command)
       name = command_data['Name']
       obj_class = get_class(command_data['Class'])
-      options = command_data['Options'] || {}
-      obj_class.new(name, options, next_command)
+      inputs = command_data['Inputs'] || command_data['Options'] || {}
+      obj_class.new(name, inputs, next_command)
     end
 
     private :command_from_data, :get_class

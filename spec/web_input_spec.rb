@@ -4,7 +4,7 @@ require 'webmock/rspec'
 describe CGE::WebInput do
   let(:web_input) { CGE::WebInput.new("test_input", {}) }
   let(:test_uri) { 'https://example.com/test' }
-  let(:options) { { 'uri' => test_uri } }
+  let(:inputs) { { 'uri' => test_uri } }
   let(:html_content) do
     <<~HTML
       <!DOCTYPE html>
@@ -38,7 +38,7 @@ describe CGE::WebInput do
   it 'should fetch and extract text content from webpage' do
     stub_successful_request
     
-    web_input.execute(options, nil)
+    web_input.execute(inputs, nil)
     expect(web_input.content).to include('Hello World')
     expect(web_input.content).to include('This is a test page.')
     expect(web_input.content).not_to include('console.log')
@@ -47,33 +47,33 @@ describe CGE::WebInput do
 
   it 'should raise error when uri is not provided' do
     expect { web_input.execute({}, nil) }
-      .to raise_error(CGE::OptionError, /Required option uri missing/)
+      .to raise_error(CGE::InputError, /Required input uri missing/)
   end
 
   it 'should raise error when uri is empty' do
     expect { web_input.execute({ 'uri' => '' }, nil) }
-      .to raise_error(CGE::OptionError, /Bad value for option uri/)
+      .to raise_error(CGE::InputError, /Bad value for input uri/)
   end
 
   it 'should raise error for invalid URI format' do
     expect { web_input.execute({ 'uri' => 'not-a-valid-uri' }, nil) }
-      .to raise_error(CGE::OptionError, /Bad value for option uri/)
+      .to raise_error(CGE::InputError, /Bad value for input uri/)
   end
 
   it 'should raise error for relative URI' do
     expect { web_input.execute({ 'uri' => '/relative/path' }, nil) }
-      .to raise_error(CGE::OptionError, /Bad value for option uri/)
+      .to raise_error(CGE::InputError, /Bad value for input uri/)
   end
 
   it 'should raise error for unsupported URI scheme' do
     expect { web_input.execute({ 'uri' => 'ftp://example.com' }, nil) }
-      .to raise_error(CGE::OptionError, /Bad value for option uri/)
+      .to raise_error(CGE::InputError, /Bad value for input uri/)
   end
 
   it 'should handle HTTP errors' do
     stub_request(:get, test_uri).to_return(status: 404, body: 'Not Found')
     
-    expect { web_input.execute(options, nil) }
+    expect { web_input.execute(inputs, nil) }
       .to raise_error(CGE::WebInputError, /HTTP 404/)
   end
 
@@ -84,7 +84,7 @@ describe CGE::WebInput do
     stub_request(:get, redirect_uri)
       .to_return(status: 200, body: html_content)
     
-    web_input.execute(options, nil)
+    web_input.execute(inputs, nil)
     expect(web_input.content).to include('Hello World')
   end
 
@@ -95,7 +95,7 @@ describe CGE::WebInput do
         .to_return(status: 302, headers: { 'Location' => next_uri })
     end
     
-    expect { web_input.execute(options, nil) }
+    expect { web_input.execute(inputs, nil) }
       .to raise_error(CGE::WebInputError, /Maximum redirects exceeded/)
   end
 
@@ -104,50 +104,50 @@ describe CGE::WebInput do
     stub_request(:get, test_uri)
       .to_return(status: 200, body: html_content, headers: large_content_type)
     
-    expect { web_input.execute(options, nil) }
+    expect { web_input.execute(inputs, nil) }
       .to raise_error(CGE::WebInputError, /Response too large/)
   end
 
   it 'should handle network errors' do
     stub_request(:get, test_uri).to_raise(SocketError.new('Failed to resolve hostname'))
     
-    expect { web_input.execute(options, nil) }
+    expect { web_input.execute(inputs, nil) }
       .to raise_error(SocketError)
   end
 
   it 'should handle timeout errors' do
     stub_request(:get, test_uri).to_timeout
     
-    expect { web_input.execute(options, nil) }
+    expect { web_input.execute(inputs, nil) }
       .to raise_error(Net::OpenTimeout)
   end
 
   it 'should use custom timeout when provided' do
-    options_with_timeout = options.merge('timeout' => 10)
+    inputs_with_timeout = inputs.merge('timeout' => 10)
     stub_successful_request
     
     expect(Net::HTTP).to receive(:start).with(
       'example.com', 443, hash_including(read_timeout: 10, open_timeout: 10)
     ).and_call_original
     
-    web_input.execute(options_with_timeout, nil)
+    web_input.execute(inputs_with_timeout, nil)
   end
 
   it 'should use custom user agent when provided' do
     custom_agent = 'CustomBot/1.0'
-    options_with_agent = options.merge('user_agent' => custom_agent)
+    inputs_with_agent = inputs.merge('user_agent' => custom_agent)
     
     stub_request(:get, test_uri)
       .with(headers: { 'User-Agent' => custom_agent })
       .to_return(status: 200, body: html_content)
     
-    web_input.execute(options_with_agent, nil)
+    web_input.execute(inputs_with_agent, nil)
   end
 
   it 'should handle empty HTML content' do
     stub_successful_request(test_uri, '')
     
-    web_input.execute(options, nil)
+    web_input.execute(inputs, nil)
     expect(web_input.content).to eq('')
   end
 
@@ -155,7 +155,7 @@ describe CGE::WebInput do
     plain_text = 'This is plain text content.'
     stub_successful_request(test_uri, plain_text)
     
-    web_input.execute(options, nil)
+    web_input.execute(inputs, nil)
     expect(web_input.content).to eq(plain_text)
   end
 
@@ -163,7 +163,7 @@ describe CGE::WebInput do
     messy_html = '<p>  Multiple   spaces   and\n\nnewlines  </p>'
     stub_successful_request(test_uri, messy_html)
     
-    web_input.execute(options, nil)
+    web_input.execute(inputs, nil)
     expect(web_input.content).to include('Multiple spaces and')
     expect(web_input.content).to include('newlines')
     expect(web_input.content.length).to be < 50  # Should be condensed

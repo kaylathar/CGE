@@ -2,37 +2,37 @@ require 'spec_helper'
 
 describe CGE::DropboxFileAction do
   before(:each) do
-    @options = { 'access_token' => 'test_token_123',
+    @inputs = { 'access_token' => 'test_token_123',
                  'file_path' => '/test_file.txt',
                  'content' => 'Test content' }
     @action = CGE::DropboxFileAction.new('dropbox_action', {})
   end
 
-  context 'options' do
-    it 'has three required options' do
-      expect { @action.class.required_options }.not_to raise_error
-      expect(@action.class.required_options.length).to eq(3)
+  context 'inputs' do
+    it 'has three required inputs' do
+      expect { @action.class.required_inputs }.not_to raise_error
+      expect(@action.class.required_inputs.length).to eq(3)
     end
 
-    it 'has four options total' do
-      expect { @action.class.options }.not_to raise_error
-      expect(@action.class.options.length).to eq(4)
+    it 'has four inputs total' do
+      expect { @action.class.inputs }.not_to raise_error
+      expect(@action.class.inputs.length).to eq(4)
     end
 
-    it 'has an access_token option of type String' do
-      expect(@action.class.options['access_token']).to eq(String)
+    it 'has an access_token input of type String' do
+      expect(@action.class.inputs['access_token']).to eq(String)
     end
 
-    it 'has a file_path option of type String' do
-      expect(@action.class.options['file_path']).to eq(String)
+    it 'has a file_path input of type String' do
+      expect(@action.class.inputs['file_path']).to eq(String)
     end
 
-    it 'has a content option of type String' do
-      expect(@action.class.options['content']).to eq(String)
+    it 'has a content input of type String' do
+      expect(@action.class.inputs['content']).to eq(String)
     end
 
-    it 'has an optional overwrite option of type Object' do
-      expect(@action.class.options['overwrite']).to eq(Object)
+    it 'has an optional overwrite input of type Object' do
+      expect(@action.class.inputs['overwrite']).to eq(Object)
     end
   end
 
@@ -60,7 +60,7 @@ describe CGE::DropboxFileAction do
       expect(Net::HTTP).to receive(:new).with('content.dropboxapi.com', 443)
       expect(@http).to receive(:use_ssl=).with(true)
 
-      @action.execute(@options, nil)
+      @action.execute(@inputs, nil)
     end
 
     it 'sets correct headers for the request' do
@@ -71,7 +71,7 @@ describe CGE::DropboxFileAction do
       expect(@request).to receive(:[]=).with('Content-Type', 'application/octet-stream')
       expect(@request).to receive(:[]=).with('Dropbox-API-Arg', kind_of(String))
 
-      @action.execute(@options, nil)
+      @action.execute(@inputs, nil)
     end
 
     it 'sends content as request body' do
@@ -80,11 +80,11 @@ describe CGE::DropboxFileAction do
 
       expect(@request).to receive(:body=).with('Test content')
 
-      @action.execute(@options, nil)
+      @action.execute(@inputs, nil)
     end
 
     it 'uses overwrite mode when overwrite is true' do
-      @options['overwrite'] = true
+      @inputs['overwrite'] = true
       allow(@response).to receive(:code).and_return('200')
       allow(@response).to receive(:body).and_return('{"path_display": "/test_file.txt"}')
       
@@ -92,13 +92,13 @@ describe CGE::DropboxFileAction do
       expect(@request).to receive(:[]=).with('Content-Type', kind_of(String))
       expect(@request).to receive(:[]=).with('Dropbox-API-Arg', kind_of(String))
 
-      @action.execute(@options, nil)
+      @action.execute(@inputs, nil)
 
       expect(JSON.parse(@request_headers['Dropbox-API-Arg'])).to match(hash_including("mode" => "overwrite"))
     end
 
     it 'uses add mode when overwrite is false' do
-      @options['overwrite'] = false
+      @inputs['overwrite'] = false
       allow(@response).to receive(:code).and_return('200')
       allow(@response).to receive(:body).and_return('{"path_display": "/test_file.txt"}')
 
@@ -106,7 +106,7 @@ describe CGE::DropboxFileAction do
       expect(@request).to receive(:[]=).with('Content-Type', kind_of(String))
       expect(@request).to receive(:[]=).with('Dropbox-API-Arg', kind_of(String))
 
-      @action.execute(@options, nil)
+      @action.execute(@inputs, nil)
 
       expect(JSON.parse(@request_headers['Dropbox-API-Arg'])).to match(hash_including("mode" => "add"))
     end
@@ -115,13 +115,13 @@ describe CGE::DropboxFileAction do
       allow(@response).to receive(:code).and_return('400')
       allow(@response).to receive(:body).and_return('{"error": "Invalid request"}')
 
-      expect {@action.execute(@options, nil)}.to raise_error(CGE::DropboxFileActionError)
+      expect {@action.execute(@inputs, nil)}.to raise_error(CGE::DropboxFileActionError)
     end
 
     it 'handles network errors gracefully' do
       allow(@http).to receive(:request).and_raise(StandardError.new('Network error'))
 
-      expect {@action.execute(@options, nil)}.to raise_error(CGE::DropboxFileActionError)
+      expect {@action.execute(@inputs, nil)}.to raise_error(CGE::DropboxFileActionError)
     end
   end
 end

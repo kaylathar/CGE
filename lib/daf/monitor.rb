@@ -17,7 +17,7 @@ module DAF
     def on_trigger(options)
       process_options(options)
       block_until_triggered
-      yield
+      yield if block_given?
     end
   end
 end

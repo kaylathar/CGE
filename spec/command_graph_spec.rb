@@ -327,10 +327,8 @@ describe DAF::CommandGraph do
         # Set up return values for action
         allow(mock_sms_action).to receive(:message_id).and_return('msg_12345')
         
-        # Mock the monitor trigger behavior to call the block
-        allow(mock_file_monitor).to receive(:on_trigger) do |options, &block|
-          block.call if block_given?
-        end
+        # Mock the monitor trigger behavior
+        allow(mock_file_monitor).to receive(:on_trigger)
         
         # Mock the action activation
         allow(mock_sms_action).to receive(:activate)

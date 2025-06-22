@@ -57,31 +57,31 @@ describe DAF::SMSAction do
     it 'should raise error when to is missing' do
       invalid_options = valid_options.dup
       invalid_options.delete('to')
-      expect { action.activate(invalid_options){} }.to raise_error
+      expect { action.activate(invalid_options) }.to raise_error
     end
 
     it 'should raise error when message is missing' do
       invalid_options = valid_options.dup
       invalid_options.delete('message')
-      expect { action.activate(invalid_options){} }.to raise_error
+      expect { action.activate(invalid_options) }.to raise_error
     end
 
     it 'should raise error when from is missing' do
       invalid_options = valid_options.dup
       invalid_options.delete('from')
-      expect { action.activate(invalid_options){} }.to raise_error
+      expect { action.activate(invalid_options) }.to raise_error
     end
 
     it 'should raise error when sid is missing' do
       invalid_options = valid_options.dup
       invalid_options.delete('sid')
-      expect { action.activate(invalid_options){} }.to raise_error
+      expect { action.activate(invalid_options) }.to raise_error
     end
 
     it 'should raise error when token is missing' do
       invalid_options = valid_options.dup
       invalid_options.delete('token')
-      expect { action.activate(invalid_options){} }.to raise_error
+      expect { action.activate(invalid_options) }.to raise_error
     end
   end
 
@@ -99,7 +99,7 @@ describe DAF::SMSAction do
 
     it 'should call create on client.messages' do
       expect(mock_messages).to receive(:create)
-      action.activate(valid_options){}
+      action.activate(valid_options)
     end
 
     it 'should pass correct parameters to messages.create' do
@@ -110,11 +110,11 @@ describe DAF::SMSAction do
       }
 
       expect(mock_messages).to receive(:create).with(expected_params)
-      action.activate(valid_options){}
+      action.activate(valid_options)
     end
 
     it 'should set message_id output attribute' do
-      action.activate(valid_options){}
+      action.activate(valid_options)
       expect(action.message_id).to eq(mock_message_id)
     end
 
@@ -124,7 +124,7 @@ describe DAF::SMSAction do
       end
 
       it 'should set the returned message ID' do
-        action.activate(valid_options){}
+        action.activate(valid_options)
         expect(action.message_id).to eq('SM_success_id')
       end
 

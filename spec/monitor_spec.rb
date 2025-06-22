@@ -23,22 +23,22 @@ describe DAF::Monitor do
     expect(test_monitor).to respond_to(:on_trigger)
   end
 
-  it 'should require a block to execute' do
-    expect { test_monitor.on_trigger(options) }.to raise_error(LocalJumpError)
+  it 'should execute without requiring a block' do
+    expect { test_monitor.on_trigger(options) }.not_to raise_error
   end
 
   it 'should call block_until_triggered' do
-    test_monitor.on_trigger(options) {}
+    test_monitor.on_trigger(options)
     expect(test_monitor.output).to eq(123)
   end
 
-  it 'should yield to a given block when triggered' do
-    expect { |b| test_monitor.on_trigger(options,&b) }
-      .to yield_with_no_args
+  it 'should return result from block_until_triggered' do
+    result = test_monitor.on_trigger(options)
+    expect(result).to eq(123)
   end
 
   it 'should set option values' do
-    test_monitor.on_trigger(options) {}
+    test_monitor.on_trigger(options)
     expect(test_monitor.option.value).to eq('test')
   end
 end

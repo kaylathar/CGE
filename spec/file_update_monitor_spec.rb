@@ -8,7 +8,7 @@ describe 'DAF::FileUpdateMonitor' do
       monitor = DAF::FileUpdateMonitor.new
 
       allow(monitor).to receive(:sleep).and_return(true)
-      expect { monitor.on_trigger(options){} }.to raise_error(DAF::OptionError)
+      expect { monitor.on_trigger(options) }.to raise_error(DAF::OptionError)
     end
 
     it 'should validate that the frequency is > 1' do
@@ -17,7 +17,7 @@ describe 'DAF::FileUpdateMonitor' do
       monitor = DAF::FileUpdateMonitor.new
 
       allow(monitor).to receive(:sleep).and_return(true)
-      expect { monitor.on_trigger(options){} }.to raise_error(DAF::OptionError)
+      expect { monitor.on_trigger(options) }.to raise_error(DAF::OptionError)
     end
 
     it 'should have a required option named path' do
@@ -48,13 +48,13 @@ describe 'DAF::FileUpdateMonitor' do
 
     it 'should sleep the set frequency' do
       expect(@monitor).to receive(:sleep).with(2)
-      @monitor.on_trigger(@options){}
+      @monitor.on_trigger(@options)
     end
 
     it 'should record current time' do
       expect(File).to receive(:mtime).twice
       allow(@monitor).to receive(:sleep)
-      @monitor.on_trigger(@options){}
+      @monitor.on_trigger(@options)
     end
 
     it 'should skip loop unless file modify time changes' do
@@ -68,19 +68,19 @@ describe 'DAF::FileUpdateMonitor' do
           1
         end
       end
-      @monitor.on_trigger(@options){}
+      @monitor.on_trigger(@options)
     end
 
     context 'when file is modified' do
       it 'should record the time as output' do
         allow(@monitor).to receive(:sleep)
-        @monitor.on_trigger(@options){}
+        @monitor.on_trigger(@options)
         expect(@monitor.time).to eq(1)
       end
 
       it 'should record the contents of the file as output' do
         allow(@monitor).to receive(:sleep)
-        @monitor.on_trigger(@options){}
+        @monitor.on_trigger(@options)
         expect(@monitor.contents).to eq('contents')
       end
     end

@@ -8,8 +8,7 @@ module DAF
   class Monitor
     include Configurable
 
-    # Begins monitoring for event, when event occurs will
-    # execute required block parameter
+    # Begins monitoring for event, when event occurs will return
     #
     # @param options [Hash] The options in key/value format,
     # the type of each option must match that expected or an
@@ -17,7 +16,6 @@ module DAF
     def on_trigger(options)
       process_options(options)
       block_until_triggered
-      yield if block_given?
     end
   end
 end

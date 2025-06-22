@@ -7,18 +7,14 @@ module DAF
   class Action
     include Configurable
 
-    # Activate this action using given options - takes an optional
-    # block parameter that will be invoked when action
-    # is complete
+    # Activate this action using given options
     #
     # @param options [Hash] A hash of options with name/value pairs, must
     # match types expected for each option or will raise an exception
-    # @yield Upon completion, will execute the optional block passed in
+    # @return The output from the action
     def activate(options)
       process_options(options)
-      output = invoke
-      yield if block_given?
-      output
+      invoke
     end
   end
 end

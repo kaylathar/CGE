@@ -18,7 +18,7 @@ describe DAF::UnixSocketMonitor do
 
     it 'should validate socket_path is not empty' do
       invalid_options = { 'socket_path' => '' }
-      expect {monitor.on_trigger(invalid_options){} }.to raise_error(DAF::OptionError)
+      expect { monitor.on_trigger(invalid_options) }.to raise_error(DAF::OptionError)
     end
   end
 
@@ -40,38 +40,38 @@ describe DAF::UnixSocketMonitor do
 
       it 'should create unix server with specified path' do
         expect(UNIXServer).to receive(:new).with(temp_socket_path)
-        monitor.on_trigger(options){}
+        monitor.on_trigger(options)
       end
 
       it 'should accept client connections' do
         expect(mock_server).to receive(:accept).and_return(mock_client)
-        monitor.on_trigger(options){}
+        monitor.on_trigger(options)
       end
 
       it 'should read data from client' do
         expect(mock_client).to receive(:read).and_return(test_data)
-        monitor.on_trigger(options){}
+        monitor.on_trigger(options)
       end
 
       it 'should set data output attribute' do
-        monitor.on_trigger(options){}
+        monitor.on_trigger(options)
         expect(monitor.data).to eq(test_data)
       end
 
       it 'should close client connection' do
         expect(mock_client).to receive(:close)
-        monitor.on_trigger(options){}
+        monitor.on_trigger(options)
       end
 
       it 'should close server socket' do
         expect(mock_server).to receive(:close)
-        monitor.on_trigger(options){}
+        monitor.on_trigger(options)
       end
 
       it 'should clean up socket file after completion' do
         allow(File).to receive(:exist?).with(temp_socket_path).and_return(true)
         expect(File).to receive(:unlink).with(temp_socket_path)
-        monitor.on_trigger(options){}
+        monitor.on_trigger(options)
       end
 
       it 'should clean up socket file even if error occurs' do
@@ -79,7 +79,7 @@ describe DAF::UnixSocketMonitor do
         allow(File).to receive(:exist?).with(temp_socket_path).and_return(true)
         expect(File).to receive(:unlink).with(temp_socket_path)
 
-        expect { monitor.on_trigger(options){} }.to raise_error(StandardError, 'test error')
+        expect { monitor.on_trigger(options) }.to raise_error(StandardError, 'test error')
       end
     end
   end

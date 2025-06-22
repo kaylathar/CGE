@@ -48,7 +48,7 @@ describe DAF::FileAction do
 
     it 'handles file write errors gracefully' do
       allow(File).to receive(:write).and_raise(StandardError.new('Permission denied'))
-      expect {@action.activate(@options) {}}.to raise_error(DAF::FileActionError)
+      expect { @action.activate(@options) }.to raise_error(DAF::FileActionError)
     end
   end
 end

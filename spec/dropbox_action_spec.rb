@@ -115,13 +115,13 @@ describe DAF::DropboxFileAction do
       allow(@response).to receive(:code).and_return('400')
       allow(@response).to receive(:body).and_return('{"error": "Invalid request"}')
 
-      expect {@action.activate(@options) {}}.to raise_error(DAF::DropboxFileActionError)
+      expect {@action.activate(@options)}.to raise_error(DAF::DropboxFileActionError)
     end
 
     it 'handles network errors gracefully' do
       allow(@http).to receive(:request).and_raise(StandardError.new('Network error'))
 
-      expect {@action.activate(@options) {}}.to raise_error(DAF::DropboxFileActionError)
+      expect {@action.activate(@options)}.to raise_error(DAF::DropboxFileActionError)
     end
   end
 end

@@ -35,11 +35,10 @@ module DAF
 
     # Execute the provided monitor node
     def execute_monitor_node(_node)
-      @current_node.underlying.on_trigger(apply_outputs(@current_node.options, @outputs)) do
-        @current_node.underlying.class.outputs.each_key do |output_name|
-          output_value = @current_node.underlying.send(output_name)
-          @outputs["#{@current_node.name}.#{output_name}"] = output_value
-        end
+      @current_node.underlying.on_trigger(apply_outputs(@current_node.options, @outputs))
+      @current_node.underlying.class.outputs.each_key do |output_name|
+        output_value = @current_node.underlying.send(output_name)
+        @outputs["#{@current_node.name}.#{output_name}"] = output_value
       end
     end
 

@@ -20,10 +20,10 @@ describe DAF::Action do
     expect(test_action).to respond_to(:activate)
   end
 
-  it 'should yield to a given block' do
+  it 'should return the result of invoke' do
     test_action.success = 123
-    expect { |b| test_action.activate(options, &b) }
-      .to yield_with_no_args()
+    result = test_action.activate(options)
+    expect(result).to eq(123)
   end
 
   it 'should set option values' do

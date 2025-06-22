@@ -11,7 +11,7 @@ class TestInput < CGE::Input
 end
 
 describe CGE::Input do
-  let(:test_input) { TestInput.new('test_input', {}) }
+  let(:test_input) { TestInput.new('test_input_id', 'test_input', {}, nil) }
   let(:inputs) { { 'input' => 'test' } }
 
   it 'should set input values' do

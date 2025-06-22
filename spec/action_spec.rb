@@ -8,7 +8,7 @@ class TestAction < CGE::Action
 end
 
 describe CGE::Action do
-  let(:test_action) { TestAction.new('test_action', {}) }
+  let(:test_action) { TestAction.new('test_action_id', 'test_action', {}, nil) }
   let(:inputs) { { 'input' => 'test' } }
 
   it 'should be configurable' do
@@ -22,7 +22,7 @@ describe CGE::Action do
 
   it 'should execute and return next command' do
     test_action.success = 123
-    next_action = TestAction.new('next_action', {})
+    next_action = TestAction.new('next_action_id', 'next_action', {}, nil)
     result = test_action.execute(inputs, next_action)
     expect(result).to eq(next_action)
     expect(test_action.success).to eq(123)
@@ -31,5 +31,16 @@ describe CGE::Action do
   it 'should set input values' do
     test_action.execute(inputs, nil)
     expect(test_action.input.value).to eq('test')
+  end
+  
+  it 'should have a readable id property' do
+    action = TestAction.new('custom_action_id', 'test', {}, nil)
+    expect(action.id).to eq('custom_action_id')
+  end
+  
+  it 'should auto-generate id when not provided' do
+    action = TestAction.new(nil, 'test', {})
+    expect(action.id).to be_a(String)
+    expect(action.id.length).to eq(36) # UUID format
   end
 end

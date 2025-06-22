@@ -1,3 +1,4 @@
+require 'securerandom'
 require 'cge/configurable'
 
 module CGE
@@ -6,9 +7,14 @@ module CGE
   class Command
     include Configurable
 
-    attr_reader :name, :inputs, :next_command
+    attr_reader :name, :inputs, :next_command, :id
 
-    def initialize(name, inputs, next_command = nil)
+    # @param id [String] Optional unique identifier for this command (auto-generated if not provided)
+    # @param name [String] The name of this command
+    # @param inputs [Hash] Initial inputs for this command
+    # @param next_command [Command] The next command to execute after this one
+    def initialize(id, name, inputs, next_command = nil)
+      @id = id || SecureRandom.uuid
       @name = name
       @inputs = inputs
       @next_command = next_command

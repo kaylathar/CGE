@@ -5,7 +5,7 @@ describe 'CGE::FileUpdateMonitor' do
     it 'should validate that the path exists' do
       allow(File).to receive(:exist?).and_return(false)
       inputs = { 'frequency' => 2, 'path' => '/asdf/' }
-      monitor = CGE::FileUpdateMonitor.new('monitor', {})
+      monitor = CGE::FileUpdateMonitor.new('file_update_monitor_id', 'monitor', {}, nil)
 
       allow(monitor).to receive(:sleep).and_return(true)
       expect { monitor.execute(inputs, nil) }.to raise_error(CGE::InputError)
@@ -14,7 +14,7 @@ describe 'CGE::FileUpdateMonitor' do
     it 'should validate that the frequency is > 1' do
       allow(File).to receive(:exist?).and_return(true)
       inputs = { 'frequency' => -1, 'path' => '/asdf' }
-      monitor = CGE::FileUpdateMonitor.new('monitor', {})
+      monitor = CGE::FileUpdateMonitor.new('file_update_monitor_id2', 'monitor', {}, nil)
 
       allow(monitor).to receive(:sleep).and_return(true)
       expect { monitor.execute(inputs, nil) }.to raise_error(CGE::InputError)
@@ -43,7 +43,7 @@ describe 'CGE::FileUpdateMonitor' do
       allow(File).to receive(:open).and_return(@file)
       allow(@file).to receive(:read).and_return('contents')
       allow(@file).to receive(:close)
-      @monitor = CGE::FileUpdateMonitor.new('monitor', {})
+      @monitor = CGE::FileUpdateMonitor.new('file_update_monitor_id3', 'monitor', {}, nil)
     end
 
     it 'should sleep the set frequency' do

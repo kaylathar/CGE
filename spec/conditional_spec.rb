@@ -25,12 +25,12 @@ class EmptyConditional < CGE::Conditional
 end
 
 describe CGE::Conditional do
-  let(:empty_conditional) { EmptyConditional.new('empty', {}) }
-  let(:test_conditional) { TestConditional.new('test', {}) }
+  let(:empty_conditional) { EmptyConditional.new('empty_conditional_id', 'empty', {}, nil) }
+  let(:test_conditional) { TestConditional.new('test_conditional_id', 'test', {}, nil) }
 
   it 'should process inputs before evaluating condition' do
     next_node = double('next_node')
-    conditional = TestConditional.new('test', {})
+    conditional = TestConditional.new('process_conditional_id', 'test', {}, nil)
     expect(conditional.execute({ 'test_input' => 'success' }, next_node)).to eq(next_node)
   end
 end

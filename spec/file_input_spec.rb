@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'tempfile'
 
 describe CGE::FileInput do
-  let(:file_input) { CGE::FileInput.new('file_input', {}) }
+  let(:file_input) { CGE::FileInput.new('file_input_id', 'file_input', {}, nil) }
   let(:temp_file) { Tempfile.new('test_file') }
   let(:test_content) { 'Hello, World!' }
   let(:inputs) { { 'file_path' => temp_file.path } }

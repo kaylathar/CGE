@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'webmock/rspec'
 
 describe CGE::GoogleSheetInput do
-  let(:google_sheet_input) { CGE::GoogleSheetInput.new("test_input", {}) }
+  let(:google_sheet_input) { CGE::GoogleSheetInput.new('google_sheet_input_id', "test_input", {}, nil) }
   let(:spreadsheet_id) { '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms' }
   let(:inputs) { { 'spreadsheet_id' => spreadsheet_id } }
   let(:inputs_with_credentials) do

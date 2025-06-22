@@ -4,7 +4,7 @@ describe CGE::FileAction do
   before(:each) do
     @inputs = { 'path' => '/tmp/test_file.txt',
                  'content' => 'Test content' }
-    @action = CGE::FileAction.new("test_action", {})
+    @action = CGE::FileAction.new('file_action_id', "test_action", {}, nil)
   end
 
   context 'inputs' do

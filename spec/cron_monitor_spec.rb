@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe CGE::CronMonitor do
   let(:inputs) { { 'time' => '2024-12-25 10:00:00' } }
-  let(:monitor) { CGE::CronMonitor.new('cron_monitor', {}) }
+  let(:monitor) { CGE::CronMonitor.new('cron_monitor_id', 'cron_monitor', {}, nil) }
 
   context 'when on_trigger is called' do
     it 'should require a time input' do
@@ -35,7 +35,7 @@ describe CGE::CronMonitor do
     context 'when target time is in the future' do
       let(:future_time) { Time.now + 1 }
       let(:future_inputs) { { 'time' => future_time.to_s } }
-      let(:future_monitor) { CGE::CronMonitor.new('future_monitor', {}) }
+      let(:future_monitor) { CGE::CronMonitor.new('future_monitor_id', 'future_monitor', {}, nil) }
 
       it 'should sleep until target time' do
         expect(future_monitor).to receive(:sleep).with(kind_of(Numeric))
@@ -53,7 +53,7 @@ describe CGE::CronMonitor do
     context 'when target time is in the past' do
       let(:past_time) { Time.now - 1 }
       let(:past_inputs) { { 'time' => past_time.to_s } }
-      let(:past_monitor) { CGE::CronMonitor.new('past_monitor', {}) }
+      let(:past_monitor) { CGE::CronMonitor.new('past_monitor_id', 'past_monitor', {}, nil) }
 
       it 'should not sleep' do
         expect(past_monitor).not_to receive(:sleep)

@@ -3,7 +3,7 @@ require 'spec_helper'
 describe CGE::ShellAction do
   before(:each) do
     @inputs = { 'path' => '/bin/ls' }
-    @action = CGE::ShellAction.new("test_action", {})
+    @action = CGE::ShellAction.new('shell_action_id', "test_action", {}, nil)
   end
 
   context 'inputs' do

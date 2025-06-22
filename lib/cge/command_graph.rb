@@ -1,3 +1,4 @@
+require 'securerandom'
 require 'thread'
 Dir["#{File.dirname(__FILE__)}/monitors/*"].sort.each { |file| require file }
 Dir["#{File.dirname(__FILE__)}/actions/*"].sort.each { |file| require file }
@@ -11,13 +12,16 @@ module CGE
   # default Command continues monitoring forever
   # though subclasses may override this behavior
   class CommandGraph
-    attr_reader :name
+    attr_reader :name, :id
 
     # Create a new command object from a data source
+    # @param id [String] Optional unique identifier for this graph (auto-generated if not provided)
+    # @param name [String] The user readable name for this graph
     # @param initial_command [Command] The first command of the command graph
     # @param global_configuration [GlobalConfiguration] Optional global configuration instance
     # @param constants [Hash] Optional hash of graph-level constants
-    def initialize(name, initial_command, global_configuration = nil, constants = {})
+    def initialize(id, name, initial_command, global_configuration = nil, constants = {})
+      @id = id || SecureRandom.uuid
       @name = name
       @initial_command = initial_command
       @current_command = initial_command

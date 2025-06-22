@@ -5,7 +5,7 @@ describe CGE::DropboxFileAction do
     @inputs = { 'access_token' => 'test_token_123',
                  'file_path' => '/test_file.txt',
                  'content' => 'Test content' }
-    @action = CGE::DropboxFileAction.new('dropbox_action', {})
+    @action = CGE::DropboxFileAction.new('dropbox_action_id', 'dropbox_action', {}, nil)
   end
 
   context 'inputs' do

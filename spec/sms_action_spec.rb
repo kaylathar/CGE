@@ -10,7 +10,7 @@ describe CGE::SMSAction do
       'token' => 'test_auth_token'
     }
   end
-  let(:action) { CGE::SMSAction.new('sms_action', {}) }
+  let(:action) { CGE::SMSAction.new('sms_action_id', 'sms_action', {}, nil) }
   let(:mock_messages) { double('Twilio::REST::Api::V2010::AccountContext::MessageList') }
   let(:mock_client) { double('Twilio::REST::Client') }
 

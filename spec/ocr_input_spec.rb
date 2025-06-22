@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe CGE::OCRInput do
-  let(:ocr_input) { CGE::OCRInput.new("test_input", {}) }
+  let(:ocr_input) { CGE::OCRInput.new('ocr_input_id', "test_input", {}, nil) }
   let(:test_image_path) { '/path/to/test_image.png' }
   let(:inputs) { { 'image_path' => test_image_path } }
   let(:mock_rtesseract) { double('RTesseract') }

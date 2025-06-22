@@ -28,7 +28,7 @@ describe CGE::CommandGraph do
   
   
   describe 'template substitution' do
-    let(:graph) { CGE::CommandGraph.new('test',mock_monitor) }
+    let(:graph) { CGE::CommandGraph.new('test_graph_id', 'test',mock_monitor, nil, {}) }
     
     context 'substitute_variables method' do
       it 'should apply template substitutions correctly in inputs' do
@@ -118,7 +118,7 @@ describe CGE::CommandGraph do
     context 'global configuration substitution' do
       let(:mock_heartbeat_option) { double('HeartbeatOption') }
       let(:mock_global_config_class) { double('GlobalConfigurationClass') }
-      let(:graph_with_global_config) { CGE::CommandGraph.new('test',mock_monitor, mock_global_config) }
+      let(:graph_with_global_config) { CGE::CommandGraph.new('test_graph_with_global_config_id', 'test',mock_monitor, mock_global_config, {}) }
       
       before do
         allow(mock_global_config).to receive(:class).and_return(mock_global_config_class)
@@ -148,7 +148,7 @@ describe CGE::CommandGraph do
     let(:mock_initial_class) { double('InitialClass') }
     let(:mock_next_class) { double('NextClass') }
     let(:constants) { { 'base_path' => '/tmp', 'admin_email' => 'admin@test.com' } }
-    let(:graph) { CGE::CommandGraph.new('test_graph', mock_initial_command, nil, constants) }
+    let(:graph) { CGE::CommandGraph.new('test_reset_graph_id', 'test_graph', mock_initial_command, nil, constants) }
     
     before do
       allow(mock_initial_command).to receive(:class).and_return(mock_initial_class)
@@ -209,7 +209,7 @@ describe CGE::CommandGraph do
       allow(mock_global_config).to receive(:outputs).and_return({'heartbeat' => Integer})
       allow(mock_global_config).to receive(:heartbeat).and_return(60)
       
-      graph_with_global = CGE::CommandGraph.new('test', mock_initial_command, mock_global_config, constants)
+      graph_with_global = CGE::CommandGraph.new('test_graph_with_global_id', 'test', mock_initial_command, mock_global_config, constants)
       
       # Add command output variables
       variables = graph_with_global.instance_variable_get(:@variables)
@@ -232,6 +232,19 @@ describe CGE::CommandGraph do
     
     it 'should handle reset when no thread is running' do
       expect { graph.reset }.not_to raise_error
+    end
+  end
+  
+  describe 'id property' do
+    it 'should have a readable id property' do
+      graph = CGE::CommandGraph.new('custom_graph_id', 'test', mock_monitor, nil, {})
+      expect(graph.id).to eq('custom_graph_id')
+    end
+    
+    it 'should auto-generate id when not provided' do
+      graph = CGE::CommandGraph.new(nil, 'test', mock_monitor)
+      expect(graph.id).to be_a(String)
+      expect(graph.id.length).to eq(36) # UUID format
     end
   end
 end

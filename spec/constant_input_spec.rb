@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe CGE::ConstantInput do
-  let(:constant_input) { CGE::ConstantInput.new('constant_input', {}) }
+  let(:constant_input) { CGE::ConstantInput.new('constant_input_id', 'constant_input', {}, nil) }
   let(:inputs) { { 'constant' => 'hello world' } }
 
   it 'should inherit from Input' do

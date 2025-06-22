@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe CGE::ComparisonConditional do
-  let(:comparison_conditional) { CGE::ComparisonConditional.new('comparison_conditional', {}) }
+  let(:comparison_conditional) { CGE::ComparisonConditional.new('comparison_conditional_id', 'comparison_conditional', {}, nil) }
   let(:dummy_next_node) { double('next_node') }
   
   # Helper method to check if condition passes (returns next_node vs nil)

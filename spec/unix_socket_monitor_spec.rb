@@ -5,7 +5,7 @@ require 'tempfile'
 describe CGE::UnixSocketMonitor do
   let(:temp_socket_path) { "/tmp/test_socket_#{SecureRandom.hex(8)}" }
   let(:inputs) { { 'socket_path' => temp_socket_path } }
-  let(:monitor) { CGE::UnixSocketMonitor.new('monitor', {}) }
+  let(:monitor) { CGE::UnixSocketMonitor.new('unix_socket_monitor_id', 'monitor', {}, nil) }
 
   after do
     File.unlink(temp_socket_path) if File.exist?(temp_socket_path)

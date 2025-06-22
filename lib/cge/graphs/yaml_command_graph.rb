@@ -1,4 +1,5 @@
 require 'yaml'
+require 'securerandom'
 require 'cge/command_graph'
 
 module CGE
@@ -50,7 +51,7 @@ module CGE
         command = command_from_data(command_data, current_command)
         current_command = command
       end
-      super(name, current_command, global_configuration, constants)
+      super(nil, name, current_command, global_configuration, constants)
     end
 
     def get_class(class_name)
@@ -63,7 +64,8 @@ module CGE
       name = command_data['Name']
       obj_class = get_class(command_data['Class'])
       inputs = command_data['Inputs'] || command_data['Options'] || {}
-      obj_class.new(name, inputs, next_command)
+      id = command_data['Id'] || SecureRandom.uuid
+      obj_class.new(id, name, inputs, next_command)
     end
 
     private :command_from_data, :get_class

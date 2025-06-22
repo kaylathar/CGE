@@ -11,7 +11,7 @@ class TestMonitor < CGE::Monitor
 end
 
 describe CGE::Monitor do
-  let(:test_monitor) { TestMonitor.new('test_monitor', {}) }
+  let(:test_monitor) { TestMonitor.new('test_monitor_id', 'test_monitor', {}, nil) }
   let(:inputs) {{'input' => 'test'}}
 
   it 'should be configurable' do
@@ -33,7 +33,7 @@ describe CGE::Monitor do
   end
 
   it 'should return next command' do
-    next_monitor = TestMonitor.new('next_monitor', {})
+    next_monitor = TestMonitor.new('next_monitor_id', 'next_monitor', {}, nil)
     result = test_monitor.execute(inputs, next_monitor)
     expect(result).to eq(next_monitor)
   end

@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'webmock/rspec'
 
 describe CGE::WebInput do
-  let(:web_input) { CGE::WebInput.new("test_input", {}) }
+  let(:web_input) { CGE::WebInput.new('web_input_id', "test_input", {}, nil) }
   let(:test_uri) { 'https://example.com/test' }
   let(:inputs) { { 'uri' => test_uri } }
   let(:html_content) do

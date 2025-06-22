@@ -8,7 +8,7 @@ describe CGE::EmailAction do
                  'subject' => 'Test Subject',
                  'body' => 'Test Body',
                  'server' => @server }
-    @action = CGE::EmailAction.new("test_action", {})
+    @action = CGE::EmailAction.new('email_action_id', "test_action", {}, nil)
   end
 
   it 'has five required inputs' do

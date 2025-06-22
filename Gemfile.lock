@@ -8,6 +8,7 @@ PATH
       net-smtp
       nokogiri (~> 1.15)
       rtesseract (~> 3.1)
+      sqlite3
       twilio-ruby
       washbullet
 
@@ -136,6 +137,7 @@ GEM
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.13.1)
     simplecov_json_formatter (0.1.4)
+    sqlite3 (2.7.0-arm64-darwin)
     timeout (0.4.3)
     trailblazer-option (0.1.2)
     twilio-ruby (7.6.3)

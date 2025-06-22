@@ -12,9 +12,10 @@ module CGE
     #
     # @param [Hash<String,Object>] Hash of input name/value pairs, values
     # must conform to validation rules for inputs or exception will be raised
-    def process_inputs(inputs)
+    def process_inputs(inputs, ignore_extras: false)
       inputs.each do |key, value|
         key = key.to_s
+        next if ignore_extras && self.class.inputs[key]
         raise InputError, "No Input #{key}" unless self.class.inputs[key]
 
         input = send(key.to_s)

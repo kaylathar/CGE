@@ -12,7 +12,7 @@ module CGE
   # default Command continues monitoring forever
   # though subclasses may override this behavior
   class CommandGraph
-    attr_reader :name, :id
+    attr_reader :name, :id, :initial_command, :constants
 
     # Create a new command object from a data source
     # @param id [String] Optional unique identifier for this graph (auto-generated if not provided)
@@ -27,6 +27,7 @@ module CGE
       @current_command = initial_command
       @variables = {}
       @initial_variables = {}
+      @constants = constants
 
       # Store constants under the 'graph' namespace
       constants.each do |key, value|

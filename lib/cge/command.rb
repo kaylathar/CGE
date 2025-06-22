@@ -1,4 +1,5 @@
 require 'securerandom'
+require 'set'
 require 'cge/configurable'
 
 module CGE
@@ -8,6 +9,33 @@ module CGE
     include Configurable
 
     attr_reader :name, :inputs, :next_command, :id
+
+    # Register a command class as valid for instantiation
+    # @param command_class [Class] The command class to register
+    def self.register_command(command_class)
+      command_registry.add(command_class.name)
+    end
+
+    # Safely get a command class by name with validation
+    # @param class_name [String] The name of the command class
+    # @return [Class] The command class if valid
+    # @raise [SecurityError] If the class is not registered
+    def self.safe_const_get(class_name)
+      raise SecurityError, "Command class '#{class_name}' is not registered" unless command_registry.include?(class_name)
+
+      Object.const_get(class_name)
+    end
+
+    # Hook to automatically register command classes when they're defined
+    def self.inherited(subclass)
+      super
+      register_command(subclass)
+    end
+
+    # Registry to track valid command classes for security
+    def self.command_registry
+      @command_registry ||= Set.new
+    end
 
     # @param id [String] Optional unique identifier for this command (auto-generated if not provided)
     # @param name [String] The name of this command

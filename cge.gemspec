@@ -34,6 +34,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'net-smtp'
   spec.add_dependency 'nokogiri', '~> 1.15'
   spec.add_dependency 'rtesseract', '~> 3.1'
+  spec.add_dependency 'sqlite3'
   spec.add_dependency 'twilio-ruby'
   spec.add_dependency 'washbullet'
   spec.metadata['rubygems_mfa_required'] = 'true'

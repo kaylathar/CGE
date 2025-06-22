@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-describe DAF::FileAction do
+describe CGE::FileAction do
   before(:each) do
     @options = { 'path' => '/tmp/test_file.txt',
                  'content' => 'Test content' }
-    @action = DAF::FileAction.new("test_action", {})
+    @action = CGE::FileAction.new("test_action", {})
   end
 
   context 'options' do
@@ -48,7 +48,7 @@ describe DAF::FileAction do
 
     it 'handles file write errors gracefully' do
       allow(File).to receive(:write).and_raise(StandardError.new('Permission denied'))
-      expect { @action.execute(@options, nil) }.to raise_error(DAF::FileActionError)
+      expect { @action.execute(@options, nil) }.to raise_error(CGE::FileActionError)
     end
   end
 end

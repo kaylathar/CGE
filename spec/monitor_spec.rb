@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 # Test monitor to verify functionality
-class TestMonitor < DAF::Monitor
+class TestMonitor < CGE::Monitor
   attr_option :option, String
   attr_reader :output
 
@@ -10,13 +10,13 @@ class TestMonitor < DAF::Monitor
   end
 end
 
-describe DAF::Monitor do
+describe CGE::Monitor do
   let(:test_monitor) { TestMonitor.new('test_monitor', {}) }
   let(:options) {{'option' => 'test'}}
 
   it 'should be configurable' do
-    mixed_in = DAF::Monitor.ancestors.select { |o| o.instance_of?(Module) }
-    expect(mixed_in).to include(DAF::Configurable)
+    mixed_in = CGE::Monitor.ancestors.select { |o| o.instance_of?(Module) }
+    expect(mixed_in).to include(CGE::Configurable)
   end
 
   it 'should have an execute method' do

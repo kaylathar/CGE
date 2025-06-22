@@ -1,19 +1,19 @@
 require 'spec_helper'
 
 # Test action to verify functionality
-class TestAction < DAF::Action
+class TestAction < CGE::Action
   attr_accessor :success
   alias invoke success
   attr_option :option, String
 end
 
-describe DAF::Action do
+describe CGE::Action do
   let(:test_action) { TestAction.new('test_action', {}) }
   let(:options) { { 'option' => 'test' } }
 
   it 'should be configurable' do
-    mixed_in = DAF::Action.ancestors.select { |o| o.instance_of?(Module) }
-    expect(mixed_in).to include(DAF::Configurable)
+    mixed_in = CGE::Action.ancestors.select { |o| o.instance_of?(Module) }
+    expect(mixed_in).to include(CGE::Configurable)
   end
 
   it 'should have an execute method' do

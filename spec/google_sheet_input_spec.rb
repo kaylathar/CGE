@@ -1,8 +1,8 @@
 require 'spec_helper'
 require 'webmock/rspec'
 
-describe DAF::GoogleSheetInput do
-  let(:google_sheet_input) { DAF::GoogleSheetInput.new("test_input", {}) }
+describe CGE::GoogleSheetInput do
+  let(:google_sheet_input) { CGE::GoogleSheetInput.new("test_input", {}) }
   let(:spreadsheet_id) { '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms' }
   let(:options) { { 'spreadsheet_id' => spreadsheet_id } }
   let(:options_with_credentials) do
@@ -61,31 +61,31 @@ describe DAF::GoogleSheetInput do
 
   it 'should raise an error when spreadsheet_id is not provided' do
     expect { google_sheet_input.execute({}, nil) }
-      .to raise_error(DAF::OptionError, /Required option spreadsheet_id missing/)
+      .to raise_error(CGE::OptionError, /Required option spreadsheet_id missing/)
   end
 
   it 'should validate spreadsheet_id format' do
     expect { google_sheet_input.execute({ 'spreadsheet_id' => 'invalid' }, nil) }
-      .to raise_error(DAF::OptionError, /Bad value for option spreadsheet_id/)
+      .to raise_error(CGE::OptionError, /Bad value for option spreadsheet_id/)
   end
 
   it 'should validate credentials_path exists' do
     expect { google_sheet_input.execute({ 'spreadsheet_id' => spreadsheet_id, 'credentials_path' => '/nonexistent/path' }, nil) }
-      .to raise_error(DAF::OptionError, /Bad value for option credentials_path/)
+      .to raise_error(CGE::OptionError, /Bad value for option credentials_path/)
   end
 
   it 'should handle Google API errors' do
     allow(mock_service).to receive(:get_spreadsheet_values).and_raise(Google::Apis::ClientError.new('Not found'))
 
     expect { google_sheet_input.execute(options, nil) }
-      .to raise_error(DAF::GoogleSheetError, /Google API error/)
+      .to raise_error(CGE::GoogleSheetError, /Google API error/)
   end
 
   it 'should handle network errors' do
     allow(mock_service).to receive(:get_spreadsheet_values).and_raise(StandardError.new('Network error'))
 
     expect { google_sheet_input.execute(options, nil) }
-      .to raise_error(DAF::GoogleSheetError, /Failed to fetch spreadsheet/)
+      .to raise_error(CGE::GoogleSheetError, /Failed to fetch spreadsheet/)
   end
 
   it 'should use service account credentials when credentials_path is provided' do

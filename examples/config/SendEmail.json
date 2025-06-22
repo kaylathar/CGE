@@ -8,7 +8,7 @@
   "Graph": [
     {
       "Name": "file_watcher",
-      "Class": "DAF::FileUpdateMonitor",
+      "Class": "CGE::FileUpdateMonitor",
       "Options": {
         "path": "{{graph.watch_file}}",
         "frequency": 2
@@ -16,7 +16,7 @@
     },
     {
       "Name": "email_notifier",
-      "Class": "DAF::EmailAction",
+      "Class": "CGE::EmailAction",
       "Options": {
         "to": "{{graph.admin_email}}",
         "from": "{{graph.admin_email}}",

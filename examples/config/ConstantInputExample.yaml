@@ -2,11 +2,11 @@
 Name: "Constant Input Example"
 Graph:
   - Name: "myinput"
-    Class: "DAF::ConstantInput"
+    Class: "CGE::ConstantInput"
     Options:
       constant: "Hello from constant input!"
   - Name: "myaction"
-    Class: "DAF::ShellAction"
+    Class: "CGE::ShellAction"
     Options:
       command: "echo 'Received: {{output}}'"
 ---

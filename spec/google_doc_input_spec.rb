@@ -1,8 +1,8 @@
 require 'spec_helper'
 require 'webmock/rspec'
 
-describe DAF::GoogleDocInput do
-  let(:google_doc_input) { DAF::GoogleDocInput.new("test_input", {}) }
+describe CGE::GoogleDocInput do
+  let(:google_doc_input) { CGE::GoogleDocInput.new("test_input", {}) }
   let(:document_id) { '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms' }
   let(:options) { { 'document_id' => document_id } }
   let(:options_with_credentials) do
@@ -57,12 +57,12 @@ describe DAF::GoogleDocInput do
 
   it 'should raise an error when document_id is not provided' do
     expect { google_doc_input.execute({}, nil) }
-      .to raise_error(DAF::OptionError, /Required option document_id missing/)
+      .to raise_error(CGE::OptionError, /Required option document_id missing/)
   end
 
   it 'should raise an error when document_id is not a string' do
     expect { google_doc_input.execute({ 'document_id' => 123 }, nil) }
-      .to raise_error(DAF::OptionError, /Bad value for option document_id/)
+      .to raise_error(CGE::OptionError, /Bad value for option document_id/)
   end
 
   it 'should handle documents with tables' do
@@ -87,24 +87,24 @@ describe DAF::GoogleDocInput do
     allow(mock_service).to receive(:get_document).and_raise(Google::Apis::ClientError.new('Not found'))
 
     expect { google_doc_input.execute(options, nil) }
-      .to raise_error(DAF::GoogleDocError, /Google API error/)
+      .to raise_error(CGE::GoogleDocError, /Google API error/)
   end
 
   it 'should handle network errors' do
     allow(mock_service).to receive(:get_document).and_raise(StandardError.new('Network error'))
 
     expect { google_doc_input.execute(options, nil) }
-      .to raise_error(DAF::GoogleDocError, /Failed to fetch document/)
+      .to raise_error(CGE::GoogleDocError, /Failed to fetch document/)
   end
 
   it 'should validate document_id format' do
     expect { google_doc_input.execute({ 'document_id' => 'invalid' }, nil) }
-      .to raise_error(DAF::OptionError, /Bad value for option document_id/)
+      .to raise_error(CGE::OptionError, /Bad value for option document_id/)
   end
 
   it 'should validate credentials_path exists' do
     expect { google_doc_input.execute({ 'document_id' => document_id, 'credentials_path' => '/nonexistent/path' }, nil) }
-      .to raise_error(DAF::OptionError, /Bad value for option credentials_path/)
+      .to raise_error(CGE::OptionError, /Bad value for option credentials_path/)
   end
 
   it 'should use service account credentials when credentials_path is provided' do

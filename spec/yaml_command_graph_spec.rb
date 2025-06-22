@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'tempfile'
 require 'yaml'
 
-describe DAF::YAMLCommandGraph do
+describe CGE::YAMLCommandGraph do
   let(:temp_file) { Tempfile.new(['test_config', '.yml']) }
   
   after { temp_file.unlink }
@@ -15,7 +15,7 @@ describe DAF::YAMLCommandGraph do
           'Graph' => [
             {
               'Name' => 'file_monitor',
-              'Class' => 'DAF::FileUpdateMonitor',
+              'Class' => 'CGE::FileUpdateMonitor',
               'Options' => {
                 'path' => '/tmp/test_file',
                 'frequency' => 5
@@ -23,7 +23,7 @@ describe DAF::YAMLCommandGraph do
             },
             {
               'Name' => 'sms_alert',
-              'Class' => 'DAF::SMSAction',
+              'Class' => 'CGE::SMSAction',
               'Options' => {
                 'to' => '+1234567890',
                 'from' => '+0987654321',
@@ -42,26 +42,26 @@ describe DAF::YAMLCommandGraph do
       end
       
       it 'should load the YAML configuration correctly' do
-        expect { DAF::YAMLCommandGraph.new(temp_file.path) }.not_to raise_error
+        expect { CGE::YAMLCommandGraph.new(temp_file.path) }.not_to raise_error
       end
       
       it 'should set the name from YAML configuration' do
-        graph = DAF::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.new(temp_file.path)
         expect(graph.name).to eq('Test Command Graph')
       end
       
       it 'should create commands with correct types' do
-        graph = DAF::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.new(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
-        expect(current_command).to be_a(DAF::FileUpdateMonitor)
+        expect(current_command).to be_a(CGE::FileUpdateMonitor)
         expect(current_command.name).to eq('file_monitor')
-        expect(current_command.next_command).to be_a(DAF::SMSAction)
+        expect(current_command.next_command).to be_a(CGE::SMSAction)
         expect(current_command.next_command.name).to eq('sms_alert')
       end
       
       it 'should preserve options for each command' do
-        graph = DAF::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.new(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         expect(current_command.options).to include('path' => '/tmp/test_file', 'frequency' => 5)
@@ -76,7 +76,7 @@ describe DAF::YAMLCommandGraph do
           'Graph' => [
             {
               'Name' => 'invalid_monitor',
-              'Class' => 'DAF::NonExistentMonitor',
+              'Class' => 'CGE::NonExistentMonitor',
               'Options' => {}
             }
           ]
@@ -89,7 +89,7 @@ describe DAF::YAMLCommandGraph do
       end
       
       it 'should raise CommandGraphException for invalid class' do
-        expect { DAF::YAMLCommandGraph.new(temp_file.path) }.to raise_error(DAF::CommandGraphException, 'Invalid Action, Monitor, or Input type')
+        expect { CGE::YAMLCommandGraph.new(temp_file.path) }.to raise_error(CGE::CommandGraphException, 'Invalid Action, Monitor, or Input type')
       end
     end
   end
@@ -102,7 +102,7 @@ describe DAF::YAMLCommandGraph do
           'Graph' => [
             {
               'Name' => 'file_monitor',
-              'Class' => 'DAF::FileUpdateMonitor',
+              'Class' => 'CGE::FileUpdateMonitor',
               'Options' => {
                 'path' => '/tmp/source_file',
                 'frequency' => 2
@@ -110,14 +110,14 @@ describe DAF::YAMLCommandGraph do
             },
             {
               'Name' => 'socket_monitor',
-              'Class' => 'DAF::UnixSocketMonitor',
+              'Class' => 'CGE::UnixSocketMonitor',
               'Options' => {
                 'socket_path' => '/tmp/webhook_{{file_monitor.time}}.sock'
               }
             },
             {
               'Name' => 'sms_action',
-              'Class' => 'DAF::SMSAction',
+              'Class' => 'CGE::SMSAction',
               'Options' => {
                 'to' => '+1234567890',
                 'message' => 'File modified at {{file_monitor.time}}, webhook data: {{socket_monitor.data}}',
@@ -136,16 +136,16 @@ describe DAF::YAMLCommandGraph do
       end
       
       it 'should create the correct chain structure' do
-        graph = DAF::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.new(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
-        expect(current_command).to be_a(DAF::FileUpdateMonitor)
-        expect(current_command.next_command).to be_a(DAF::UnixSocketMonitor)
-        expect(current_command.next_command.next_command).to be_a(DAF::SMSAction)
+        expect(current_command).to be_a(CGE::FileUpdateMonitor)
+        expect(current_command.next_command).to be_a(CGE::UnixSocketMonitor)
+        expect(current_command.next_command.next_command).to be_a(CGE::SMSAction)
       end
       
       it 'should preserve template substitution patterns' do
-        graph = DAF::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.new(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         socket_monitor_options = current_command.next_command.options
@@ -163,7 +163,7 @@ describe DAF::YAMLCommandGraph do
           'Graph' => [
             {
               'Name' => 'file_monitor',
-              'Class' => 'DAF::FileUpdateMonitor',
+              'Class' => 'CGE::FileUpdateMonitor',
               'Options' => {
                 'path' => '/tmp/monitored_file',
                 'frequency' => 5
@@ -171,7 +171,7 @@ describe DAF::YAMLCommandGraph do
             },
             {
               'Name' => 'email_action',
-              'Class' => 'DAF::EmailAction',
+              'Class' => 'CGE::EmailAction',
               'Options' => {
                 'to' => 'admin@example.com',
                 'subject' => 'File Update Alert',
@@ -182,7 +182,7 @@ describe DAF::YAMLCommandGraph do
             },
             {
               'Name' => 'sms_action',
-              'Class' => 'DAF::SMSAction',
+              'Class' => 'CGE::SMSAction',
               'Options' => {
                 'to' => '+1234567890',
                 'message' => 'Email sent: {{email_action.message_id}}',
@@ -201,12 +201,12 @@ describe DAF::YAMLCommandGraph do
       end
       
       it 'should create the correct chain structure' do
-        graph = DAF::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.new(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
-        expect(current_command).to be_a(DAF::FileUpdateMonitor)
-        expect(current_command.next_command).to be_a(DAF::EmailAction)
-        expect(current_command.next_command.next_command).to be_a(DAF::SMSAction)
+        expect(current_command).to be_a(CGE::FileUpdateMonitor)
+        expect(current_command.next_command).to be_a(CGE::EmailAction)
+        expect(current_command.next_command.next_command).to be_a(CGE::SMSAction)
       end
     end
     
@@ -217,7 +217,7 @@ describe DAF::YAMLCommandGraph do
           'Graph' => [
             {
               'Name' => 'file_monitor',
-              'Class' => 'DAF::FileUpdateMonitor',
+              'Class' => 'CGE::FileUpdateMonitor',
               'Options' => {
                 'path' => '/tmp/source_file',
                 'frequency' => 3
@@ -225,7 +225,7 @@ describe DAF::YAMLCommandGraph do
             },
             {
               'Name' => 'shell_action',
-              'Class' => 'DAF::ShellAction',
+              'Class' => 'CGE::ShellAction',
               'Options' => {
                 'path' => '/bin/echo',
                 'arguments' => 'Processing {{file_monitor.contents}}'
@@ -233,7 +233,7 @@ describe DAF::YAMLCommandGraph do
             },
             {
               'Name' => 'result_monitor',
-              'Class' => 'DAF::FileUpdateMonitor',
+              'Class' => 'CGE::FileUpdateMonitor',
               'Options' => {
                 'path' => '/tmp/result_file',
                 'frequency' => 1
@@ -249,12 +249,12 @@ describe DAF::YAMLCommandGraph do
       end
       
       it 'should create the correct chain structure' do
-        graph = DAF::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.new(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
-        expect(current_command).to be_a(DAF::FileUpdateMonitor)
-        expect(current_command.next_command).to be_a(DAF::ShellAction)
-        expect(current_command.next_command.next_command).to be_a(DAF::FileUpdateMonitor)
+        expect(current_command).to be_a(CGE::FileUpdateMonitor)
+        expect(current_command.next_command).to be_a(CGE::ShellAction)
+        expect(current_command.next_command.next_command).to be_a(CGE::FileUpdateMonitor)
       end
     end
     
@@ -265,7 +265,7 @@ describe DAF::YAMLCommandGraph do
           'Graph' => [
             {
               'Name' => 'startup_action',
-              'Class' => 'DAF::ShellAction',
+              'Class' => 'CGE::ShellAction',
               'Options' => {
                 'path' => '/bin/echo',
                 'arguments' => 'startup complete'
@@ -273,7 +273,7 @@ describe DAF::YAMLCommandGraph do
             },
             {
               'Name' => 'file_monitor',
-              'Class' => 'DAF::FileUpdateMonitor',
+              'Class' => 'CGE::FileUpdateMonitor',
               'Options' => {
                 'path' => '/tmp/response_file',
                 'frequency' => 2
@@ -281,7 +281,7 @@ describe DAF::YAMLCommandGraph do
             },
             {
               'Name' => 'email_action',
-              'Class' => 'DAF::EmailAction',
+              'Class' => 'CGE::EmailAction',
               'Options' => {
                 'to' => 'admin@example.com',
                 'subject' => 'Response received',
@@ -300,12 +300,12 @@ describe DAF::YAMLCommandGraph do
       end
       
       it 'should create the correct chain structure' do
-        graph = DAF::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.new(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
-        expect(current_command).to be_a(DAF::ShellAction)
-        expect(current_command.next_command).to be_a(DAF::FileUpdateMonitor)
-        expect(current_command.next_command.next_command).to be_a(DAF::EmailAction)
+        expect(current_command).to be_a(CGE::ShellAction)
+        expect(current_command.next_command).to be_a(CGE::FileUpdateMonitor)
+        expect(current_command.next_command.next_command).to be_a(CGE::EmailAction)
       end
     end
     
@@ -316,14 +316,14 @@ describe DAF::YAMLCommandGraph do
           'Graph' => [
             {
               'Name' => 'web_input',
-              'Class' => 'DAF::WebInput',
+              'Class' => 'CGE::WebInput',
               'Options' => {
                 'url' => 'http://example.com/data'
               }
             },
             {
               'Name' => 'sms_action',
-              'Class' => 'DAF::SMSAction',
+              'Class' => 'CGE::SMSAction',
               'Options' => {
                 'to' => '+1234567890',
                 'message' => 'Data received: {{web_input.content}}',
@@ -342,15 +342,15 @@ describe DAF::YAMLCommandGraph do
       end
       
       it 'should create the correct chain structure' do
-        graph = DAF::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.new(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
-        expect(current_command).to be_a(DAF::WebInput)
-        expect(current_command.next_command).to be_a(DAF::SMSAction)
+        expect(current_command).to be_a(CGE::WebInput)
+        expect(current_command.next_command).to be_a(CGE::SMSAction)
       end
       
       it 'should preserve template substitution for input outputs' do
-        graph = DAF::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.new(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         sms_action_options = current_command.next_command.options
@@ -371,7 +371,7 @@ describe DAF::YAMLCommandGraph do
           'Graph' => [
             {
               'Name' => 'file_monitor',
-              'Class' => 'DAF::FileUpdateMonitor',
+              'Class' => 'CGE::FileUpdateMonitor',
               'Options' => {
                 'path' => '{{graph.base_path}}/watched_file',
                 'frequency' => 5
@@ -379,7 +379,7 @@ describe DAF::YAMLCommandGraph do
             },
             {
               'Name' => 'email_action',
-              'Class' => 'DAF::EmailAction',
+              'Class' => 'CGE::EmailAction',
               'Options' => {
                 'to' => '{{graph.admin_email}}',
                 'subject' => 'Alert',
@@ -398,7 +398,7 @@ describe DAF::YAMLCommandGraph do
       end
       
       it 'should preserve {{graph.constant_name}} patterns in command options' do
-        graph = DAF::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.new(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         monitor_options = current_command.options
@@ -410,7 +410,7 @@ describe DAF::YAMLCommandGraph do
       end
       
       it 'should correctly substitute constants when applying outputs' do
-        graph = DAF::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.new(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         # Get the outputs which should include the constants
@@ -441,7 +441,7 @@ describe DAF::YAMLCommandGraph do
           'Graph' => [
             {
               'Name' => 'file_monitor',
-              'Class' => 'DAF::FileUpdateMonitor',
+              'Class' => 'CGE::FileUpdateMonitor',
               'Options' => {
                 'path' => '{{graph.monitoring_path}}/application.log',
                 'frequency' => 1
@@ -449,7 +449,7 @@ describe DAF::YAMLCommandGraph do
             },
             {
               'Name' => 'email_alert',
-              'Class' => 'DAF::EmailAction',
+              'Class' => 'CGE::EmailAction',
               'Options' => {
                 'to' => '{{graph.alert_email}}',
                 'subject' => 'Log Alert from {{graph.server_host}}',
@@ -468,15 +468,15 @@ describe DAF::YAMLCommandGraph do
       end
       
       it 'should create correct chain structure with constants' do
-        graph = DAF::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.new(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
-        expect(current_command).to be_a(DAF::FileUpdateMonitor)
-        expect(current_command.next_command).to be_a(DAF::EmailAction)
+        expect(current_command).to be_a(CGE::FileUpdateMonitor)
+        expect(current_command.next_command).to be_a(CGE::EmailAction)
       end
       
       it 'should substitute all constants correctly in complex workflow' do
-        graph = DAF::YAMLCommandGraph.new(temp_file.path)
+        graph = CGE::YAMLCommandGraph.new(temp_file.path)
         current_command = graph.instance_variable_get(:@current_command)
         
         # Create some mock outputs for file monitor

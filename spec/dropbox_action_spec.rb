@@ -1,11 +1,11 @@
 require 'spec_helper'
 
-describe DAF::DropboxFileAction do
+describe CGE::DropboxFileAction do
   before(:each) do
     @options = { 'access_token' => 'test_token_123',
                  'file_path' => '/test_file.txt',
                  'content' => 'Test content' }
-    @action = DAF::DropboxFileAction.new('dropbox_action', {})
+    @action = CGE::DropboxFileAction.new('dropbox_action', {})
   end
 
   context 'options' do
@@ -115,13 +115,13 @@ describe DAF::DropboxFileAction do
       allow(@response).to receive(:code).and_return('400')
       allow(@response).to receive(:body).and_return('{"error": "Invalid request"}')
 
-      expect {@action.execute(@options, nil)}.to raise_error(DAF::DropboxFileActionError)
+      expect {@action.execute(@options, nil)}.to raise_error(CGE::DropboxFileActionError)
     end
 
     it 'handles network errors gracefully' do
       allow(@http).to receive(:request).and_raise(StandardError.new('Network error'))
 
-      expect {@action.execute(@options, nil)}.to raise_error(DAF::DropboxFileActionError)
+      expect {@action.execute(@options, nil)}.to raise_error(CGE::DropboxFileActionError)
     end
   end
 end

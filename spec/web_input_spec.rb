@@ -1,8 +1,8 @@
 require 'spec_helper'
 require 'webmock/rspec'
 
-describe DAF::WebInput do
-  let(:web_input) { DAF::WebInput.new("test_input", {}) }
+describe CGE::WebInput do
+  let(:web_input) { CGE::WebInput.new("test_input", {}) }
   let(:test_uri) { 'https://example.com/test' }
   let(:options) { { 'uri' => test_uri } }
   let(:html_content) do
@@ -47,34 +47,34 @@ describe DAF::WebInput do
 
   it 'should raise error when uri is not provided' do
     expect { web_input.execute({}, nil) }
-      .to raise_error(DAF::OptionError, /Required option uri missing/)
+      .to raise_error(CGE::OptionError, /Required option uri missing/)
   end
 
   it 'should raise error when uri is empty' do
     expect { web_input.execute({ 'uri' => '' }, nil) }
-      .to raise_error(DAF::OptionError, /Bad value for option uri/)
+      .to raise_error(CGE::OptionError, /Bad value for option uri/)
   end
 
   it 'should raise error for invalid URI format' do
     expect { web_input.execute({ 'uri' => 'not-a-valid-uri' }, nil) }
-      .to raise_error(DAF::OptionError, /Bad value for option uri/)
+      .to raise_error(CGE::OptionError, /Bad value for option uri/)
   end
 
   it 'should raise error for relative URI' do
     expect { web_input.execute({ 'uri' => '/relative/path' }, nil) }
-      .to raise_error(DAF::OptionError, /Bad value for option uri/)
+      .to raise_error(CGE::OptionError, /Bad value for option uri/)
   end
 
   it 'should raise error for unsupported URI scheme' do
     expect { web_input.execute({ 'uri' => 'ftp://example.com' }, nil) }
-      .to raise_error(DAF::OptionError, /Bad value for option uri/)
+      .to raise_error(CGE::OptionError, /Bad value for option uri/)
   end
 
   it 'should handle HTTP errors' do
     stub_request(:get, test_uri).to_return(status: 404, body: 'Not Found')
     
     expect { web_input.execute(options, nil) }
-      .to raise_error(DAF::WebInputError, /HTTP 404/)
+      .to raise_error(CGE::WebInputError, /HTTP 404/)
   end
 
   it 'should handle redirects' do
@@ -96,7 +96,7 @@ describe DAF::WebInput do
     end
     
     expect { web_input.execute(options, nil) }
-      .to raise_error(DAF::WebInputError, /Maximum redirects exceeded/)
+      .to raise_error(CGE::WebInputError, /Maximum redirects exceeded/)
   end
 
   it 'should handle response size limits' do
@@ -105,7 +105,7 @@ describe DAF::WebInput do
       .to_return(status: 200, body: html_content, headers: large_content_type)
     
     expect { web_input.execute(options, nil) }
-      .to raise_error(DAF::WebInputError, /Response too large/)
+      .to raise_error(CGE::WebInputError, /Response too large/)
   end
 
   it 'should handle network errors' do

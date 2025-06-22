@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 # Test conditional class for testing
-class TestConditional < DAF::Conditional
+class TestConditional < CGE::Conditional
   def execute(options, next_command)
     # Simple test logic - if values match, continue to next command
     return next_command if options['value1'] == options['value2']
@@ -15,13 +15,13 @@ class TestConditional < DAF::Conditional
 end
 
 # Test action class for testing
-class TestCommandAction < DAF::Action
+class TestCommandAction < CGE::Action
   def invoke
     # no-op
   end
 end
 
-describe DAF::CommandGraph do
+describe CGE::CommandGraph do
   describe 'conditional command execution' do
     let(:action_command) { TestCommandAction.new('test_action', {}) }
     let(:conditional_command) { TestConditional.new('test_conditional', { 'value1' => 'test', 'value2' => 'test' }, action_command) }
@@ -32,7 +32,7 @@ describe DAF::CommandGraph do
     end
 
     it 'should continue execution when conditional returns next command' do
-      command_graph = DAF::CommandGraph.new(conditional_command)
+      command_graph = CGE::CommandGraph.new(conditional_command)
       
       # Test that the conditional passes through to next command when condition is true
       result = conditional_command.execute({ 'value1' => 'match', 'value2' => 'match' }, action_command)
@@ -40,7 +40,7 @@ describe DAF::CommandGraph do
     end
 
     it 'should halt execution when conditional returns nil' do
-      command_graph = DAF::CommandGraph.new(conditional_command)
+      command_graph = CGE::CommandGraph.new(conditional_command)
       
       # Test that the conditional returns nil when condition is false
       result = conditional_command.execute({ 'value1' => 'no_match', 'value2' => 'different' }, action_command)
@@ -49,7 +49,7 @@ describe DAF::CommandGraph do
 
     it 'should apply output substitutions to conditional options' do
       substitution_conditional = TestConditional.new('test_conditional', { 'value1' => '{{previous.output}}', 'value2' => 'expected' }, action_command)
-      command_graph = DAF::CommandGraph.new(substitution_conditional)
+      command_graph = CGE::CommandGraph.new(substitution_conditional)
       command_graph.instance_variable_get(:@outputs)['previous.output'] = 'expected'
       
       substituted_options = command_graph.send(:apply_outputs, substitution_conditional.options, command_graph.instance_variable_get(:@outputs))

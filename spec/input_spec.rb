@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 # Test input to verify functionality
-class TestInput < DAF::Input
+class TestInput < CGE::Input
   attr_accessor :result
   def invoke
     @output = @result
@@ -10,7 +10,7 @@ class TestInput < DAF::Input
   attr_output :output, String
 end
 
-describe DAF::Input do
+describe CGE::Input do
   let(:test_input) { TestInput.new('test_input', {}) }
   let(:options) { { 'option' => 'test' } }
 

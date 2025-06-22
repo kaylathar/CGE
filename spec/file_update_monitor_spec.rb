@@ -1,31 +1,31 @@
 require 'spec_helper'
 
-describe 'DAF::FileUpdateMonitor' do
+describe 'CGE::FileUpdateMonitor' do
   context 'when on_trigger is called' do
     it 'should validate that the path exists' do
       allow(File).to receive(:exist?).and_return(false)
       options = { 'frequency' => 2, 'path' => '/asdf/' }
-      monitor = DAF::FileUpdateMonitor.new('monitor', {})
+      monitor = CGE::FileUpdateMonitor.new('monitor', {})
 
       allow(monitor).to receive(:sleep).and_return(true)
-      expect { monitor.execute(options, nil) }.to raise_error(DAF::OptionError)
+      expect { monitor.execute(options, nil) }.to raise_error(CGE::OptionError)
     end
 
     it 'should validate that the frequency is > 1' do
       allow(File).to receive(:exist?).and_return(true)
       options = { 'frequency' => -1, 'path' => '/asdf' }
-      monitor = DAF::FileUpdateMonitor.new('monitor', {})
+      monitor = CGE::FileUpdateMonitor.new('monitor', {})
 
       allow(monitor).to receive(:sleep).and_return(true)
-      expect { monitor.execute(options, nil) }.to raise_error(DAF::OptionError)
+      expect { monitor.execute(options, nil) }.to raise_error(CGE::OptionError)
     end
 
     it 'should have a required option named path' do
-      expect(DAF::FileUpdateMonitor.required_options).to include('path')
+      expect(CGE::FileUpdateMonitor.required_options).to include('path')
     end
 
     it 'should have a required option named frequency' do
-      expect(DAF::FileUpdateMonitor.required_options).to include('frequency')
+      expect(CGE::FileUpdateMonitor.required_options).to include('frequency')
     end
   end
 
@@ -43,7 +43,7 @@ describe 'DAF::FileUpdateMonitor' do
       allow(File).to receive(:open).and_return(@file)
       allow(@file).to receive(:read).and_return('contents')
       allow(@file).to receive(:close)
-      @monitor = DAF::FileUpdateMonitor.new('monitor', {})
+      @monitor = CGE::FileUpdateMonitor.new('monitor', {})
     end
 
     it 'should sleep the set frequency' do

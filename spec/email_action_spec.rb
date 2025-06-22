@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe DAF::EmailAction do
+describe CGE::EmailAction do
   before(:each) do
     @server = 'mail.example.com'
     @options = { 'from' => 'test@example.com',
@@ -8,7 +8,7 @@ describe DAF::EmailAction do
                  'subject' => 'Test Subject',
                  'body' => 'Test Body',
                  'server' => @server }
-    @action = DAF::EmailAction.new("test_action", {})
+    @action = CGE::EmailAction.new("test_action", {})
   end
 
   it 'has five required options' do

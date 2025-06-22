@@ -10,12 +10,12 @@ Constants:
   twilio_token: "your_twilio_token"
 Graph:
   - Name: "file_monitor"
-    Class: "DAF::FileUpdateMonitor"
+    Class: "CGE::FileUpdateMonitor"
     Options:
       path: "{{graph.watch_path}}"
       frequency: 3
   - Name: "email_alert"
-    Class: "DAF::EmailAction"
+    Class: "CGE::EmailAction"
     Options:
       to: "{{graph.admin_email}}"
       from: "{{graph.system_email}}"
@@ -23,7 +23,7 @@ Graph:
       body: "File changed at {{file_monitor.time}}"
       server: "smtp.example.com"
   - Name: "sms_followup"
-    Class: "DAF::SMSAction"
+    Class: "CGE::SMSAction"
     Options:
       to: "{{graph.phone_number}}"
       from: "{{graph.from_number}}"

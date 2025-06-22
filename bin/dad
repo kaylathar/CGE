@@ -1,4 +1,4 @@
 #!/usr/bin/env ruby
 
-require 'daf'
-DAF.new.start_dad
+require 'cge'
+CGE.new.start_cgd

@@ -1,8 +1,8 @@
 require 'spec_helper'
 require 'tempfile'
 
-describe DAF::FileInput do
-  let(:file_input) { DAF::FileInput.new('file_input', {}) }
+describe CGE::FileInput do
+  let(:file_input) { CGE::FileInput.new('file_input', {}) }
   let(:temp_file) { Tempfile.new('test_file') }
   let(:test_content) { 'Hello, World!' }
   let(:options) { { 'file_path' => temp_file.path } }
@@ -23,30 +23,30 @@ describe DAF::FileInput do
 
   it 'should raise error when file_path is not provided' do
     expect { file_input.execute({}, nil) }
-      .to raise_error(DAF::OptionError)
+      .to raise_error(CGE::OptionError)
   end
 
   it 'should raise error when file_path is empty' do
     expect { file_input.execute({ 'file_path' => '' }, nil) }
-      .to raise_error(DAF::OptionError)
+      .to raise_error(CGE::OptionError)
   end
 
   it 'should raise error when file does not exist' do
     expect { file_input.execute({ 'file_path' => '/nonexistent/file.txt' }, nil) }
-      .to raise_error(DAF::OptionError)
+      .to raise_error(CGE::OptionError)
   end
 
   it 'should raise error when path is a directory' do
     Dir.mktmpdir do |dir|
       expect { file_input.execute({ 'file_path' => dir }, nil) }
-      .to raise_error(DAF::OptionError)
+      .to raise_error(CGE::OptionError)
     end
   end
 
   it 'should raise error when file is not readable' do
     File.chmod(0o000, temp_file.path)
     expect { file_input.execute(options, nil) }
-      .to raise_error(DAF::OptionError)
+      .to raise_error(CGE::OptionError)
   ensure
     File.chmod(0o644, temp_file.path)
   end

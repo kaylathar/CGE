@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe DAF::Configurable do
+describe CGE::Configurable do
   # Test class to verify Configurable functionality
   class MockClass
-    include DAF::Configurable
+    include CGE::Configurable
 
     attr_option :test, String, :required
     attr_option :test2, Integer, :optional do |val|

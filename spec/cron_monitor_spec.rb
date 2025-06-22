@@ -1,12 +1,12 @@
 require 'spec_helper'
 
-describe DAF::CronMonitor do
+describe CGE::CronMonitor do
   let(:options) { { 'time' => '2024-12-25 10:00:00' } }
-  let(:monitor) { DAF::CronMonitor.new('cron_monitor', {}) }
+  let(:monitor) { CGE::CronMonitor.new('cron_monitor', {}) }
 
   context 'when on_trigger is called' do
     it 'should require a time option' do
-      expect(DAF::CronMonitor.required_options).to include('time')
+      expect(CGE::CronMonitor.required_options).to include('time')
     end
 
     it 'should validate that time is parseable' do
@@ -35,7 +35,7 @@ describe DAF::CronMonitor do
     context 'when target time is in the future' do
       let(:future_time) { Time.now + 1 }
       let(:future_options) { { 'time' => future_time.to_s } }
-      let(:future_monitor) { DAF::CronMonitor.new('future_monitor', {}) }
+      let(:future_monitor) { CGE::CronMonitor.new('future_monitor', {}) }
 
       it 'should sleep until target time' do
         expect(future_monitor).to receive(:sleep).with(kind_of(Numeric))
@@ -53,7 +53,7 @@ describe DAF::CronMonitor do
     context 'when target time is in the past' do
       let(:past_time) { Time.now - 1 }
       let(:past_options) { { 'time' => past_time.to_s } }
-      let(:past_monitor) { DAF::CronMonitor.new('past_monitor', {}) }
+      let(:past_monitor) { CGE::CronMonitor.new('past_monitor', {}) }
 
       it 'should not sleep' do
         expect(past_monitor).not_to receive(:sleep)

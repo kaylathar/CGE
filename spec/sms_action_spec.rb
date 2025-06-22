@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe DAF::SMSAction do
+describe CGE::SMSAction do
   let(:valid_options) do
     {
       'to' => '+1234567890',
@@ -10,7 +10,7 @@ describe DAF::SMSAction do
       'token' => 'test_auth_token'
     }
   end
-  let(:action) { DAF::SMSAction.new('sms_action', {}) }
+  let(:action) { CGE::SMSAction.new('sms_action', {}) }
   let(:mock_messages) { double('Twilio::REST::Api::V2010::AccountContext::MessageList') }
   let(:mock_client) { double('Twilio::REST::Client') }
 
@@ -25,23 +25,23 @@ describe DAF::SMSAction do
 
   context 'when new action is created' do
     it 'should require a to option' do
-      expect(DAF::SMSAction.required_options).to include('to')
+      expect(CGE::SMSAction.required_options).to include('to')
     end
 
     it 'should require a message option' do
-      expect(DAF::SMSAction.required_options).to include('message')
+      expect(CGE::SMSAction.required_options).to include('message')
     end
 
     it 'should require a from option' do
-      expect(DAF::SMSAction.required_options).to include('from')
+      expect(CGE::SMSAction.required_options).to include('from')
     end
 
     it 'should require a sid option' do
-      expect(DAF::SMSAction.required_options).to include('sid')
+      expect(CGE::SMSAction.required_options).to include('sid')
     end
 
     it 'should require a token option' do
-      expect(DAF::SMSAction.required_options).to include('token')
+      expect(CGE::SMSAction.required_options).to include('token')
     end
 
     it 'should accept valid options' do

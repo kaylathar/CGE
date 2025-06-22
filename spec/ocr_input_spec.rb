@@ -1,7 +1,7 @@
 require 'spec_helper'
 
-describe DAF::OCRInput do
-  let(:ocr_input) { DAF::OCRInput.new("test_input", {}) }
+describe CGE::OCRInput do
+  let(:ocr_input) { CGE::OCRInput.new("test_input", {}) }
   let(:test_image_path) { '/path/to/test_image.png' }
   let(:options) { { 'image_path' => test_image_path } }
   let(:mock_rtesseract) { double('RTesseract') }
@@ -28,14 +28,14 @@ describe DAF::OCRInput do
 
   it 'should raise error when image_path is empty' do
     expect { ocr_input.execute({ 'image_path' => '' }, nil) }
-      .to raise_error(DAF::OptionError, /Bad value for option image_path/)
+      .to raise_error(CGE::OptionError, /Bad value for option image_path/)
   end
 
   it 'should raise error when image file is not accessible' do
     allow(File).to receive(:readable?).with(test_image_path).and_return(false)
     
     expect { ocr_input.execute(options, nil) }
-      .to raise_error(DAF::OptionError, /Bad value for option image_path/)
+      .to raise_error(CGE::OptionError, /Bad value for option image_path/)
   end
 
   it 'should validate supported image formats' do
@@ -51,7 +51,7 @@ describe DAF::OCRInput do
     allow(File).to receive(:extname).with(test_image_path).and_return('.txt')
     
     expect { ocr_input.execute(options, nil) }
-      .to raise_error(DAF::OptionError, /Bad value for option image_path/)
+      .to raise_error(CGE::OptionError, /Bad value for option image_path/)
   end
 
   it 'should pass language option to RTesseract' do
@@ -82,7 +82,7 @@ describe DAF::OCRInput do
     allow(RTesseract).to receive(:new).and_raise(StandardError.new('Tesseract error'))
     
     expect { ocr_input.execute(options, nil) }
-      .to raise_error(DAF::OCRInputError, /OCR processing failed.*Tesseract error/)
+      .to raise_error(CGE::OCRInputError, /OCR processing failed.*Tesseract error/)
   end
 
 end

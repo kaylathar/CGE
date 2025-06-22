@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe DAF::CommandGraph do
+describe CGE::CommandGraph do
   let(:mock_monitor) { double('Monitor') }
   let(:mock_action) { double('Action') }
   let(:mock_monitor_class) { double('MonitorClass') }
@@ -28,13 +28,13 @@ describe DAF::CommandGraph do
   
   describe 'initialization' do
     it 'should initialize with a command' do
-      graph = DAF::CommandGraph.new(mock_monitor)
+      graph = CGE::CommandGraph.new(mock_monitor)
       expect(graph.instance_variable_get(:@current_command)).to eq(mock_monitor)
       expect(graph.instance_variable_get(:@outputs)).to eq({})
     end
     
     it 'should initialize with a command and global configuration' do
-      graph = DAF::CommandGraph.new(mock_monitor, mock_global_config)
+      graph = CGE::CommandGraph.new(mock_monitor, mock_global_config)
       expect(graph.instance_variable_get(:@current_command)).to eq(mock_monitor)
       expect(graph.instance_variable_get(:@outputs)).to eq({})
       expect(graph.instance_variable_get(:@global_configuration)).to eq(mock_global_config)
@@ -42,7 +42,7 @@ describe DAF::CommandGraph do
   end
   
   describe 'template substitution' do
-    let(:graph) { DAF::CommandGraph.new(mock_monitor) }
+    let(:graph) { CGE::CommandGraph.new(mock_monitor) }
     
     context 'apply_outputs method' do
       it 'should apply template substitutions correctly in options' do
@@ -132,7 +132,7 @@ describe DAF::CommandGraph do
     context 'global configuration substitution' do
       let(:mock_heartbeat_option) { double('HeartbeatOption') }
       let(:mock_global_config_class) { double('GlobalConfigurationClass') }
-      let(:graph_with_global_config) { DAF::CommandGraph.new(mock_monitor, mock_global_config) }
+      let(:graph_with_global_config) { CGE::CommandGraph.new(mock_monitor, mock_global_config) }
       
       before do
         allow(mock_global_config).to receive(:class).and_return(mock_global_config_class)

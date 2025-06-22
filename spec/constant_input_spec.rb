@@ -1,11 +1,11 @@
 require 'spec_helper'
 
-describe DAF::ConstantInput do
-  let(:constant_input) { DAF::ConstantInput.new('constant_input', {}) }
+describe CGE::ConstantInput do
+  let(:constant_input) { CGE::ConstantInput.new('constant_input', {}) }
   let(:options) { { 'constant' => 'hello world' } }
 
   it 'should inherit from Input' do
-    expect(constant_input).to be_a(DAF::Input)
+    expect(constant_input).to be_a(CGE::Input)
   end
 
   it 'should have a constant option' do
@@ -29,11 +29,11 @@ describe DAF::ConstantInput do
 
   it 'should raise an error when constant is not provided' do
     expect { constant_input.execute({}, nil) }
-      .to raise_error(DAF::OptionError, /Required option constant missing/)
+      .to raise_error(CGE::OptionError, /Required option constant missing/)
   end
 
   it 'should raise an error when constant is not a string' do
     expect { constant_input.execute({ 'constant' => 123 }, nil) }
-      .to raise_error(DAF::OptionError, /Bad value for option constant/)
+      .to raise_error(CGE::OptionError, /Bad value for option constant/)
   end
 end

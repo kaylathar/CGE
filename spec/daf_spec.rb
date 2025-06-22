@@ -1,23 +1,23 @@
 require 'spec_helper'
-include DAF
+include CGE
 
-describe 'DAF' do
-  context 'when start_dad is called' do
-    let(:mock_command_graph1) { double('DAF::YAMLCommandGraph') }
-    let(:mock_command_graph2) { double('DAF::YAMLCommandGraph') }
-    let(:mock_global_config) { double('DAF::GlobalConfiguration') }
+describe 'CGE' do
+  context 'when start_cgd is called' do
+    let(:mock_command_graph1) { double('CGE::YAMLCommandGraph') }
+    let(:mock_command_graph2) { double('CGE::YAMLCommandGraph') }
+    let(:mock_global_config) { double('CGE::GlobalConfiguration') }
     
     let!(:yaml_command_graph_class) do
-      dup = class_double('DAF::YAMLCommandGraph').as_stubbed_const
+      dup = class_double('CGE::YAMLCommandGraph').as_stubbed_const
       allow(dup).to receive(:new).with('/test/file1.yaml').and_return(mock_command_graph1)
       allow(dup).to receive(:new).with('/test/file2.yaml').and_return(mock_command_graph2)
       dup
     end
 
-    let(:mock_command_graph3) { double('DAF::JSONCommandGraph') }
+    let(:mock_command_graph3) { double('CGE::JSONCommandGraph') }
 
     let!(:json_command_graph_class) do
-      dup = class_double('DAF::JSONCommandGraph').as_stubbed_const
+      dup = class_double('CGE::JSONCommandGraph').as_stubbed_const
       allow(dup).to receive(:new).with('/test/file1.json').and_return(mock_command_graph3)
       dup
     end
@@ -32,13 +32,13 @@ describe 'DAF' do
     end
 
     let(:mock_daemon_instance) do
-      dup = double('DAF::DynamicActionDaemon')
+      dup = double('CGE::CommandGraphExecutor')
       allow(dup).to receive(:start)
       dup
     end
 
     let!(:daemon_class) do
-      dup = class_double('DAF::DynamicActionDaemon').as_stubbed_const
+      dup = class_double('CGE::CommandGraphExecutor').as_stubbed_const
       allow(dup).to receive(:new).with([mock_command_graph1, mock_command_graph2, mock_command_graph3], nil).and_return(mock_daemon_instance)
       dup
     end
@@ -52,7 +52,7 @@ describe 'DAF' do
     it 'should print usage if argument is not directory' do
       expect(self).to receive(:print_usage)
       ARGV[0] = '/dev/null'
-      start_dad
+      start_cgd
     end
 
     it 'should generate CommandGraph objects from each file' do
@@ -60,19 +60,19 @@ describe 'DAF' do
       expect(yaml_command_graph_class).to receive(:new).with('/test/file2.yaml')
       expect(json_command_graph_class).to receive(:new).with('/test/file1.json')
       ARGV[0] = '/test'
-      start_dad
+      start_cgd
     end
 
     it 'should create a new daemon with command graphs' do
       expect(daemon_class).to receive(:new).with([mock_command_graph1, mock_command_graph2, mock_command_graph3], nil)
       ARGV[0] = '/test'
-      start_dad
+      start_cgd
     end
 
     it 'should start the daemon' do
       expect(mock_daemon_instance).to receive(:start)
       ARGV[0] = '/test'
-      start_dad
+      start_cgd
     end
   end
 
@@ -84,16 +84,16 @@ describe 'DAF' do
   end
 end
 
-describe 'DAF::DynamicActionDaemon' do
+describe 'CGE::CommandGraphExecutor' do
   context 'when started' do
     it 'should execute each command graph' do
-      command_graph1 = double('DAF::YAMLCommandGraph')
-      command_graph2 = double('DAF::YAMLCommandGraph')
+      command_graph1 = double('CGE::YAMLCommandGraph')
+      command_graph2 = double('CGE::YAMLCommandGraph')
       expect(command_graph1).to receive(:execute)
       expect(command_graph2).to receive(:execute)
-      dad = DynamicActionDaemon.new([command_graph1, command_graph2], nil)
+      cgd = CommandGraphExecutor.new([command_graph1, command_graph2], nil)
       thread = Thread.new do
-        dad.start
+        cgd.start
       end
       sleep(1)
       thread.kill

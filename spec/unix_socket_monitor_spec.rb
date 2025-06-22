@@ -2,10 +2,10 @@ require 'spec_helper'
 require 'socket'
 require 'tempfile'
 
-describe DAF::UnixSocketMonitor do
+describe CGE::UnixSocketMonitor do
   let(:temp_socket_path) { "/tmp/test_socket_#{SecureRandom.hex(8)}" }
   let(:options) { { 'socket_path' => temp_socket_path } }
-  let(:monitor) { DAF::UnixSocketMonitor.new('monitor', {}) }
+  let(:monitor) { CGE::UnixSocketMonitor.new('monitor', {}) }
 
   after do
     File.unlink(temp_socket_path) if File.exist?(temp_socket_path)
@@ -13,12 +13,12 @@ describe DAF::UnixSocketMonitor do
 
   context 'monitor options' do
     it 'should require a socket_path option' do
-      expect(DAF::UnixSocketMonitor.required_options).to include('socket_path')
+      expect(CGE::UnixSocketMonitor.required_options).to include('socket_path')
     end
 
     it 'should validate socket_path is not empty' do
       invalid_options = { 'socket_path' => '' }
-      expect { monitor.execute(invalid_options, nil) }.to raise_error(DAF::OptionError)
+      expect { monitor.execute(invalid_options, nil) }.to raise_error(CGE::OptionError)
     end
   end
 

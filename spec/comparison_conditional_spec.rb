@@ -1,7 +1,7 @@
 require 'spec_helper'
 
-describe DAF::ComparisonConditional do
-  let(:comparison_conditional) { DAF::ComparisonConditional.new('comparison_conditional', {}) }
+describe CGE::ComparisonConditional do
+  let(:comparison_conditional) { CGE::ComparisonConditional.new('comparison_conditional', {}) }
   let(:dummy_next_node) { double('next_node') }
   
   # Helper method to check if condition passes (returns next_node vs nil)
@@ -92,12 +92,12 @@ describe DAF::ComparisonConditional do
     it 'should raise error for unsupported operator' do
       options = { 'value1' => 'test', 'value2' => 'test', 'operator' => 'invalid_op' }
       expect { comparison_conditional.execute(options, dummy_next_node) }
-        .to raise_error(DAF::OptionError, /Bad value for option operator/)
+        .to raise_error(CGE::OptionError, /Bad value for option operator/)
     end
 
     it 'should raise error when required values are missing' do
       expect { comparison_conditional.execute({}, dummy_next_node) }
-        .to raise_error(DAF::OptionError, /Required option value1 missing/)
+        .to raise_error(CGE::OptionError, /Required option value1 missing/)
     end
   end
 end

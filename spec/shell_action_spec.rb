@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe DAF::ShellAction do
+describe CGE::ShellAction do
   before(:each) do
     @options = { 'path' => '/bin/ls' }
-    @action = DAF::ShellAction.new("test_action", {})
+    @action = CGE::ShellAction.new("test_action", {})
   end
 
   context 'options' do

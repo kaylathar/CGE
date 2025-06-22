@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 # Test conditional to verify functionality
-class TestConditional < DAF::Conditional
+class TestConditional < CGE::Conditional
   attr_option 'test_option', String, :required
 
   protected
@@ -18,13 +18,13 @@ class TestConditional < DAF::Conditional
   end
 end
 
-class EmptyConditional < DAF::Conditional
+class EmptyConditional < CGE::Conditional
   # Does not implement condition_met? to test NotImplementedError
   # Need at least one option to initialize class variables
   attr_option 'dummy', String, :optional
 end
 
-describe DAF::Conditional do
+describe CGE::Conditional do
   let(:empty_conditional) { EmptyConditional.new('empty', {}) }
   let(:test_conditional) { TestConditional.new('test', {}) }
 

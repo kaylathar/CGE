@@ -3,14 +3,14 @@
   "Graph": [
     {
       "Name": "myinput",
-      "Class": "DAF::ConstantInput",
+      "Class": "CGE::ConstantInput",
       "Options": {
         "constant": "Hello from JSON constant input!"
       }
     },
     {
       "Name": "myaction",
-      "Class": "DAF::ShellAction",
+      "Class": "CGE::ShellAction",
       "Options": {
         "command": "echo 'JSON Received: {{output}}'"
       }

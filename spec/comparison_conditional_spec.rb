@@ -4,11 +4,11 @@ describe DAF::ComparisonConditional do
   let(:comparison_conditional) { DAF::ComparisonConditional.new }
   let(:dummy_next_node) { double('next_node') }
   
-  # Helper method to simulate the old boolean behavior
+  # Helper method to check if condition passes (returns next_node vs nil)
   def evaluate_as_boolean(options)
     result = comparison_conditional.evaluate(options, dummy_next_node)
-    # The current implementation returns a boolean directly instead of next_node/nil
-    result
+    # Returns next_node if condition is true, nil if false
+    result == dummy_next_node
   end
 
   describe 'equality comparison (default)' do

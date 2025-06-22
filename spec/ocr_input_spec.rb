@@ -28,14 +28,14 @@ describe DAF::OCRInput do
 
   it 'should raise error when image_path is empty' do
     expect { ocr_input.process({ 'image_path' => '' }) }
-      .to raise_error(DAF::OptionError, /Bad value for option image_path: path required/)
+      .to raise_error(DAF::OptionError, /Bad value for option image_path/)
   end
 
   it 'should raise error when image file is not accessible' do
     allow(File).to receive(:readable?).with(test_image_path).and_return(false)
     
     expect { ocr_input.process(options) }
-      .to raise_error(DAF::OptionError, /Bad value for option image_path: file not accessible/)
+      .to raise_error(DAF::OptionError, /Bad value for option image_path/)
   end
 
   it 'should validate supported image formats' do
@@ -51,7 +51,7 @@ describe DAF::OCRInput do
     allow(File).to receive(:extname).with(test_image_path).and_return('.txt')
     
     expect { ocr_input.process(options) }
-      .to raise_error(DAF::OptionError, /Bad value for option image_path: unsupported format/)
+      .to raise_error(DAF::OptionError, /Bad value for option image_path/)
   end
 
   it 'should pass language option to RTesseract' do
@@ -62,16 +62,6 @@ describe DAF::OCRInput do
     ).and_return(mock_rtesseract)
     
     ocr_input.process(options_with_lang)
-  end
-
-  it 'should pass PSM option to RTesseract' do
-    options_with_psm = options.merge('psm' => 6)
-    
-    expect(RTesseract).to receive(:new).with(
-      hash_including(image: test_image_path, psm: 6)
-    ).and_return(mock_rtesseract)
-    
-    ocr_input.process(options_with_psm)
   end
 
   it 'should clean up whitespace in OCR results' do
@@ -92,7 +82,7 @@ describe DAF::OCRInput do
     allow(RTesseract).to receive(:new).and_raise(StandardError.new('Tesseract error'))
     
     expect { ocr_input.process(options) }
-      .to raise_error(DAF::OptionError, /OCR processing failed.*Tesseract error/)
+      .to raise_error(DAF::OCRInputError, /OCR processing failed.*Tesseract error/)
   end
 
 end

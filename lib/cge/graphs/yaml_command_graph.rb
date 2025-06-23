@@ -43,6 +43,7 @@ module CGE
     # @param global_configuration [GlobalConfiguration] Optional global configuration instance
     def initialize(yaml_string, global_configuration = nil)
       configuration = YAML.safe_load(yaml_string)
+      id = configuration['Id']
       name = configuration['Name']
       command_list = configuration['Graph']
       constants = configuration['Constants'] || {}

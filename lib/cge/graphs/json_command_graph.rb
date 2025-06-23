@@ -48,6 +48,7 @@ module CGE
     # @param global_configuration [GlobalConfiguration] Optional global configuration instance
     def initialize(json_data, global_configuration = nil)
       configuration = JSON.parse(json_data)
+      id = configuration['Id']
       name = configuration['Name']
       command_list = configuration['Graph']
       constants = configuration['Constants'] || {}
@@ -58,7 +59,7 @@ module CGE
         current_command = command
       end
 
-      super(nil, name, current_command, global_configuration, constants)
+      super(id, name, current_command, global_configuration, constants)
     end
 
     def get_class(class_name)

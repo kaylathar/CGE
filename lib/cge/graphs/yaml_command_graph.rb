@@ -1,6 +1,7 @@
 require 'yaml'
 require 'securerandom'
 require 'cge/command_graph'
+require 'cge/command'
 
 module CGE
   # A command graph that is parsed out of a YAML file
@@ -55,8 +56,8 @@ module CGE
     end
 
     def get_class(class_name)
-      Object.const_get(class_name)
-    rescue StandardError
+      Command.safe_const_get(class_name)
+    rescue SecurityError, StandardError
       raise CommandGraphException, 'Invalid Action, Monitor, or Input type'
     end
 

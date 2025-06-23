@@ -33,9 +33,7 @@ module CGE
       request.body = @content.value
       response = http.request(request)
 
-      unless response.code == '200'
-        raise DropboxFileActionError, "Failed to upload to Dropbox: #{response.code} - #{response.body}"
-      end
+      raise DropboxFileActionError, "Failed to upload to Dropbox: #{response.code} - #{response.body}" unless response.code == '200'
     rescue StandardError => e
       raise DropboxFileActionError, "Failed to upload to Dropbox: #{e.message}"
     end

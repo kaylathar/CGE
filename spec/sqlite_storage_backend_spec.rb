@@ -14,10 +14,10 @@ describe CGE::SQLiteStorageBackend do
   # Mock command class for testing
   class TestCommand < CGE::Command
     def initialize(id, name, inputs = {}, previous_command = nil)
-      super(id, name, inputs, previous_command)
+      super
     end
 
-    def invoke(inputs)
+    def invoke(_inputs)
       { result: 'test_output' }
     end
   end
@@ -64,7 +64,7 @@ describe CGE::SQLiteStorageBackend do
           'INSERT INTO config (key, value) VALUES (?,?)', anything
         )
         allow(storage_backend).to receive(:schema_version).and_return(described_class::SCHEMA_VERSION_NONE)
-        
+
         storage_backend.send(:upgrade_if_needed)
       end
 
@@ -85,7 +85,7 @@ describe CGE::SQLiteStorageBackend do
           'INSERT INTO config (key, value) VALUES (?,?)', anything
         )
         allow(storage_backend).to receive(:schema_version).and_return(described_class::SCHEMA_VERSION_NONE)
-        
+
         storage_backend.send(:upgrade_if_needed)
       end
 
@@ -106,7 +106,7 @@ describe CGE::SQLiteStorageBackend do
           'INSERT INTO config (key, value) VALUES (?,?)', anything
         )
         allow(storage_backend).to receive(:schema_version).and_return(described_class::SCHEMA_VERSION_NONE)
-        
+
         storage_backend.send(:upgrade_if_needed)
       end
     end
@@ -117,7 +117,7 @@ describe CGE::SQLiteStorageBackend do
         expect(storage_backend.instance_variable_get(:@database)).not_to receive(:execute).with(
           include('CREATE TABLE')
         )
-        
+
         storage_backend.send(:upgrade_if_needed)
       end
     end
@@ -135,17 +135,17 @@ describe CGE::SQLiteStorageBackend do
         expect(storage_backend.instance_variable_get(:@database)).to receive(:execute).with(
           'SELECT id FROM commands WHERE id=?', ['cmd_1']
         ).and_return([])
-        
+
         expect(storage_backend.instance_variable_get(:@database)).to receive(:execute).with(
           'INSERT INTO commands (id, name, class, previous_command_id, inputs) VALUES (?,?,?,?,?)',
           ['cmd_1', 'test_command', 'TestCommand', nil, '{"param":"value"}']
         )
-        
+
         # Then expect graph operations
         expect(storage_backend.instance_variable_get(:@database)).to receive(:execute).with(
           'SELECT id FROM graphs WHERE id=?', ['graph_1']
         ).and_return([])
-        
+
         expect(storage_backend.instance_variable_get(:@database)).to receive(:execute).with(
           'INSERT INTO graphs (id, name, final_command_id, constants) VALUES (?,?,?,?)',
           ['graph_1', 'Test Graph', 'cmd_1', '{"const_key":"const_value"}']
@@ -161,17 +161,17 @@ describe CGE::SQLiteStorageBackend do
         expect(storage_backend.instance_variable_get(:@database)).to receive(:execute).with(
           'SELECT id FROM commands WHERE id=?', ['cmd_1']
         ).and_return([['cmd_1']])
-        
+
         expect(storage_backend.instance_variable_get(:@database)).to receive(:execute).with(
           'UPDATE commands SET name=?, class=?, previous_command_id=?, inputs=? WHERE id=?',
           ['test_command', 'TestCommand', nil, '{"param":"value"}', 'cmd_1']
         )
-        
+
         # Then expect graph operations
         expect(storage_backend.instance_variable_get(:@database)).to receive(:execute).with(
           'SELECT id FROM graphs WHERE id=?', ['graph_1']
         ).and_return([['graph_1']])
-        
+
         expect(storage_backend.instance_variable_get(:@database)).to receive(:execute).with(
           'UPDATE graphs SET name=?, final_command_id=?, constants=? WHERE id=?',
           ['Test Graph', 'cmd_1', '{"const_key":"const_value"}', 'graph_1']

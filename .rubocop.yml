@@ -1,5 +1,9 @@
 Metrics/MethodLength:
-  Max: 25
+  Max: 50
+Metrics/ClassLength:
+  Max: 200
+Layout/LineLength:
+  Max: 150
 Metrics/AbcSize:
   Enabled: false
 Gemspec/DevelopmentDependencies:

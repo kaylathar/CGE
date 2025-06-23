@@ -4,13 +4,16 @@ PATH
     cge (0.1.0)
       google-apis-docs_v1 (~> 0.33)
       google-apis-sheets_v4 (~> 0.28)
+      google-cloud-storage
+      mongo
+      mysql2
       net-http (~> 0.4)
       net-smtp
       nokogiri (~> 1.15)
+      pg
       rtesseract (~> 3.1)
       sqlite3
       twilio-ruby
-      washbullet
 
 GEM
   remote: https://rubygems.org/
@@ -20,11 +23,14 @@ GEM
     ast (2.4.3)
     base64 (0.3.0)
     bigdecimal (3.2.2)
+    bson (5.1.1)
     crack (1.0.0)
       bigdecimal
       rexml
     declarative (0.0.20)
     diff-lcs (1.6.2)
+    digest-crc (0.7.0)
+      rake (>= 12.0.0, < 14.0.0)
     docile (1.4.1)
     faraday (2.13.1)
       faraday-net_http (>= 2.0, < 3.5)
@@ -42,11 +48,28 @@ GEM
       retriable (>= 2.0, < 4.a)
     google-apis-docs_v1 (0.33.0)
       google-apis-core (>= 0.15.0, < 2.a)
+    google-apis-iamcredentials_v1 (0.24.0)
+      google-apis-core (>= 0.15.0, < 2.a)
     google-apis-sheets_v4 (0.44.0)
       google-apis-core (>= 0.15.0, < 2.a)
+    google-apis-storage_v1 (0.53.0)
+      google-apis-core (>= 0.15.0, < 2.a)
+    google-cloud-core (1.8.0)
+      google-cloud-env (>= 1.0, < 3.a)
+      google-cloud-errors (~> 1.0)
     google-cloud-env (2.3.1)
       base64 (~> 0.2)
       faraday (>= 1.0, < 3.a)
+    google-cloud-errors (1.5.0)
+    google-cloud-storage (1.56.0)
+      addressable (~> 2.8)
+      digest-crc (~> 0.4)
+      google-apis-core (~> 0.13)
+      google-apis-iamcredentials_v1 (~> 0.18)
+      google-apis-storage_v1 (>= 0.42)
+      google-cloud-core (~> 1.6)
+      googleauth (~> 1.9)
+      mini_mime (~> 1.0)
     google-logging-utils (0.2.0)
     googleauth (1.14.0)
       faraday (>= 1.0, < 3.a)
@@ -65,13 +88,13 @@ GEM
     language_server-protocol (3.17.0.5)
     lint_roller (1.1.0)
     logger (1.7.0)
-    mime-types (3.7.0)
-      logger
-      mime-types-data (~> 3.2025, >= 3.2025.0507)
-    mime-types-data (3.2025.0617)
     mini_mime (1.1.5)
+    mongo (2.21.1)
+      base64
+      bson (>= 4.14.1, < 6.0.0)
     multi_json (1.15.0)
     mutex_m (0.3.0)
+    mysql2 (0.5.6)
     net-http (0.6.0)
       uri
     net-protocol (0.2.2)
@@ -85,6 +108,7 @@ GEM
     parser (3.3.8.0)
       ast (~> 2.4.1)
       racc
+    pg (1.5.9)
     prism (1.4.0)
     public_suffix (6.0.2)
     racc (1.8.1)
@@ -149,9 +173,6 @@ GEM
       unicode-emoji (~> 4.0, >= 4.0.4)
     unicode-emoji (4.0.4)
     uri (1.0.3)
-    washbullet (0.3.0)
-      faraday
-      mime-types
     webmock (3.25.1)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)

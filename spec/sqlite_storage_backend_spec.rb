@@ -313,4 +313,34 @@ describe CGE::SQLiteStorageBackend do
       end
     end
   end
+
+  describe '#list_all_graph_ids' do
+    context 'with no graphs' do
+      it 'returns empty array' do
+        graph_ids = storage_backend.list_all_graph_ids
+        expect(graph_ids).to eq([])
+      end
+    end
+
+    context 'with stored graphs' do
+      before do
+        storage_backend.create_or_update_graph(mock_graph)
+        
+        # Create a second graph
+        second_command = TestCommand.new('cmd_2', 'second_command', { 'param2' => 'value2' })
+        allow(second_command).to receive(:next_command).and_return(nil)
+        second_graph = instance_double('CommandGraph')
+        allow(second_graph).to receive(:id).and_return('graph_2')
+        allow(second_graph).to receive(:name).and_return('Second Graph')
+        allow(second_graph).to receive(:initial_command).and_return(second_command)
+        allow(second_graph).to receive(:constants).and_return({})
+        storage_backend.create_or_update_graph(second_graph)
+      end
+
+      it 'returns all graph IDs' do
+        graph_ids = storage_backend.list_all_graph_ids
+        expect(graph_ids).to contain_exactly('graph_1', 'graph_2')
+      end
+    end
+  end
 end

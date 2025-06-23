@@ -134,6 +134,10 @@ module CGE
       @commands_collection.delete_many({ 'graph_id' => graph_id })
     end
 
+    def list_all_graph_ids
+      @graphs_collection.find({}, projection: { 'id' => 1 }).map { |doc| doc['id'] }
+    end
+
     # Additional MongoDB-specific methods for querying
     def find_graphs_by_name(name_pattern)
       @graphs_collection.find({ 'name' => { '$regex' => name_pattern, '$options' => 'i' } }).to_a

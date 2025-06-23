@@ -287,4 +287,74 @@ describe CGE::MariaStorageBackend do
       end
     end
   end
+
+  describe '#list_all_graph_ids' do
+    context 'with no graphs' do
+      it 'returns empty array' do
+        # Create completely fresh mocks for this test
+        fresh_database = instance_double('Mysql2::Client')
+        allow(Mysql2::Client).to receive(:new).and_return(fresh_database)
+        
+        # Mock initialization calls
+        allow(fresh_database).to receive(:query).with(include('CREATE TABLE graphs'))
+        allow(fresh_database).to receive(:query).with(include('CREATE TABLE commands'))
+        allow(fresh_database).to receive(:query).with(include('CREATE TABLE config'))
+        
+        mock_init_statement = instance_double('Mysql2::Statement')
+        mock_init_result = []
+        allow(fresh_database).to receive(:prepare).with('SELECT `value` FROM config WHERE `key`=?').and_return(mock_init_statement)
+        allow(mock_init_statement).to receive(:execute).with(described_class::SCHEMA_VERSION_KEY).and_return(mock_init_result)
+        
+        allow(fresh_database).to receive(:prepare).with('INSERT INTO config (`key`, `value`) VALUES (?,?)').and_return(mock_init_statement)
+        allow(mock_init_statement).to receive(:execute).with(described_class::SCHEMA_VERSION_KEY, 1)
+        
+        fresh_backend = described_class.new(connection_params, global_config)
+        
+        # Mock the list query
+        mock_list_statement = instance_double('Mysql2::Statement')
+        mock_empty_result = []
+        allow(fresh_database).to receive(:prepare).with('SELECT id FROM graphs').and_return(mock_list_statement)
+        allow(mock_list_statement).to receive(:execute).and_return(mock_empty_result)
+        
+        graph_ids = fresh_backend.list_all_graph_ids
+        expect(graph_ids).to eq([])
+      end
+    end
+
+    context 'with stored graphs' do
+      it 'returns all graph IDs' do
+        # Create completely fresh mocks for this test
+        fresh_database = instance_double('Mysql2::Client')
+        allow(Mysql2::Client).to receive(:new).and_return(fresh_database)
+        
+        # Mock initialization calls
+        allow(fresh_database).to receive(:query).with(include('CREATE TABLE graphs'))
+        allow(fresh_database).to receive(:query).with(include('CREATE TABLE commands'))
+        allow(fresh_database).to receive(:query).with(include('CREATE TABLE config'))
+        
+        mock_init_statement = instance_double('Mysql2::Statement')
+        mock_init_result = []
+        allow(fresh_database).to receive(:prepare).with('SELECT `value` FROM config WHERE `key`=?').and_return(mock_init_statement)
+        allow(mock_init_statement).to receive(:execute).with(described_class::SCHEMA_VERSION_KEY).and_return(mock_init_result)
+        
+        allow(fresh_database).to receive(:prepare).with('INSERT INTO config (`key`, `value`) VALUES (?,?)').and_return(mock_init_statement)
+        allow(mock_init_statement).to receive(:execute).with(described_class::SCHEMA_VERSION_KEY, 1)
+        
+        fresh_backend = described_class.new(connection_params, global_config)
+        
+        # Mock the list query with results
+        mock_list_statement = instance_double('Mysql2::Statement')
+        mock_result_data = [
+          { 'id' => 'graph_1' },
+          { 'id' => 'graph_2' },
+          { 'id' => 'graph_3' }
+        ]
+        allow(fresh_database).to receive(:prepare).with('SELECT id FROM graphs').and_return(mock_list_statement)
+        allow(mock_list_statement).to receive(:execute).and_return(mock_result_data)
+        
+        graph_ids = fresh_backend.list_all_graph_ids
+        expect(graph_ids).to contain_exactly('graph_1', 'graph_2', 'graph_3')
+      end
+    end
+  end
 end

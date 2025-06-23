@@ -126,6 +126,13 @@ module CGE
       end
     end
 
+    def list_all_graph_ids
+      result = @database.exec_params('SELECT id FROM graphs')
+      (0...result.ntuples).map do |i|
+        result[i]['id']
+      end
+    end
+
     private
 
     def schema_version

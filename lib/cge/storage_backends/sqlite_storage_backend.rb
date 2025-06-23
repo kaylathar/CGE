@@ -77,6 +77,9 @@ module CGE
         constants = JSON.parse(row[2])
       end
 
+      # Return nil if no graph was found
+      return nil if name.nil?
+
       # Recursively build command graph
       fetch_command_id = initial_command_id
       current_command = nil
@@ -93,6 +96,14 @@ module CGE
 
     def delete_graph_with_id(graph_id)
       @database.execute('DELETE FROM graphs WHERE id=?', [graph_id])
+    end
+
+    def list_all_graph_ids
+      graph_ids = []
+      @database.execute('SELECT id FROM graphs') do |row|
+        graph_ids << row[0]
+      end
+      graph_ids
     end
 
     def schema_version

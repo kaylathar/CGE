@@ -154,6 +154,11 @@ module CGE
       save_index('commands', commands_index)
     end
 
+    def list_all_graph_ids
+      graphs_index = load_index('graphs')
+      graphs_index.keys
+    end
+
     private
 
     def schema_version

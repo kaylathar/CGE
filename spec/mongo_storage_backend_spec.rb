@@ -316,4 +316,30 @@ describe CGE::MongoStorageBackend do
       storage_backend.send(:update_schema_version, 2)
     end
   end
+
+  describe '#list_all_graph_ids' do
+    context 'with no graphs' do
+      it 'returns empty array' do
+        expect(mock_graphs_collection).to receive(:find).with({}, projection: { 'id' => 1 }).and_return([])
+        
+        graph_ids = storage_backend.list_all_graph_ids
+        expect(graph_ids).to eq([])
+      end
+    end
+
+    context 'with stored graphs' do
+      it 'returns all graph IDs' do
+        mock_docs = [
+          { 'id' => 'graph_1' },
+          { 'id' => 'graph_2' },
+          { 'id' => 'graph_3' }
+        ]
+        
+        expect(mock_graphs_collection).to receive(:find).with({}, projection: { 'id' => 1 }).and_return(mock_docs)
+        
+        graph_ids = storage_backend.list_all_graph_ids
+        expect(graph_ids).to contain_exactly('graph_1', 'graph_2', 'graph_3')
+      end
+    end
+  end
 end

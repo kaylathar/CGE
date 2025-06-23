@@ -53,7 +53,7 @@ module CGE
         command = command_from_data(command_data, current_command)
         current_command = command
       end
-      super(nil, name, current_command, global_configuration, constants)
+      super(id, name, current_command, global_configuration, constants)
     end
 
     def get_class(class_name)

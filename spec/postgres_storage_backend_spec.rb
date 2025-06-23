@@ -385,4 +385,66 @@ describe CGE::PostgresStorageBackend do
       end
     end
   end
+
+  describe '#list_all_graph_ids' do
+    context 'with no graphs' do
+      it 'returns empty array' do
+        # Create completely fresh mocks for this test
+        fresh_database = double('PG::Connection')
+        
+        allow(PG).to receive(:connect).and_return(fresh_database)
+        allow(fresh_database).to receive(:exec)
+        
+        # Setup for initialization
+        init_result = double('PG::Result')
+        allow(init_result).to receive(:ntuples).and_return(1)
+        allow(init_result).to receive(:[]).with(0).and_return({ 'value' => '1' })
+        allow(fresh_database).to receive(:exec_params).with(
+          'SELECT value FROM config WHERE key=$1', [described_class::SCHEMA_VERSION_KEY]
+        ).and_return(init_result)
+        
+        # Create fresh backend
+        fresh_backend = described_class.new(connection_params, global_config)
+        
+        # Mock the list query
+        empty_result = double('PG::Result')
+        allow(empty_result).to receive(:ntuples).and_return(0)
+        expect(fresh_database).to receive(:exec_params).with('SELECT id FROM graphs').and_return(empty_result)
+        
+        graph_ids = fresh_backend.list_all_graph_ids
+        expect(graph_ids).to eq([])
+      end
+    end
+
+    context 'with stored graphs' do
+      it 'returns all graph IDs' do
+        # Create completely fresh mocks for this test
+        fresh_database = double('PG::Connection')
+        
+        allow(PG).to receive(:connect).and_return(fresh_database)
+        allow(fresh_database).to receive(:exec)
+        
+        # Setup for initialization
+        init_result = double('PG::Result')
+        allow(init_result).to receive(:ntuples).and_return(1)
+        allow(init_result).to receive(:[]).with(0).and_return({ 'value' => '1' })
+        allow(fresh_database).to receive(:exec_params).with(
+          'SELECT value FROM config WHERE key=$1', [described_class::SCHEMA_VERSION_KEY]
+        ).and_return(init_result)
+        
+        # Create fresh backend
+        fresh_backend = described_class.new(connection_params, global_config)
+        
+        # Mock the list query with results
+        list_result = double('PG::Result')
+        allow(list_result).to receive(:ntuples).and_return(2)
+        allow(list_result).to receive(:[]).with(0).and_return({ 'id' => 'graph_1' })
+        allow(list_result).to receive(:[]).with(1).and_return({ 'id' => 'graph_2' })
+        expect(fresh_database).to receive(:exec_params).with('SELECT id FROM graphs').and_return(list_result)
+        
+        graph_ids = fresh_backend.list_all_graph_ids
+        expect(graph_ids).to contain_exactly('graph_1', 'graph_2')
+      end
+    end
+  end
 end

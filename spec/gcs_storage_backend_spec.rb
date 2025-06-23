@@ -279,4 +279,70 @@ describe CGE::GCSStorageBackend do
       fresh_backend.send(:save_index, 'test', index_data)
     end
   end
+
+  describe '#list_all_graph_ids' do
+    context 'with no graphs' do
+      it 'returns empty array' do
+        # Create completely fresh mocks for this test
+        fresh_storage = instance_double('Google::Cloud::Storage::Project')
+        fresh_bucket = instance_double('Google::Cloud::Storage::Bucket')
+        
+        allow(Google::Cloud::Storage).to receive(:new).and_return(fresh_storage)
+        allow(fresh_storage).to receive(:bucket).and_return(fresh_bucket)
+        
+        # Mock initialization calls
+        allow(fresh_bucket).to receive(:file).with('indexes/config.json').and_return(nil)
+        allow(fresh_bucket).to receive(:create_file).with(anything, 'indexes/graphs.json')
+        allow(fresh_bucket).to receive(:create_file).with(anything, 'indexes/commands.json')
+        allow(fresh_bucket).to receive(:create_file).with(anything, 'indexes/config.json')
+        
+        fresh_backend = described_class.new('test-bucket', nil, global_config)
+        
+        # Mock empty graphs index
+        empty_index_file = instance_double('Google::Cloud::Storage::File')
+        empty_index_content = instance_double('StringIO')
+        allow(empty_index_content).to receive(:string).and_return('{}')
+        allow(empty_index_file).to receive(:download).and_return(empty_index_content)
+        allow(fresh_bucket).to receive(:file).with('indexes/graphs.json').and_return(empty_index_file)
+        
+        graph_ids = fresh_backend.list_all_graph_ids
+        expect(graph_ids).to eq([])
+      end
+    end
+
+    context 'with stored graphs' do
+      it 'returns all graph IDs' do
+        # Create completely fresh mocks for this test
+        fresh_storage = instance_double('Google::Cloud::Storage::Project')
+        fresh_bucket = instance_double('Google::Cloud::Storage::Bucket')
+        
+        allow(Google::Cloud::Storage).to receive(:new).and_return(fresh_storage)
+        allow(fresh_storage).to receive(:bucket).and_return(fresh_bucket)
+        
+        # Mock initialization calls
+        allow(fresh_bucket).to receive(:file).with('indexes/config.json').and_return(nil)
+        allow(fresh_bucket).to receive(:create_file).with(anything, 'indexes/graphs.json')
+        allow(fresh_bucket).to receive(:create_file).with(anything, 'indexes/commands.json')
+        allow(fresh_bucket).to receive(:create_file).with(anything, 'indexes/config.json')
+        
+        fresh_backend = described_class.new('test-bucket', nil, global_config)
+        
+        # Mock graphs index with data
+        graphs_index_data = {
+          'graph_1' => { 'name' => 'Graph 1', 'final_command_id' => 'cmd_1' },
+          'graph_2' => { 'name' => 'Graph 2', 'final_command_id' => 'cmd_2' },
+          'graph_3' => { 'name' => 'Graph 3', 'final_command_id' => 'cmd_3' }
+        }
+        
+        index_file = instance_double('Google::Cloud::Storage::File')
+        index_content = instance_double('StringIO')
+        allow(index_content).to receive(:string).and_return(graphs_index_data.to_json)
+        allow(index_file).to receive(:download).and_return(index_content)
+        allow(fresh_bucket).to receive(:file).with('indexes/graphs.json').and_return(index_file)
+        
+        graph_ids = fresh_backend.list_all_graph_ids
+        expect(graph_ids).to contain_exactly('graph_1', 'graph_2', 'graph_3')
+      end
+    end
+  end
 end

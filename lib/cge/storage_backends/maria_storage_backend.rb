@@ -130,6 +130,12 @@ module CGE
       end
     end
 
+    def list_all_graph_ids
+      stmt = @database.prepare('SELECT id FROM graphs')
+      result = stmt.execute
+      result.map { |row| row['id'] }
+    end
+
     private
 
     def schema_version

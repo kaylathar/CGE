@@ -46,10 +46,11 @@ module CGE
     # Begins executing the command by starting the monitor specified in
     # the data source - will return immediately
     def execute
+      @cancelled = false
       @thread = Thread.new do
         if Thread.current != Thread.main
           loop do
-            break if @current_command.nil?
+            break if @current_command.nil? || @cancelled
 
             next_command = @current_command.execute(substitute_variables(@current_command.inputs, @variables),
                                                     @current_command.next)
@@ -82,9 +83,15 @@ module CGE
       processed_inputs
     end
 
-    # Immediately cancels command graph execution
+    # Gracefully cancels command graph execution
     def cancel
-      @thread.kill if @thread
+      return unless @thread
+      
+      @cancelled = true
+      # Give the thread a moment to finish gracefully
+      @thread.join(1.0)
+      # Force termination only if thread is still alive after timeout
+      @thread.kill if @thread.alive?
     end
 
     # Resets the command graph to its initial state by cancelling

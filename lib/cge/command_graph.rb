@@ -12,7 +12,7 @@ module CGE
   # default Command continues monitoring forever
   # though subclasses may override this behavior
   class CommandGraph
-    attr_reader :name, :id, :initial_command, :constants
+    attr_reader :name, :id, :initial_command, :constants, :owner_id
 
     # Create a new command object from a data source
     # @param id [String] Optional unique identifier for this graph (auto-generated if not provided)
@@ -20,7 +20,8 @@ module CGE
     # @param initial_command [Command] The first command of the command graph
     # @param global_configuration [GlobalConfiguration] Optional global configuration instance
     # @param constants [Hash] Optional hash of graph-level constants
-    def initialize(id, name, initial_command, global_configuration = nil, constants = {})
+    # @param owner_id [String] Optional ID of the user who owns this graph
+    def initialize(id, name, initial_command, global_configuration = nil, constants = {}, owner_id = nil)
       @id = id || SecureRandom.uuid
       @name = name
       @initial_command = initial_command
@@ -28,6 +29,7 @@ module CGE
       @variables = {}
       @initial_variables = {}
       @constants = constants
+      @owner_id = owner_id
 
       # Store constants under the 'graph' namespace
       constants.each do |key, value|

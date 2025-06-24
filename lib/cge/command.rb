@@ -8,7 +8,7 @@ module CGE
   class Command
     include Configurable
 
-    attr_reader :name, :inputs, :next_command, :id
+    attr_reader :name, :inputs, :next_command, :id, :owner_id
 
     # Register a command class as valid for instantiation
     # @param command_class [Class] The command class to register
@@ -41,11 +41,13 @@ module CGE
     # @param name [String] The name of this command
     # @param inputs [Hash] Initial inputs for this command
     # @param next_command [Command] The next command to execute after this one
-    def initialize(id, name, inputs, next_command = nil)
+    # @param owner_id [String] Optional ID of the user who owns this command
+    def initialize(id, name, inputs, next_command = nil, owner_id = nil)
       @id = id || SecureRandom.uuid
       @name = name
       @inputs = inputs
       @next_command = next_command
+      @owner_id = owner_id
     end
 
     # Executes the command with given inputs and next command

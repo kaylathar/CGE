@@ -40,6 +40,16 @@ describe CGE::ServiceManager do
         super()
         @value = value
       end
+
+      protected
+
+      def perform_start
+        # No-op for this test service
+      end
+
+      def perform_stop
+        # No-op for this test service
+      end
     end
   end
 
@@ -143,7 +153,7 @@ describe CGE::ServiceManager do
       
       expect(service.started?).to be false
       expect(service.stop_called).to be true
-      expect(service_manager.get(:test_service)).to be_nil
+      expect(service_manager.active_services).not_to include(:test_service)
     end
 
     it 'handles stopping non-existent service gracefully' do

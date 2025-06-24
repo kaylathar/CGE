@@ -32,18 +32,15 @@ module CGE
       # Store constants under the 'graph' namespace
       constants.each do |key, value|
         @variables["graph.#{key}"] = value
-        @initial_variables["graph.#{key}"] = value
       end
 
-      return unless global_configuration
-
-      global_configuration.outputs.each_key do |output_name|
-        output_value = global_configuration.send(output_name)
-        unless output_value.nil?
-          @variables["global.#{output_name}"] = output_value
-          @initial_variables["global.#{output_name}"] = output_value
+      if global_configuration
+        global_configuration.command_visible_configs.each do |key, value|
+          @variables["global.#{key}"] = value
         end
       end
+
+      @initial_variables = @variables.clone
     end
 
     # Begins executing the command by starting the monitor specified in

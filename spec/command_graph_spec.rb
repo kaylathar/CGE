@@ -12,7 +12,7 @@ describe CGE::CommandGraph do
     allow(mock_action).to receive(:class).and_return(mock_action_class)
     allow(mock_monitor_class).to receive(:outputs).and_return({})
     allow(mock_action_class).to receive(:outputs).and_return({})
-    allow(mock_global_config).to receive(:outputs).and_return({})
+    allow(mock_global_config).to receive(:heartbeat).and_return(60)
     
     # Mock the basic Command interface
     allow(mock_monitor).to receive(:name).and_return('test_monitor')
@@ -206,8 +206,7 @@ describe CGE::CommandGraph do
     
     it 'should preserve global configuration variables after reset' do
       mock_global_config = double('GlobalConfiguration')
-      allow(mock_global_config).to receive(:outputs).and_return({'heartbeat' => Integer})
-      allow(mock_global_config).to receive(:heartbeat).and_return(60)
+      allow(mock_global_config).to receive(:command_visible_configs).and_return({:heartbeat => 60})
       
       graph_with_global = CGE::CommandGraph.new('test_graph_with_global_id', 'test', mock_initial_command, mock_global_config, constants)
       

@@ -1,32 +1,79 @@
 require 'yaml'
 require 'json'
-require 'cge/configurable'
 
 module CGE
   # Global configuration system for CGE daemon
-  # Supports YAML and JSON configuration files with type validation
+  # Supports YAML and JSON configuration files with dedicated accessor methods
   #
   # Configuration file structure:
   #   heartbeat: 60
   #
   # @example
   #   config = GlobalConfiguration.new("/path/to/config.yml")
-  #   config.heartbeat.value # => 60
+  #   config.heartbeat # => 60
   class GlobalConfiguration
-    include Configurable
-
-    attr_input :heartbeat, Integer, :optional do |value|
-      value > 0
-    end
+    # Known configuration options with their defaults and validators
+    KNOWN_OPTIONS = {
+      heartbeat: {
+        default: 60,
+        visible: true,
+        validator: ->(value) { value.is_a?(Integer) && value > 0 }
+      }
+    }.freeze
 
     # @param file_path [String] Path to YAML or JSON configuration file
     def initialize(file_path = nil)
+      @config = {}
+
+      # Set defaults
+      KNOWN_OPTIONS.each do |key, options|
+        @config[key] = options[:default]
+      end
+
       return unless file_path
 
       configuration = parse_configuration_file(file_path)
       raise GlobalConfigurationError('Failed to parse configuration file') unless configuration
 
-      process_inputs(configuration)
+      load_configuration(configuration)
+    end
+
+    # Heartbeat interval in seconds
+    # @return [Integer] Heartbeat interval (default: 60)
+    def heartbeat
+      @config[:heartbeat]
+    end
+
+    # Provides set of key/value pairs that should be visible to
+    # the command graphs
+    def command_visible_configs
+      @config.filter do |key, _value|
+        KNOWN_OPTIONS[key][:visible]
+      end
+    end
+
+    # Load configuration from parsed hash
+    # @param configuration [Hash] Parsed configuration data
+    def load_configuration(configuration)
+      configuration.each do |key, value|
+        key_sym = key.to_sym
+        if KNOWN_OPTIONS.key?(key_sym)
+          validate_option(key_sym, value)
+          @config[key_sym] = value
+        else
+          warn "Unknown configuration option '#{key}' ignored"
+        end
+      end
+    end
+
+    # Validate a configuration option
+    # @param key [Symbol] Configuration key
+    # @param value [Object] Configuration value
+    def validate_option(key, value)
+      validator = KNOWN_OPTIONS[key][:validator]
+      return if validator.call(value)
+
+      raise GlobalConfigurationError, "Invalid value for #{key}: #{value.inspect}"
     end
 
     # Parses configuration file based on extension
@@ -47,7 +94,7 @@ module CGE
       raise GlobalConfigurationError, "Failed to parse configuration file: #{e.message}"
     end
 
-    private :parse_configuration_file
+    private :parse_configuration_file, :validate_option, :load_configuration
   end
 
   class GlobalConfigurationError < StandardError

@@ -6,15 +6,21 @@ describe CGE::GlobalConfiguration do
   let(:json_content) { '{"heartbeat": 60}' }
   let(:invalid_yaml) { "heartbeat: -5\n" }
   let(:invalid_json) { '{"heartbeat": "not_a_number"}' }
+  let(:unknown_option_yaml) { "heartbeat: 30\nunknown_option: test\n" }
 
   describe '#initialize' do
+    it 'uses default values when no file provided' do
+      config = CGE::GlobalConfiguration.new
+      expect(config.heartbeat).to eq(60)
+    end
+
     it 'parses YAML configuration file' do
       Tempfile.create(['config', '.yml']) do |file|
         file.write(yaml_content)
         file.rewind
         
         config = CGE::GlobalConfiguration.new(file.path)
-        expect(config.heartbeat.value).to eq(30)
+        expect(config.heartbeat).to eq(30)
       end
     end
 
@@ -24,7 +30,17 @@ describe CGE::GlobalConfiguration do
         file.rewind
         
         config = CGE::GlobalConfiguration.new(file.path)
-        expect(config.heartbeat.value).to eq(60)
+        expect(config.heartbeat).to eq(60)
+      end
+    end
+
+    it 'warns and ignores unknown configuration options' do
+      Tempfile.create(['config', '.yml']) do |file|
+        file.write(unknown_option_yaml)
+        file.rewind
+        
+        expect { CGE::GlobalConfiguration.new(file.path) }
+          .to output(/Unknown configuration option 'unknown_option' ignored/).to_stderr
       end
     end
 
@@ -49,29 +65,10 @@ describe CGE::GlobalConfiguration do
     end
   end
 
-  describe 'heartbeat input' do
-    it 'accepts valid heartbeat values' do
+  describe 'heartbeat accessor' do
+    it 'returns default heartbeat value' do
       config = CGE::GlobalConfiguration.new
-      config.heartbeat.value = 60
-      expect(config.heartbeat.valid?).to be true
-    end
-
-    it 'rejects negative heartbeat values' do
-      config = CGE::GlobalConfiguration.new
-      config.heartbeat.value = -5
-      expect(config.heartbeat.valid?).to be false
-    end
-
-    it 'rejects zero heartbeat values' do
-      config = CGE::GlobalConfiguration.new
-      config.heartbeat.value = 0
-      expect(config.heartbeat.valid?).to be false
-    end
-
-    it 'rejects non-integer heartbeat values' do
-      config = CGE::GlobalConfiguration.new
-      config.heartbeat.value = 'not_a_number'
-      expect(config.heartbeat.valid?).to be false
+      expect(config.heartbeat).to eq(60)
     end
   end
 
@@ -82,7 +79,17 @@ describe CGE::GlobalConfiguration do
         file.rewind
         
         expect { CGE::GlobalConfiguration.new(file.path) }
-          .to raise_error(CGE::InputError, /Bad value for input heartbeat/)
+          .to raise_error(CGE::GlobalConfigurationError, /Invalid value for heartbeat: -5/)
+      end
+    end
+
+    it 'validates inputs with non-integer types' do
+      Tempfile.create(['config', '.json']) do |file|
+        file.write(invalid_json)
+        file.rewind
+        
+        expect { CGE::GlobalConfiguration.new(file.path) }
+          .to raise_error(CGE::GlobalConfigurationError, /Invalid value for heartbeat: "not_a_number"/)
       end
     end
   end

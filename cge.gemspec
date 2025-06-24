@@ -23,6 +23,7 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = '>= 2.0.0'
 
   spec.add_development_dependency 'bundler'
+  spec.add_development_dependency 'rack-test'
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'rspec'
   spec.add_development_dependency 'rubocop'
@@ -31,6 +32,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'google-apis-docs_v1', '~> 0.33'
   spec.add_dependency 'google-apis-sheets_v4', '~> 0.28'
   spec.add_dependency 'google-cloud-storage'
+  spec.add_dependency 'json'
   spec.add_dependency 'mongo'
   spec.add_dependency 'mysql2'
   spec.add_dependency 'net-http', '~> 0.4'
@@ -38,6 +40,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'nokogiri', '~> 1.15'
   spec.add_dependency 'pg'
   spec.add_dependency 'rtesseract', '~> 3.1'
+  spec.add_dependency 'sinatra', '~> 3.0'
   spec.add_dependency 'sqlite3'
   spec.add_dependency 'twilio-ruby'
 

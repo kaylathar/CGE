@@ -58,7 +58,7 @@ module CGE
                                                     @current_command.next)
             @current_command.class.outputs.each_key do |output_name|
               output_value = @current_command.send(output_name)
-              @variables["#{@current_command.name}.#{output_name}"] = output_value
+              @variables["#{@current_command.id}.#{output_name}"] = output_value
             end
             @current_command = next_command
           end

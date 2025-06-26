@@ -1,32 +1,20 @@
 ## Command Graph Executor
 
-Command Graph Executor, or CGE, is a flexible, extensible system to let a user trigger actions based on events, either on a system or through anything else you can write in Ruby.  Some examples of things you can automate using CGE:
+Command Graph Executor is an action graph execution system that allows users to specify specific graphs of behaviors they want to have executed, similar to something like IFTTT or Zapier but self-hosted and with in many cases fewer integrations that you have more control over.
 
+For example you could setup workflows supporting:
 * When my bus is 10 minutes away, text me
-* When I get an email from my mother, text me the contents
-* When I'm five minutes away from a meeting, send me the agenda
-* Automatically create a blog entry based on my tweets
-* Automatically download any picture from facebook that has me tagged
-* Alert me when the weather changes via text message
+* If a webhook is triggered, then if it has the contexts X, text me, wait for a response, then send that text to this other backend
 
-In addition, you could use it as a library to develop other action systems, including things like:
+Graphs of multiple types of commands are supported - this can include waiting on multiple things, conditional comparisons, and much more.
 
-* Server monitoring systems
-* Email filtering systems
+## Planned Features
 
-CGE integrates with other action systems such as IFTTT in numerous ways, the easiest probably being through use of Dropbox and monitoring file modification times.  Using CGE with these services permits an even greater level of integration and customizability.
-
-### Planned Features
-
-* Additional plugins for input/output
-* A robust Erlang daemon that uses Ruby framework to provide high availability monitor
-* Additional input sources (SQL, Socket/Listening API, etc)
-* REST API layer
+* Additional action, input, conditional, and monitor types for a variety of services
+* Web and Mobile apps to interact with the server via a RESTful API
+* More robust daemon
+* Some base Service types to support use cases such as dynamically configurable Discord or Slack bots that easily integrate with other systems, or other more dynamic applications
 
 ## Contributing
 
-If you're interested in contributing custom actions or monitors you've written, please just submit a pull request - http://github.com/klmcarthur/CGE - and I'll happily have a look.
-
-If you're interested in using CGE in something else, or have a different front-end experience, please let me know as well, for front-ends, I'd love to bring it into the core if it's interesting or useful, and for third party projects I'd love to link to you.
-
-Thanks!
+If you're interested in contributing custom commands you've written, please just submit a pull request - http://github.com/klmcarthur/CGE - and I'll happily have a look.

@@ -1,10 +1,5 @@
 ## Command Graph Executor
 
-[![Gem Version](https://badge.fury.io/rb/cge.svg)](http://badge.fury.io/rb/cge) [![Build Status](https://kayla-ci.org/klmcarthur/CGE.svg?branch=master)](https://kayla-ci.org/klmcarthur/CGE) [![Inline docs](http://inch-ci.org/github/klmcarthur/CGE.svg?branch=master)](http://inch-ci.org/github/klmcarthur/CGE) [![Code Climate](https://codeclimate.com/github/klmcarthur/CGE/badges/gpa.svg)](https://codeclimate.com/github/klmcarthur/CGE)
-
-
-https://rubygems.org/gems/cge
-
 Command Graph Executor, or CGE, is a flexible, extensible system to let a user trigger actions based on events, either on a system or through anything else you can write in Ruby.  Some examples of things you can automate using CGE:
 
 * When my bus is 10 minutes away, text me

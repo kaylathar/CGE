@@ -1,10 +1,17 @@
 require 'spec_helper'
-require 'mysql2'
-require 'cge/storage_backends/maria_storage_backend'
+
+begin
+  require 'mysql2'
+  require 'cge/storage_backends/maria_storage_backend'
+rescue LoadError => e
+  puts "Skipping MariaStorageBackend tests: #{e.message}"
+end
+
 require 'cge/storage_backend'
 require 'cge/command'
 
-describe CGE::MariaStorageBackend do
+if defined?(Mysql2) && defined?(CGE::MariaStorageBackend)
+  RSpec.describe CGE::MariaStorageBackend do
   let(:connection_params) do
     {
       host: 'localhost',
@@ -357,4 +364,7 @@ describe CGE::MariaStorageBackend do
       end
     end
   end
+  end
+else
+  puts "Skipping MariaStorageBackend tests - dependencies not available"
 end

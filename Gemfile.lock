@@ -6,16 +6,12 @@ PATH
       google-apis-sheets_v4 (~> 0.28)
       google-cloud-storage
       json
-      mongo
-      mysql2
       net-http (~> 0.4)
       net-smtp
       nokogiri (~> 1.15)
-      pg
       rtesseract (~> 3.1)
       sinatra (~> 3.0)
       sqlite3
-      twilio-ruby
 
 GEM
   remote: https://rubygems.org/
@@ -25,7 +21,6 @@ GEM
     ast (2.4.3)
     base64 (0.3.0)
     bigdecimal (3.2.2)
-    bson (5.1.1)
     crack (1.0.0)
       bigdecimal
       rexml
@@ -52,7 +47,7 @@ GEM
       google-apis-core (>= 0.15.0, < 2.a)
     google-apis-iamcredentials_v1 (0.24.0)
       google-apis-core (>= 0.15.0, < 2.a)
-    google-apis-sheets_v4 (0.44.0)
+    google-apis-sheets_v4 (0.45.0)
       google-apis-core (>= 0.15.0, < 2.a)
     google-apis-storage_v1 (0.53.0)
       google-apis-core (>= 0.15.0, < 2.a)
@@ -91,28 +86,37 @@ GEM
     lint_roller (1.1.0)
     logger (1.7.0)
     mini_mime (1.1.5)
-    mongo (2.21.1)
-      base64
-      bson (>= 4.14.1, < 6.0.0)
     multi_json (1.15.0)
     mustermann (3.0.3)
       ruby2_keywords (~> 0.0.1)
     mutex_m (0.3.0)
-    mysql2 (0.5.6)
     net-http (0.6.0)
       uri
     net-protocol (0.2.2)
       timeout
     net-smtp (0.5.1)
       net-protocol
+    nokogiri (1.18.8-aarch64-linux-gnu)
+      racc (~> 1.4)
+    nokogiri (1.18.8-aarch64-linux-musl)
+      racc (~> 1.4)
+    nokogiri (1.18.8-arm-linux-gnu)
+      racc (~> 1.4)
+    nokogiri (1.18.8-arm-linux-musl)
+      racc (~> 1.4)
     nokogiri (1.18.8-arm64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.18.8-x86_64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.18.8-x86_64-linux-gnu)
+      racc (~> 1.4)
+    nokogiri (1.18.8-x86_64-linux-musl)
       racc (~> 1.4)
     os (1.1.4)
     parallel (1.27.0)
     parser (3.3.8.0)
       ast (~> 2.4.1)
       racc
-    pg (1.5.9)
     prism (1.4.0)
     public_suffix (6.0.2)
     racc (1.8.1)
@@ -135,7 +139,7 @@ GEM
       rspec-core (~> 3.13.0)
       rspec-expectations (~> 3.13.0)
       rspec-mocks (~> 3.13.0)
-    rspec-core (3.13.4)
+    rspec-core (3.13.5)
       rspec-support (~> 3.13.0)
     rspec-expectations (3.13.5)
       diff-lcs (>= 1.2.0, < 2.0)
@@ -145,7 +149,7 @@ GEM
       rspec-support (~> 3.13.0)
     rspec-support (3.13.4)
     rtesseract (3.1.4)
-    rubocop (1.76.2)
+    rubocop (1.77.0)
       json (~> 2.3)
       language_server-protocol (~> 3.17.0.2)
       lint_roller (~> 1.1.0)
@@ -177,14 +181,17 @@ GEM
       rack (~> 2.2, >= 2.2.4)
       rack-protection (= 3.2.0)
       tilt (~> 2.0)
+    sqlite3 (2.7.0-aarch64-linux-gnu)
+    sqlite3 (2.7.0-aarch64-linux-musl)
+    sqlite3 (2.7.0-arm-linux-gnu)
+    sqlite3 (2.7.0-arm-linux-musl)
     sqlite3 (2.7.0-arm64-darwin)
+    sqlite3 (2.7.0-x86_64-darwin)
+    sqlite3 (2.7.0-x86_64-linux-gnu)
+    sqlite3 (2.7.0-x86_64-linux-musl)
     tilt (2.6.0)
     timeout (0.4.3)
     trailblazer-option (0.1.2)
-    twilio-ruby (7.6.3)
-      faraday (>= 0.9, < 3.0)
-      jwt (>= 1.5, < 3.0)
-      nokogiri (>= 1.6, < 2.0)
     uber (0.1.0)
     unicode-display_width (3.1.4)
       unicode-emoji (~> 4.0, >= 4.0.4)
@@ -196,7 +203,14 @@ GEM
       hashdiff (>= 0.4.0, < 2.0.0)
 
 PLATFORMS
+  aarch64-linux-gnu
+  aarch64-linux-musl
+  arm-linux-gnu
+  arm-linux-musl
   arm64-darwin
+  x86_64-darwin
+  x86_64-linux-gnu
+  x86_64-linux-musl
 
 DEPENDENCIES
   bundler

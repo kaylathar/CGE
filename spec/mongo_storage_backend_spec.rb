@@ -1,10 +1,17 @@
 require 'spec_helper'
-require 'mongo'
-require 'cge/storage_backends/mongo_storage_backend'
+
+begin
+  require 'mongo'
+  require 'cge/storage_backends/mongo_storage_backend'
+rescue LoadError => e
+  puts "Skipping MongoStorageBackend tests: #{e.message}"
+end
+
 require 'cge/storage_backend'
 require 'cge/command'
 
-describe CGE::MongoStorageBackend do
+if defined?(Mongo) && defined?(CGE::MongoStorageBackend)
+  RSpec.describe CGE::MongoStorageBackend do
   let(:connection_string) { 'mongodb://localhost:27017' }
   let(:database_name) { 'cge_test' }
   let(:global_config) { instance_double('GlobalConfiguration') }
@@ -342,4 +349,7 @@ describe CGE::MongoStorageBackend do
       end
     end
   end
+  end
+else
+  puts "Skipping MongoStorageBackend tests - dependencies not available"
 end

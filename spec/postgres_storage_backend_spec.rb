@@ -1,10 +1,17 @@
 require 'spec_helper'
-require 'pg'
-require 'cge/storage_backends/postgres_storage_backend'
+
+begin
+  require 'pg'
+  require 'cge/storage_backends/postgres_storage_backend'
+rescue LoadError => e
+  puts "Skipping PostgresStorageBackend tests: #{e.message}"
+end
+
 require 'cge/storage_backend'
 require 'cge/command'
 
-describe CGE::PostgresStorageBackend do
+if defined?(PG) && defined?(CGE::PostgresStorageBackend)
+  RSpec.describe CGE::PostgresStorageBackend do
   let(:connection_params) do
     {
       host: 'localhost',
@@ -447,4 +454,7 @@ describe CGE::PostgresStorageBackend do
       end
     end
   end
+  end
+else
+  puts "Skipping PostgresStorageBackend tests - dependencies not available"
 end

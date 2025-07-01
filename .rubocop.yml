@@ -10,6 +10,7 @@ Gemspec/DevelopmentDependencies:
   EnforcedStyle: gemspec
 AllCops:
   NewCops: enable
+  TargetRubyVersion: 2.3
   Exclude:
     - spec/**
   SuggestExtensions: false

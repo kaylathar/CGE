@@ -52,7 +52,7 @@ module CGE
       until command.nil?
         stmt = @database.prepare('SELECT id FROM commands WHERE id=?')
         result = stmt.execute(command.id)
-        if result.count > 0
+        if result.any?
           stmt = @database.prepare('UPDATE commands SET name=?, class=?, previous_command_id=?, inputs=? WHERE id=?')
           stmt.execute(command.name, command.class.name, previous_command_id, command.inputs.to_json, command.id)
         else
@@ -65,7 +65,7 @@ module CGE
 
       stmt = @database.prepare('SELECT id FROM graphs WHERE id=?')
       result = stmt.execute(graph.id)
-      if result.count > 0
+      if result.any?
         stmt = @database.prepare('UPDATE graphs SET name=?, final_command_id=?, constants=? WHERE id=?')
         stmt.execute(graph.name, previous_command_id, graph.constants.to_json, graph.id)
       else
@@ -97,7 +97,7 @@ module CGE
           fetch_command_id = row['previous_command_id']
           current_command = command_class.new(row['id'], row['name'], JSON.parse(row['inputs']), current_command)
         end
-        break if result.count.zero?
+        break if result.none?
       end
       CommandGraph.new(graph_id, name, current_command, @global_configuration, constants)
     end
@@ -126,7 +126,7 @@ module CGE
         stmt.execute(fetch_command_id)
 
         fetch_command_id = previous_command_id
-        break if result.count.zero?
+        break if result.none?
       end
     end
 
@@ -153,7 +153,7 @@ module CGE
     def update_schema_version(version)
       stmt = @database.prepare('SELECT `value` FROM config WHERE `key`=?')
       result = stmt.execute(SCHEMA_VERSION_KEY)
-      if result.count > 0
+      if result.any?
         stmt = @database.prepare('UPDATE config SET `value`=? WHERE `key`=?')
         stmt.execute(version, SCHEMA_VERSION_KEY)
       else

@@ -1,5 +1,6 @@
+# frozen_string_literal: true
+
 require 'securerandom'
-require 'thread'
 Dir["#{File.dirname(__FILE__)}/monitors/*"].sort.each { |file| require file }
 Dir["#{File.dirname(__FILE__)}/actions/*"].sort.each { |file| require file }
 Dir["#{File.dirname(__FILE__)}/inputs/*"].sort.each { |file| require file }
@@ -14,19 +15,19 @@ module CGE
   class CommandGraph
     attr_reader :name, :id, :initial_command, :constants, :owner_id
 
-    @@plugins_loaded = false
+    @plugins_loaded = false
 
     # Load additional plugins from configured paths
     # @param global_configuration [GlobalConfiguration] Global configuration containing plugin paths
     def self.load_additional_plugins(global_configuration)
-      return if @@plugins_loaded
+      return if @plugins_loaded
       return unless global_configuration&.additional_plugins
 
       global_configuration.additional_plugins.each do |plugin_path|
         load_plugins_from_path(plugin_path)
       end
-      
-      @@plugins_loaded = true
+
+      @plugins_loaded = true
     end
 
     # Load all Ruby files from a specific path
@@ -35,9 +36,11 @@ module CGE
       return unless File.directory?(path)
 
       Dir["#{path}/**/*.rb"].sort.each do |file|
-        require file
-      rescue LoadError => e
-        warn "Failed to load plugin from #{file}: #{e.message}"
+        begin
+          require file
+        rescue LoadError => e
+          warn "Failed to load plugin from #{file}: #{e.message}"
+        end
       end
     end
 
@@ -63,10 +66,8 @@ module CGE
         @variables["graph.#{key}"] = value
       end
 
-      if global_configuration
-        global_configuration.command_visible_configs.each do |key, value|
-          @variables["global.#{key}"] = value
-        end
+      global_configuration&.command_visible_configs&.each do |key, value|
+        @variables["global.#{key}"] = value
       end
 
       @initial_variables = @variables.clone
@@ -115,7 +116,7 @@ module CGE
     # Gracefully cancels command graph execution
     def cancel
       return unless @thread
-      
+
       @cancelled = true
       # Give the thread a moment to finish gracefully
       @thread.join(1.0)

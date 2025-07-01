@@ -44,7 +44,7 @@ module CGE
     def initialize(yaml_string, global_configuration = nil)
       # Load additional plugins before parsing
       CommandGraph.load_additional_plugins(global_configuration)
-      
+
       configuration = YAML.safe_load(yaml_string)
       id = configuration['Id']
       name = configuration['Name']

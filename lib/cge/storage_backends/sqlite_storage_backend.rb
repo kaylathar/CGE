@@ -48,7 +48,7 @@ module CGE
       previous_command_id = nil
       command = graph.initial_command
       until command.nil?
-        if @database.execute('SELECT id FROM commands WHERE id=?', [command.id]).count > 0
+        if @database.execute('SELECT id FROM commands WHERE id=?', [command.id]).any?
           @database.execute('UPDATE commands SET name=?, class=?, previous_command_id=?, inputs=? WHERE id=?',
                             [command.name, command.class.name, previous_command_id, command.inputs.to_json, command.id])
         else
@@ -58,7 +58,7 @@ module CGE
         previous_command_id = command.id
         command = command.next_command
       end
-      if @database.execute('SELECT id FROM graphs WHERE id=?', [graph.id]).count > 0
+      if @database.execute('SELECT id FROM graphs WHERE id=?', [graph.id]).any?
         @database.execute('UPDATE graphs SET name=?, final_command_id=?, constants=? WHERE id=?',
                           [graph.name, previous_command_id, graph.constants.to_json, graph.id])
       else
@@ -119,7 +119,7 @@ module CGE
     end
 
     def update_schema_version(version)
-      if @database.execute('SELECT value FROM config WHERE key=?', [SCHEMA_VERSION_KEY]).count > 0
+      if @database.execute('SELECT value FROM config WHERE key=?', [SCHEMA_VERSION_KEY]).any?
         @database.execute('UPDATE config SET value=? WHERE key=?', [version, SCHEMA_VERSION_KEY])
       else
         @database.execute('INSERT INTO config (key, value) VALUES (?,?)', [SCHEMA_VERSION_KEY, version])

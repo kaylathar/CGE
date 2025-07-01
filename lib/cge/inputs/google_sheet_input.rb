@@ -59,3 +59,4 @@ module CGE
   class GoogleSheetError < StandardError
   end
 end
+CGE::Command.register_command(CGE::GoogleSheetInput)

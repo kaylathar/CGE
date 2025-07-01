@@ -33,3 +33,5 @@ TEXT
     private :format_email
   end
 end
+
+CGE::Command.register_command(CGE::EmailAction)

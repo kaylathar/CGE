@@ -18,3 +18,4 @@ module CGE
   class FileActionError < StandardError
   end
 end
+CGE::Command.register_command(CGE::FileAction)

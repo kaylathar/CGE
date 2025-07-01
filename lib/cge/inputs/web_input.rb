@@ -82,3 +82,4 @@ module CGE
   class WebInputError < StandardError
   end
 end
+CGE::Command.register_command(CGE::WebInput)

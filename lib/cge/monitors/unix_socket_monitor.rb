@@ -30,3 +30,4 @@ module CGE
     end
   end
 end
+CGE::Command.register_command(CGE::UnixSocketMonitor)

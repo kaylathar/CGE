@@ -34,3 +34,4 @@ module CGE
   class OCRInputError < StandardError
   end
 end
+CGE::Command.register_command(CGE::OCRInput)

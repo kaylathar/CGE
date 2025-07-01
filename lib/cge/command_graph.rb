@@ -5,6 +5,7 @@ Dir["#{File.dirname(__FILE__)}/monitors/*"].sort.each { |file| require file }
 Dir["#{File.dirname(__FILE__)}/actions/*"].sort.each { |file| require file }
 Dir["#{File.dirname(__FILE__)}/inputs/*"].sort.each { |file| require file }
 Dir["#{File.dirname(__FILE__)}/conditionals/*"].sort.each { |file| require file }
+Dir["#{File.dirname(__FILE__)}/services/*"].sort.each { |file| require file }
 
 module CGE
   # Represents a graph of Monitor and Action objects
@@ -51,7 +52,8 @@ module CGE
     # @param global_configuration [GlobalConfiguration] Optional global configuration instance
     # @param constants [Hash] Optional hash of graph-level constants
     # @param owner_id [String] Optional ID of the user who owns this graph
-    def initialize(id, name, initial_command, global_configuration = nil, constants = {}, owner_id = nil)
+    # @param repeat [Boolean] Whether the graph should repeat when it reaches the end (defaults to false)
+    def initialize(id, name, initial_command, global_configuration = nil, constants = {}, owner_id = nil, repeat = false)
       @id = id || SecureRandom.uuid
       @name = name
       @initial_command = initial_command
@@ -71,6 +73,7 @@ module CGE
       end
 
       @initial_variables = @variables.clone
+      @repeat = repeat
     end
 
     # Begins executing the command by starting the monitor specified in
@@ -80,10 +83,19 @@ module CGE
       @thread = Thread.new do
         if Thread.current != Thread.main
           loop do
+            # If we are repeatable, then repeat if we are at the end
+            if @current_command.nil? && @repeat
+              @current_command = @initial_command
+              @variables = @initial_variables.dup
+            end
+
             break if @current_command.nil? || @cancelled
 
+            puts @current_command.id
+            puts @current_command.inputs.count
+            puts @variables
             next_command = @current_command.execute(substitute_variables(@current_command.inputs, @variables),
-                                                    @current_command.next)
+                                                    @current_command.next_command)
             @current_command.class.outputs.each_key do |output_name|
               output_value = @current_command.send(output_name)
               @variables["#{@current_command.id}.#{output_name}"] = output_value

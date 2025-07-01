@@ -18,3 +18,4 @@ module CGE
   class FileInputError < StandardError
   end
 end
+CGE::Command.register_command(CGE::FileInput)

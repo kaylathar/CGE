@@ -41,3 +41,4 @@ module CGE
     private :contents_of_file
   end
 end
+CGE::Command.register_command(CGE::FileUpdateMonitor)

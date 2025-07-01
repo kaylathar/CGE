@@ -62,3 +62,4 @@ module CGE
   class ComparisonConditionalError < StandardError
   end
 end
+CGE::Command.register_command(CGE::ComparisonConditional)

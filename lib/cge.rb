@@ -2,6 +2,7 @@ require 'cge/command'
 require 'cge/graphs/yaml_command_graph'
 require 'cge/graphs/json_command_graph'
 require 'cge/global_configuration'
+require 'cge/service_manager'
 
 # Starts the CGE daemon (CGD) - takes a directory
 # containing the YAML and JSON files for monitor/action pairs
@@ -13,13 +14,14 @@ require 'cge/global_configuration'
 module CGE
   def start_cgd
     if ARGV[0] && File.directory?(ARGV[0])
+      service_manager = ServiceManager.new
       global_config = parse_global_config(ARGV[1])
       command_graphs = Dir["#{ARGV[0]}/*.yaml"].map do |file|
-        YAMLCommandGraph.new(file)
+        YAMLCommandGraph.from_file(file, global_config, service_manager)
       end
 
       Dir["#{ARGV[0]}/*.json"].each do |file|
-        command_graphs << JSONCommandGraph.new(file)
+        command_graphs << JSONCommandGraph.from_file(file, global_config, service_manager)
       end
 
       cgd = CommandGraphExecutor.new(command_graphs, global_config)

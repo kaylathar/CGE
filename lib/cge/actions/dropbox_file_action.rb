@@ -44,3 +44,5 @@ module CGE
   class DropboxFileActionError < StandardError
   end
 end
+
+CGE::Command.register_command(CGE::DropboxFileAction)

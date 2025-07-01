@@ -80,3 +80,4 @@ module CGE
   class GoogleDocError < StandardError
   end
 end
+CGE::Command.register_command(CGE::GoogleDocInput)

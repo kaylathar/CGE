@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'securerandom'
 require 'set'
 require 'cge/configurable'
@@ -26,12 +28,6 @@ module CGE
       Object.const_get(class_name)
     end
 
-    # Hook to automatically register command classes when they're defined
-    def self.inherited(subclass)
-      super
-      register_command(subclass)
-    end
-
     # Registry to track valid command classes for security
     def self.command_registry
       @command_registry ||= Set.new
@@ -42,12 +38,14 @@ module CGE
     # @param inputs [Hash] Initial inputs for this command
     # @param next_command [Command] The next command to execute after this one
     # @param owner_id [String] Optional ID of the user who owns this command
-    def initialize(id, name, inputs, next_command = nil, owner_id = nil)
+    # @param service_manager [ServiceManager] Optional service manager for accessing services
+    def initialize(id, name, inputs, next_command = nil, owner_id = nil, service_manager = nil)
       @id = id || SecureRandom.uuid
       @name = name
       @inputs = inputs
       @next_command = next_command
       @owner_id = owner_id
+      @service_manager = service_manager
     end
 
     # Executes the command with given inputs and next command
@@ -60,5 +58,9 @@ module CGE
       process_inputs(inputs)
       next_command
     end
+
+    protected
+
+    attr_reader :service_manager
   end
 end

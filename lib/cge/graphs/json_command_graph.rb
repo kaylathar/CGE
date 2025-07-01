@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'json'
 require 'securerandom'
 require 'cge/command'
@@ -40,13 +42,15 @@ module CGE
   class JSONCommandGraph < CommandGraph
     # @param file_path [String] Path to JSON configuration file
     # @param global_configuration [GlobalConfiguration] Optional global configuration instance
-    def self.from_file(file_path, global_configuration = nil)
-      new(File.read(file_path), global_configuration)
+    # @param service_manager [ServiceManager] Optional service manager instance
+    def self.from_file(file_path, global_configuration = nil, service_manager = nil)
+      new(File.read(file_path), global_configuration, service_manager)
     end
 
     # @param json_data [String] JSON data to parse command graph from
     # @param global_configuration [GlobalConfiguration] Optional global configuration instance
-    def initialize(json_data, global_configuration = nil)
+    # @param service_manager [ServiceManager] Optional service manager instance
+    def initialize(json_data, global_configuration = nil, service_manager = nil)
       # Load additional plugins before parsing
       CommandGraph.load_additional_plugins(global_configuration)
 
@@ -58,11 +62,12 @@ module CGE
 
       current_command = nil
       command_list.reverse.each do |command_data|
-        command = command_from_data(command_data, current_command)
+        command = command_from_data(command_data, current_command, service_manager)
         current_command = command
       end
 
-      super(id, name, current_command, global_configuration, constants)
+      super(id, name, current_command, global_configuration, constants, configuration.key?('Repeat'))
+      @repeat = configuration.key?('Repeat')
     end
 
     def get_class(class_name)
@@ -71,12 +76,12 @@ module CGE
       raise CommandGraphException, 'Invalid Action, Monitor, or Input type'
     end
 
-    def command_from_data(command_data, next_command)
+    def command_from_data(command_data, next_command, service_manager = nil)
       name = command_data['Name']
       obj_class = get_class(command_data['Class'])
       inputs = command_data['Inputs'] || {}
       id = command_data['Id'] || SecureRandom.uuid
-      obj_class.new(id, name, inputs, next_command)
+      obj_class.new(id, name, inputs, next_command, nil, service_manager)
     end
 
     private :command_from_data, :get_class

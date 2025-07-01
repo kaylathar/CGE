@@ -40,11 +40,5 @@ module CGE
         return @started
       end
     end
-
-    # Hook to automatically register service classes when they're defined
-    def self.inherited(subclass)
-      super
-      ServiceManager.register_service(subclass.name.to_sym, subclass) if subclass.name
-    end
   end
 end

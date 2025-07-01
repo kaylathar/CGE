@@ -114,7 +114,7 @@ module CGE
       # @return [Hash<String,Class>]] Outputs that are set on trigger, with
       # types of each as values
       def outputs
-        class_variable_get('@@outputs')
+        setup_outputs
       end
 
       protected :attr_input, :attr_output

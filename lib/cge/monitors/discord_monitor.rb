@@ -17,7 +17,7 @@ module CGE
     end
 
     # Boolean, if true enables triggering on a mention, this or command_token must be set.
-    aatr_input :enable_mention, Object
+    attr_input :enable_mention, Object
 
     attr_output :sender, String
     attr_output :content, String
@@ -56,13 +56,13 @@ module CGE
       command_token_value = command_token.value
 
       bot.add_command(command_token_value) do |event, args|
-        handle_discord_command(event, args.join(' '))
+        handle_discord_trigger(event, args.join(' '))
       end
     end
 
     def register_mention_handler(bot)
       bot.on_mention do |event, clean_content|
-        handle_discord_command(event, words)
+        handle_discord_trigger(event, clean_content)
       end
     end
 

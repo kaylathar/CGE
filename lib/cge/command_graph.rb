@@ -91,9 +91,6 @@ module CGE
 
             break if @current_command.nil? || @cancelled
 
-            puts @current_command.id
-            puts @current_command.inputs.count
-            puts @variables
             next_command = @current_command.execute(substitute_variables(@current_command.inputs, @variables),
                                                     @current_command.next_command)
             @current_command.class.outputs.each_key do |output_name|

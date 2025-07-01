@@ -18,6 +18,11 @@ module CGE
         default: 60,
         visible: true,
         validator: ->(value) { value.is_a?(Integer) && value > 0 }
+      },
+      additional_plugins: {
+        default: [],
+        visible: false,
+        validator: ->(value) { value.is_a?(Array) && value.all? { |path| path.is_a?(String) } }
       }
     }.freeze
 
@@ -42,6 +47,12 @@ module CGE
     # @return [Integer] Heartbeat interval (default: 60)
     def heartbeat
       @config[:heartbeat]
+    end
+
+    # Additional plugin paths to load
+    # @return [Array<String>] Array of plugin paths (default: [])
+    def additional_plugins
+      @config[:additional_plugins]
     end
 
     # Provides set of key/value pairs that should be visible to

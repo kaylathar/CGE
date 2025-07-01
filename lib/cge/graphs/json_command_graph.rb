@@ -47,6 +47,9 @@ module CGE
     # @param json_data [String] JSON data to parse command graph from
     # @param global_configuration [GlobalConfiguration] Optional global configuration instance
     def initialize(json_data, global_configuration = nil)
+      # Load additional plugins before parsing
+      CommandGraph.load_additional_plugins(global_configuration)
+      
       configuration = JSON.parse(json_data)
       id = configuration['Id']
       name = configuration['Name']

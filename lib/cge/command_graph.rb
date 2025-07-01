@@ -14,6 +14,33 @@ module CGE
   class CommandGraph
     attr_reader :name, :id, :initial_command, :constants, :owner_id
 
+    @@plugins_loaded = false
+
+    # Load additional plugins from configured paths
+    # @param global_configuration [GlobalConfiguration] Global configuration containing plugin paths
+    def self.load_additional_plugins(global_configuration)
+      return if @@plugins_loaded
+      return unless global_configuration&.additional_plugins
+
+      global_configuration.additional_plugins.each do |plugin_path|
+        load_plugins_from_path(plugin_path)
+      end
+      
+      @@plugins_loaded = true
+    end
+
+    # Load all Ruby files from a specific path
+    # @param path [String] Path to directory containing plugin files
+    def self.load_plugins_from_path(path)
+      return unless File.directory?(path)
+
+      Dir["#{path}/**/*.rb"].sort.each do |file|
+        require file
+      rescue LoadError => e
+        warn "Failed to load plugin from #{file}: #{e.message}"
+      end
+    end
+
     # Create a new command object from a data source
     # @param id [String] Optional unique identifier for this graph (auto-generated if not provided)
     # @param name [String] The user readable name for this graph

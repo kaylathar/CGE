@@ -1,9 +1,12 @@
 require 'cge/conditional'
+require 'cge/logging'
 
 module CGE
   # A conditional that compares two values using various operators
   # Halts execution if the condition is not met
   class ComparisonConditional < Conditional
+    include Logging
+
     attr_input 'value1', String, :required
     attr_input 'value2', String, :required
     attr_input 'operator', String do |val|
@@ -15,6 +18,7 @@ module CGE
     def determine_next_node(next_node)
       return next_node if compute_comparison_result(value1.value, value2.value)
 
+      log_debug("Comparison #{self} failed, aborting graph execution")
       nil
     end
 

@@ -1,5 +1,6 @@
 require 'yaml'
 require 'json'
+require 'cge/logging'
 
 module CGE
   # Global configuration system for CGE daemon
@@ -23,6 +24,11 @@ module CGE
         default: [],
         visible: false,
         validator: ->(value) { value.is_a?(Array) && value.all? { |path| path.is_a?(String) } }
+      },
+      log_level: {
+        default: CGE::Logging::LOG_LEVEL_NONE,
+        visible: false,
+        validator: ->(value) { value.between?(CGE::Logging::LOG_LEVEL_DEBUG, CGE::Logging::LOG_LEVEL_ERROR) }
       }
     }.freeze
 
@@ -47,6 +53,10 @@ module CGE
     # @return [Integer] Heartbeat interval (default: 60)
     def heartbeat
       @config[:heartbeat]
+    end
+
+    def log_level
+      @config[:log_level]
     end
 
     # Additional plugin paths to load

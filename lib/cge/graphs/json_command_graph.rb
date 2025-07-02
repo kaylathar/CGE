@@ -66,8 +66,7 @@ module CGE
         current_command = command
       end
 
-      super(id, name, current_command, global_configuration, constants, configuration.key?('Repeat'))
-      @repeat = configuration.key?('Repeat')
+      super(id, name, current_command, global_configuration, constants, nil, configuration.key?('Repeat'))
     end
 
     def get_class(class_name)

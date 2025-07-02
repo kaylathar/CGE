@@ -7,6 +7,8 @@ Dir["#{File.dirname(__FILE__)}/inputs/*"].sort.each { |file| require file }
 Dir["#{File.dirname(__FILE__)}/conditionals/*"].sort.each { |file| require file }
 Dir["#{File.dirname(__FILE__)}/services/*"].sort.each { |file| require file }
 
+require 'cge/logging'
+
 module CGE
   # Represents a graph of Monitor and Action objects
   # when requested, will begin watching the Monitor
@@ -14,6 +16,7 @@ module CGE
   # default Command continues monitoring forever
   # though subclasses may override this behavior
   class CommandGraph
+    include Logging
     attr_reader :name, :id, :initial_command, :constants, :owner_id
 
     @plugins_loaded = false
@@ -82,15 +85,19 @@ module CGE
       @cancelled = false
       @thread = Thread.new do
         if Thread.current != Thread.main
+          log_info("Beginning thread for graph #{id} - will be repeated: #{@repeat}")
           loop do
             # If we are repeatable, then repeat if we are at the end
             if @current_command.nil? && @repeat
+              log_info("Repeating command graph #{name} with id #{id}")
               @current_command = @initial_command
               @variables = @initial_variables.dup
             end
 
             break if @current_command.nil? || @cancelled
 
+            log_info("Executing command: #{@current_command.id}")
+            log_debug("Current Variables: #{@variables}")
             next_command = @current_command.execute(substitute_variables(@current_command.inputs, @variables),
                                                     @current_command.next_command)
             @current_command.class.outputs.each_key do |output_name|

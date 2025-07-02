@@ -3,6 +3,7 @@ require 'cge/graphs/yaml_command_graph'
 require 'cge/graphs/json_command_graph'
 require 'cge/global_configuration'
 require 'cge/service_manager'
+require 'cge/logging'
 
 # Starts the CGE daemon (CGD) - takes a directory
 # containing the YAML and JSON files for monitor/action pairs
@@ -12,6 +13,10 @@ require 'cge/service_manager'
 # @author Kayla McArthur (mailto:kayla@kayla.is)
 # @license MIT License
 module CGE
+  def self.log_level
+    @@log_level || CGE::Logging::LOG_LEVEL_NONE
+  end
+
   def start_cgd
     if ARGV[0] && File.directory?(ARGV[0])
       service_manager = ServiceManager.new
@@ -23,6 +28,8 @@ module CGE
       Dir["#{ARGV[0]}/*.json"].each do |file|
         command_graphs << JSONCommandGraph.from_file(file, global_config, service_manager)
       end
+
+      @@log_level = global_config.log_level
 
       cgd = CommandGraphExecutor.new(command_graphs, global_config)
       cgd.start

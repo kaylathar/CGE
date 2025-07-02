@@ -2,6 +2,11 @@ Metrics/MethodLength:
   Max: 50
 Metrics/ClassLength:
   Max: 200
+Metrics/ParameterLists:
+  Max: 7
+  MaxOptionalParameters: 7
+Style/OptionalBooleanParameter:
+  Enabled: false
 Layout/LineLength:
   Max: 150
 Metrics/AbcSize:
@@ -12,5 +17,5 @@ AllCops:
   NewCops: enable
   TargetRubyVersion: 2.3
   Exclude:
-    - spec/**
+    - 'spec/**/*'
   SuggestExtensions: false

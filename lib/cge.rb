@@ -15,6 +15,8 @@ require 'cge/logging'
 # @author Kayla McArthur (mailto:kayla@kayla.is)
 # @license MIT License
 module CGE
+  @@log_level = nil # rubocop:disable Style/ClassVars
+
   def self.log_level
     @@log_level || CGE::Logging::LOG_LEVEL_NONE
   end
@@ -31,7 +33,7 @@ module CGE
         command_graphs << JSONCommandGraph.from_file(file, global_config, service_manager)
       end
 
-      @@log_level = global_config.log_level
+      @@log_level = global_config.log_level # rubocop:disable Style/ClassVars
 
       cgd = CommandGraphExecutor.new(command_graphs, global_config)
       cgd.start

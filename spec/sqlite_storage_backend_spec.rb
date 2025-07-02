@@ -29,6 +29,9 @@ if defined?(SQLite3) && defined?(CGE::SQLiteStorageBackend)
     end
   end
 
+  # Register the test command
+  CGE::Command.register_command(TestCommand)
+
   # Mock command graph for testing
   let(:mock_command) do
     cmd = TestCommand.new('cmd_1', 'test_command', { 'param' => 'value' })

@@ -9,8 +9,8 @@ describe 'CGE' do
     
     let!(:yaml_command_graph_class) do
       dup = class_double('CGE::YAMLCommandGraph').as_stubbed_const
-      allow(dup).to receive(:new).with('/test/file1.yaml').and_return(mock_command_graph1)
-      allow(dup).to receive(:new).with('/test/file2.yaml').and_return(mock_command_graph2)
+      allow(dup).to receive(:from_file).with('/test/file1.yaml', mock_global_config, anything).and_return(mock_command_graph1)
+      allow(dup).to receive(:from_file).with('/test/file2.yaml', mock_global_config, anything).and_return(mock_command_graph2)
       dup
     end
 
@@ -18,7 +18,7 @@ describe 'CGE' do
 
     let!(:json_command_graph_class) do
       dup = class_double('CGE::JSONCommandGraph').as_stubbed_const
-      allow(dup).to receive(:new).with('/test/file1.json').and_return(mock_command_graph3)
+      allow(dup).to receive(:from_file).with('/test/file1.json', mock_global_config, anything).and_return(mock_command_graph3)
       dup
     end
 
@@ -39,7 +39,7 @@ describe 'CGE' do
 
     let!(:daemon_class) do
       dup = class_double('CGE::CommandGraphExecutor').as_stubbed_const
-      allow(dup).to receive(:new).with([mock_command_graph1, mock_command_graph2, mock_command_graph3], nil).and_return(mock_daemon_instance)
+      allow(dup).to receive(:new).with([mock_command_graph1, mock_command_graph2, mock_command_graph3], mock_global_config).and_return(mock_daemon_instance)
       dup
     end
 
@@ -47,6 +47,10 @@ describe 'CGE' do
       # Mock File.directory? to return true for our test directory
       allow(File).to receive(:directory?).with('/test').and_return(true)
       allow(File).to receive(:directory?).with('/dev/null').and_return(false)
+      
+      # Mock parse_global_config to return a mock global config
+      allow_any_instance_of(Object).to receive(:parse_global_config).and_return(mock_global_config)
+      allow(mock_global_config).to receive(:log_level).and_return(CGE::Logging::LOG_LEVEL_NONE)
     end
 
     it 'should print usage if argument is not directory' do
@@ -56,15 +60,15 @@ describe 'CGE' do
     end
 
     it 'should generate CommandGraph objects from each file' do
-      expect(yaml_command_graph_class).to receive(:new).with('/test/file1.yaml')
-      expect(yaml_command_graph_class).to receive(:new).with('/test/file2.yaml')
-      expect(json_command_graph_class).to receive(:new).with('/test/file1.json')
+      expect(yaml_command_graph_class).to receive(:from_file).with('/test/file1.yaml', mock_global_config, anything)
+      expect(yaml_command_graph_class).to receive(:from_file).with('/test/file2.yaml', mock_global_config, anything)
+      expect(json_command_graph_class).to receive(:from_file).with('/test/file1.json', mock_global_config, anything)
       ARGV[0] = '/test'
       start_cgd
     end
 
     it 'should create a new daemon with command graphs' do
-      expect(daemon_class).to receive(:new).with([mock_command_graph1, mock_command_graph2, mock_command_graph3], nil)
+      expect(daemon_class).to receive(:new).with([mock_command_graph1, mock_command_graph2, mock_command_graph3], mock_global_config)
       ARGV[0] = '/test'
       start_cgd
     end

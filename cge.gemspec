@@ -22,7 +22,7 @@ Gem::Specification.new do |spec|
   spec.files         = `git ls-files -z`.split("\x0")
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
-  spec.required_ruby_version = '>= 2.0.0'
+  spec.required_ruby_version = '>= 2.3.0'
 
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'rack-test'
@@ -31,6 +31,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rubocop'
   spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'webmock'
+  spec.add_dependency 'discordrb'
   spec.add_dependency 'google-apis-docs_v1', '~> 0.33'
   spec.add_dependency 'google-apis-sheets_v4', '~> 0.28'
   spec.add_dependency 'google-cloud-storage'
@@ -41,6 +42,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'rtesseract', '~> 3.1'
   spec.add_dependency 'sinatra', '~> 3.0'
   spec.add_dependency 'sqlite3'
+  spec.add_dependency 'twilio-ruby'
 
   spec.metadata['rubygems_mfa_required'] = 'true'
 end

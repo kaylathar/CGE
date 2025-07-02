@@ -223,6 +223,8 @@ describe CGE::CommandGraph do
     
     it 'should cancel execution thread during reset' do
       mock_thread = double('Thread')
+      expect(mock_thread).to receive(:join).with(1.0)
+      expect(mock_thread).to receive(:alive?).and_return(true)
       expect(mock_thread).to receive(:kill)
       
       graph.instance_variable_set(:@thread, mock_thread)

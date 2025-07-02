@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
 require 'cge/action'
+require 'cge/logging'
 
 module CGE
   # An action to send messages via the orchestration service
   class OrchestrationAction < Action
+    include Logging
     attr_input :role, String, :required
     attr_input :message, String, :required
 

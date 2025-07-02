@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
 require 'cge/monitor'
+require 'cge/logging'
 
 module CGE
   # Monitors the orchestration service, waits for a message to this role
   class OrchestrationMonitor < Monitor
+    include Logging
     attr_input :role, String, :required do |val|
       !val.empty?
     end

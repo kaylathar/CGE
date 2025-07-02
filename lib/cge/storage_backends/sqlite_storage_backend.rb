@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'json'
 require 'sqlite3'
 require 'cge/storage_backend'
@@ -6,7 +8,7 @@ require 'cge/command_graph'
 module CGE
   # SQLite storage backend
   class SQLiteStorageBackend < StorageBackend
-    SCHEMA_VERSION_KEY = 'schema_version'.freeze
+    SCHEMA_VERSION_KEY = 'schema_version'
     SCHEMA_VERSION_NONE = -1
     SCHEMA_VERSION_CURRENT = 1
 

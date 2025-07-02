@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'cge/input'
 require 'net/http'
 require 'uri'
@@ -10,9 +12,7 @@ module CGE
       parsed_uri = URI.parse(val)
       parsed_uri && %w[http https].include?(parsed_uri.scheme)
     end
-    attr_input 'timeout', Integer do |val|
-      val > 0
-    end
+    attr_input 'timeout', Integer, &:positive?
     attr_input 'user_agent', String
 
     attr_output 'content', String

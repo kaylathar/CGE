@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'json'
 require 'google/cloud/storage'
 require 'cge/storage_backend'
@@ -7,7 +9,7 @@ require 'cge/command'
 module CGE
   # Google Cloud Storage backend
   class GCSStorageBackend < StorageBackend
-    SCHEMA_VERSION_KEY = 'schema_version'.freeze
+    SCHEMA_VERSION_KEY = 'schema_version'
     SCHEMA_VERSION_NONE = -1
     SCHEMA_VERSION_CURRENT = 1
 
@@ -126,7 +128,7 @@ module CGE
 
       # Delete graph file
       graph_file = @bucket.file("graphs/#{graph_id}.json")
-      graph_file.delete if graph_file
+      graph_file&.delete
 
       # Find and delete associated commands
       graph_data = graphs_index[graph_id]
@@ -192,7 +194,7 @@ module CGE
       file_path = "indexes/#{name}.json"
       # Delete existing file
       existing_file = @bucket.file(file_path)
-      existing_file.delete if existing_file
+      existing_file&.delete
 
       # Create new file
       @bucket.create_file(StringIO.new(data.to_json), file_path)

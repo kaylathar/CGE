@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module CGE
   # Storage system for persisting graphs
   class CommandGraphManager

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'cge/input'
 require 'google/apis/docs_v1'
 require 'googleauth'
@@ -42,7 +44,7 @@ module CGE
     end
 
     def extract_text_from_document(document)
-      return '' unless document.body && document.body.content
+      return '' unless document.body&.content
 
       document.body.content.map { |element| extract_text_from_element(element) }.join
     end

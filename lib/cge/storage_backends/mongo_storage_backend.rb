@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'json'
 require 'mongo'
 require 'cge/storage_backend'
@@ -7,7 +9,7 @@ require 'cge/command'
 module CGE
   # MongoDB storage backend
   class MongoStorageBackend < StorageBackend
-    SCHEMA_VERSION_KEY = 'schema_version'.freeze
+    SCHEMA_VERSION_KEY = 'schema_version'
     SCHEMA_VERSION_NONE = -1
     SCHEMA_VERSION_CURRENT = 1
 

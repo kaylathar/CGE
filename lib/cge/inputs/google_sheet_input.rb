@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'cge/input'
 require 'google/apis/sheets_v4'
 require 'googleauth'

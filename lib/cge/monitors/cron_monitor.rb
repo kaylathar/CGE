@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'cge/monitor'
 require 'time'
 
@@ -23,7 +25,7 @@ module CGE
       return if current_time >= @target_time
 
       sleep_duration = @target_time - current_time
-      sleep(sleep_duration) if sleep_duration > 0
+      sleep(sleep_duration) if sleep_duration.positive?
 
       @fired_at = Time.now
     end

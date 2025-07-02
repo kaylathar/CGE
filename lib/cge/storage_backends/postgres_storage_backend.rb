@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'json'
 require 'pg'
 require 'cge/storage_backend'
@@ -7,7 +9,7 @@ require 'cge/command'
 module CGE
   # PostgreSQL storage backend
   class PostgresStorageBackend < StorageBackend
-    SCHEMA_VERSION_KEY = 'schema_version'.freeze
+    SCHEMA_VERSION_KEY = 'schema_version'
     SCHEMA_VERSION_NONE = -1
     SCHEMA_VERSION_CURRENT = 1
 
@@ -51,7 +53,7 @@ module CGE
       command = graph.initial_command
       until command.nil?
         result = @database.exec_params('SELECT id FROM commands WHERE id=$1', [command.id])
-        if result.ntuples > 0
+        if result.ntuples.positive?
           @database.exec_params('UPDATE commands SET name=$1, class=$2, previous_command_id=$3, inputs=$4 WHERE id=$5',
                                 [command.name, command.class.name, previous_command_id, command.inputs.to_json,
                                  command.id])
@@ -65,7 +67,7 @@ module CGE
       end
 
       result = @database.exec_params('SELECT id FROM graphs WHERE id=$1', [graph.id])
-      if result.ntuples > 0
+      if result.ntuples.positive?
         @database.exec_params('UPDATE graphs SET name=$1, final_command_id=$2, constants=$3 WHERE id=$4',
                               [graph.name, previous_command_id, graph.constants.to_json, graph.id])
       else
@@ -79,7 +81,7 @@ module CGE
       initial_command_id = nil
       constants = nil
       result = @database.exec_params('SELECT name, final_command_id, constants FROM graphs WHERE id=$1', [graph_id])
-      if result.ntuples > 0
+      if result.ntuples.positive?
         row = result[0]
         name = row['name']
         initial_command_id = row['final_command_id']
@@ -92,7 +94,7 @@ module CGE
       until fetch_command_id.nil?
         result = @database.exec_params('SELECT id, name, class, previous_command_id, inputs FROM commands WHERE id=$1',
                                        [fetch_command_id])
-        break unless result.ntuples > 0
+        break unless result.ntuples.positive?
 
         row = result[0]
         command_class = Command.safe_const_get(row['class'])
@@ -106,7 +108,7 @@ module CGE
     def delete_graph_with_id(graph_id)
       # Get final command ID before deleting graph
       result = @database.exec_params('SELECT final_command_id FROM graphs WHERE id=$1', [graph_id])
-      final_command_id = result.ntuples > 0 ? result[0]['final_command_id'] : nil
+      final_command_id = result.ntuples.positive? ? result[0]['final_command_id'] : nil
 
       # Delete graph
       @database.exec_params('DELETE FROM graphs WHERE id=$1', [graph_id])
@@ -137,7 +139,7 @@ module CGE
 
     def schema_version
       result = @database.exec_params('SELECT value FROM config WHERE key=$1', [SCHEMA_VERSION_KEY])
-      return result[0]['value'].to_i if result.ntuples > 0
+      return result[0]['value'].to_i if result.ntuples.positive?
 
       SCHEMA_VERSION_NONE
     rescue PG::UndefinedTable
@@ -147,7 +149,7 @@ module CGE
 
     def update_schema_version(version)
       result = @database.exec_params('SELECT value FROM config WHERE key=$1', [SCHEMA_VERSION_KEY])
-      if result.ntuples > 0
+      if result.ntuples.positive?
         @database.exec_params('UPDATE config SET value=$1 WHERE key=$2', [version, SCHEMA_VERSION_KEY])
       else
         @database.exec_params('INSERT INTO config (key, value) VALUES ($1,$2)', [SCHEMA_VERSION_KEY, version])

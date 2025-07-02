@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'yaml'
 require 'json'
 require 'cge/logging'
@@ -18,7 +20,7 @@ module CGE
       heartbeat: {
         default: 60,
         visible: true,
-        validator: ->(value) { value.is_a?(Integer) && value > 0 }
+        validator: ->(value) { value.is_a?(Integer) && value.positive? }
       },
       additional_plugins: {
         default: [],

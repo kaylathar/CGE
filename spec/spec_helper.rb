@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'simplecov'
 SimpleCov.start do
   add_filter '/spec/'
@@ -25,6 +27,8 @@ require 'cge/actions/shell_action'
 require 'cge/actions/sms_action'
 require 'cge/actions/file_action'
 require 'cge/actions/dropbox_file_action'
+require 'cge/actions/atproto_action'
+require 'cge/monitors/atproto_monitor'
 
 require 'cge/inputs/constant_input'
 require 'cge/inputs/file_input'
@@ -45,6 +49,8 @@ CGE::Command.register_command(CGE::ShellAction)
 CGE::Command.register_command(CGE::SMSAction)
 CGE::Command.register_command(CGE::FileAction)
 CGE::Command.register_command(CGE::DropboxFileAction)
+CGE::Command.register_command(CGE::AtProtoAction)
+CGE::Command.register_command(CGE::AtProtoMonitor)
 
 CGE::Command.register_command(CGE::ConstantInput)
 CGE::Command.register_command(CGE::FileInput)

@@ -36,11 +36,13 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'google-apis-sheets_v4', '~> 0.28'
   spec.add_dependency 'google-cloud-storage'
   spec.add_dependency 'json'
+  spec.add_dependency 'minisky'
   spec.add_dependency 'net-http', '~> 0.4'
   spec.add_dependency 'net-smtp'
   spec.add_dependency 'nokogiri', '~> 1.15'
   spec.add_dependency 'rtesseract', '~> 3.1'
   spec.add_dependency 'sinatra', '~> 3.0'
+  spec.add_dependency 'skyfall'
   spec.add_dependency 'sqlite3'
   spec.add_dependency 'twilio-ruby'
 

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'cge/monitor'
+require 'securerandom'
 
 module CGE
   # Monitor that listens for messages via a bot on Discord
@@ -28,6 +29,7 @@ module CGE
       @triggered = false
       @trigger_mutex = Mutex.new
       @trigger_condition = ConditionVariable.new
+      @mention_id = SecureRandom.uuid
 
       discord_service = service_manager.lookup(:DiscordService)
       bot = discord_service.bot_for_token(token.value)
@@ -61,7 +63,7 @@ module CGE
     end
 
     def register_mention_handler(bot)
-      bot.on_mention do |event, clean_content|
+      bot.on_mention(@mention_id) do |event, clean_content|
         handle_discord_trigger(event, clean_content)
       end
     end

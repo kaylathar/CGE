@@ -52,7 +52,7 @@ module CGE
       @token = token
       @bot = nil
       @commands = {}
-      @mention_handler = nil
+      @mention_handlers = {}
       @bot_mutex = Mutex.new
       @thread = nil
       @running = false
@@ -77,18 +77,20 @@ module CGE
     end
 
     # Set a handler for when the bot is mentioned
+    # @param obj [Object] An object that can act as a hash key
+    # for this handler, should be unique
     # @param block [Proc] Block to execute when triggered
     # Block receives (event, message_content)
-    def on_mention(&block)
+    def on_mention(obj, &block)
       @bot_mutex.synchronize do
-        @mention_handler = block
+        @mention_handlers[obj] = block
       end
     end
 
     # Remove the mention handler
-    def remove_mention_handler
+    def remove_mention_handler(obj)
       @bot_mutex.synchronize do
-        @mention_handler = nil
+        @mention_handlers.delete(obj)
       end
     end
 
@@ -167,14 +169,16 @@ module CGE
     # Handle messages where the bot is mentioned
     def handle_mention(event, message_content)
       @bot_mutex.synchronize do
-        return unless @mention_handler
+        return unless @mention_handlers
 
         # Get clean content with mentions removed for the handler
         clean_content = get_clean_content_without_mentions(event, message_content)
 
         # Execute mention handler in a separate thread
         Thread.new do
-          @mention_handler.call(event, clean_content)
+          @mention_handlers.each_value do |handler|
+            handler.call(event, clean_content)
+          end
         end
       end
     end

@@ -18,7 +18,8 @@ describe CGE::UnixSocketMonitor do
 
     it 'should validate socket_path is not empty' do
       invalid_inputs = { 'socket_path' => '' }
-      expect { monitor.execute(invalid_inputs, nil) }.to raise_error(CGE::InputError)
+      mock_graph = double('CommandGraph')
+      expect { monitor.execute(invalid_inputs, nil, mock_graph) }.to raise_error(CGE::InputError)
     end
   end
 
@@ -40,38 +41,45 @@ describe CGE::UnixSocketMonitor do
 
       it 'should create unix server with specified path' do
         expect(UNIXServer).to receive(:new).with(temp_socket_path)
-        monitor.execute(inputs, nil)
+        mock_graph = double('CommandGraph')
+        monitor.execute(inputs, nil, mock_graph)
       end
 
       it 'should accept client connections' do
         expect(mock_server).to receive(:accept).and_return(mock_client)
-        monitor.execute(inputs, nil)
+        mock_graph = double('CommandGraph')
+        monitor.execute(inputs, nil, mock_graph)
       end
 
       it 'should read data from client' do
         expect(mock_client).to receive(:read).and_return(test_data)
-        monitor.execute(inputs, nil)
+        mock_graph = double('CommandGraph')
+        monitor.execute(inputs, nil, mock_graph)
       end
 
       it 'should set data output attribute' do
-        monitor.execute(inputs, nil)
+        mock_graph = double('CommandGraph')
+        monitor.execute(inputs, nil, mock_graph)
         expect(monitor.data).to eq(test_data)
       end
 
       it 'should close client connection' do
         expect(mock_client).to receive(:close)
-        monitor.execute(inputs, nil)
+        mock_graph = double('CommandGraph')
+        monitor.execute(inputs, nil, mock_graph)
       end
 
       it 'should close server socket' do
         expect(mock_server).to receive(:close)
-        monitor.execute(inputs, nil)
+        mock_graph = double('CommandGraph')
+        monitor.execute(inputs, nil, mock_graph)
       end
 
       it 'should clean up socket file after completion' do
         allow(File).to receive(:exist?).with(temp_socket_path).and_return(true)
         expect(File).to receive(:unlink).with(temp_socket_path)
-        monitor.execute(inputs, nil)
+        mock_graph = double('CommandGraph')
+        monitor.execute(inputs, nil, mock_graph)
       end
 
       it 'should clean up socket file even if error occurs' do
@@ -79,7 +87,8 @@ describe CGE::UnixSocketMonitor do
         allow(File).to receive(:exist?).with(temp_socket_path).and_return(true)
         expect(File).to receive(:unlink).with(temp_socket_path)
 
-        expect { monitor.execute(inputs, nil) }.to raise_error(StandardError, 'test error')
+        mock_graph = double('CommandGraph')
+        expect { monitor.execute(inputs, nil, mock_graph) }.to raise_error(StandardError, 'test error')
       end
     end
   end

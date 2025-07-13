@@ -15,7 +15,8 @@ RSpec.describe CGE::InclusionConditional do
           'set' => 'apple,banana,cherry'
         })
         
-        result = conditional.send(:determine_next_node, next_command)
+        mock_graph = double('CommandGraph')
+        result = conditional.send(:determine_next_node, next_command, mock_graph)
         expect(result).to eq(next_command)
       end
 
@@ -25,7 +26,8 @@ RSpec.describe CGE::InclusionConditional do
           'set' => 'apple,banana,cherry'
         })
         
-        result = conditional.send(:determine_next_node, next_command)
+        mock_graph = double('CommandGraph')
+        result = conditional.send(:determine_next_node, next_command, mock_graph)
         expect(result).to be_nil
       end
     end
@@ -38,7 +40,8 @@ RSpec.describe CGE::InclusionConditional do
           'operation' => 'exclude'
         })
         
-        result = conditional.send(:determine_next_node, next_command)
+        mock_graph = double('CommandGraph')
+        result = conditional.send(:determine_next_node, next_command, mock_graph)
         expect(result).to eq(next_command)
       end
 
@@ -49,7 +52,8 @@ RSpec.describe CGE::InclusionConditional do
           'operation' => 'exclude'
         })
         
-        result = conditional.send(:determine_next_node, next_command)
+        mock_graph = double('CommandGraph')
+        result = conditional.send(:determine_next_node, next_command, mock_graph)
         expect(result).to be_nil
       end
     end
@@ -62,7 +66,8 @@ RSpec.describe CGE::InclusionConditional do
           'case_sensitive' => true
         })
         
-        result = conditional.send(:determine_next_node, next_command)
+        mock_graph = double('CommandGraph')
+        result = conditional.send(:determine_next_node, next_command, mock_graph)
         expect(result).to be_nil
       end
 
@@ -73,7 +78,8 @@ RSpec.describe CGE::InclusionConditional do
           'case_sensitive' => false
         })
         
-        result = conditional.send(:determine_next_node, next_command)
+        mock_graph = double('CommandGraph')
+        result = conditional.send(:determine_next_node, next_command, mock_graph)
         expect(result).to eq(next_command)
       end
     end
@@ -85,7 +91,8 @@ RSpec.describe CGE::InclusionConditional do
           'set' => ' apple , banana , cherry '
         })
         
-        result = conditional.send(:determine_next_node, next_command)
+        mock_graph = double('CommandGraph')
+        result = conditional.send(:determine_next_node, next_command, mock_graph)
         expect(result).to eq(next_command)
       end
     end
@@ -140,7 +147,8 @@ RSpec.describe CGE::InclusionConditional do
         'set' => 'apple,banana,cherry'
       }
       
-      result = conditional.execute(inputs, next_command)
+      mock_graph = double('CommandGraph')
+      result = conditional.execute(inputs, next_command, mock_graph)
       expect(result).to eq(next_command)
     end
   end

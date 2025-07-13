@@ -35,12 +35,14 @@ describe CGE::EmailAction do
     it 'sends with the server and port passed in' do
       @inputs['port'] = 333
       expect(@smtp).to receive(:start).with(@server, 333)
-      @action.execute(@inputs, nil)
+      mock_graph = double('CommandGraph')
+      @action.execute(@inputs, nil, mock_graph)
     end
 
     it 'should use a default port if none is specified' do
       expect(@smtp).to receive(:start).with(@server, 25)
-      @action.execute(@inputs, nil)
+      mock_graph = double('CommandGraph')
+      @action.execute(@inputs, nil, mock_graph)
     end
 
     it 'should send a message' do
@@ -55,7 +57,8 @@ END
       expect(@smtp_obj).to receive(:send_message).with(
         target_message, 'test@example.com', 'test_to@example.com'
       )
-      @action.execute(@inputs, nil)
+      mock_graph = double('CommandGraph')
+      @action.execute(@inputs, nil, mock_graph)
     end
   end
 end

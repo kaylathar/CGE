@@ -31,6 +31,7 @@ describe CGE::Conditional do
   it 'should process inputs before evaluating condition' do
     next_node = double('next_node')
     conditional = TestConditional.new('process_conditional_id', 'test', {}, nil)
-    expect(conditional.execute({ 'test_input' => 'success' }, next_node)).to eq(next_node)
+    mock_graph = double('CommandGraph')
+    expect(conditional.execute({ 'test_input' => 'success' }, next_node, mock_graph)).to eq(next_node)
   end
 end

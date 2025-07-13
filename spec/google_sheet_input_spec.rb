@@ -30,7 +30,8 @@ describe CGE::GoogleSheetInput do
   end
 
   it 'should fetch and set spreadsheet content when processed' do
-    google_sheet_input.execute(inputs, nil)
+    mock_graph = double('CommandGraph')
+    google_sheet_input.execute(inputs, nil, mock_graph)
     expect(google_sheet_input.content).to eq("Name\tAge\nJohn\t25\nJane\t30")
   end
 
@@ -39,7 +40,8 @@ describe CGE::GoogleSheetInput do
       .with(spreadsheet_id, 'A1:B5')
       .and_return(mock_response)
 
-    google_sheet_input.execute(inputs_with_range, nil)
+    mock_graph = double('CommandGraph')
+    google_sheet_input.execute(inputs_with_range, nil, mock_graph)
     expect(google_sheet_input.content).to eq("Name\tAge\nJohn\t25\nJane\t30")
   end
 
@@ -48,43 +50,50 @@ describe CGE::GoogleSheetInput do
       .with(spreadsheet_id, 'A:ZZ')
       .and_return(mock_response)
 
-    google_sheet_input.execute(inputs, nil)
+    mock_graph = double('CommandGraph')
+    google_sheet_input.execute(inputs, nil, mock_graph)
   end
 
   it 'should handle empty spreadsheets' do
     empty_response = double('response', values: nil)
     allow(mock_service).to receive(:get_spreadsheet_values).and_return(empty_response)
 
-    google_sheet_input.execute(inputs, nil)
+    mock_graph = double('CommandGraph')
+    google_sheet_input.execute(inputs, nil, mock_graph)
     expect(google_sheet_input.content).to eq('')
   end
 
   it 'should raise an error when spreadsheet_id is not provided' do
-    expect { google_sheet_input.execute({}, nil) }
+    mock_graph = double('CommandGraph')
+    expect { google_sheet_input.execute({}, nil, mock_graph) }
       .to raise_error(CGE::InputError, /Required input spreadsheet_id missing/)
   end
 
   it 'should validate spreadsheet_id format' do
-    expect { google_sheet_input.execute({ 'spreadsheet_id' => 'invalid' }, nil) }
+    mock_graph = double('CommandGraph')
+    expect { google_sheet_input.execute({ 'spreadsheet_id' => 'invalid' }, nil, mock_graph) }
       .to raise_error(CGE::InputError, /Bad value for input spreadsheet_id/)
   end
 
   it 'should validate credentials_path exists' do
-    expect { google_sheet_input.execute({ 'spreadsheet_id' => spreadsheet_id, 'credentials_path' => '/nonexistent/path' }, nil) }
+    mock_graph = double('CommandGraph')
+    expect { google_sheet_input.execute({ 'spreadsheet_id' => spreadsheet_id, 'credentials_path' => '/nonexistent/path' }, nil, mock_graph) }
       .to raise_error(CGE::InputError, /Bad value for input credentials_path/)
   end
 
   it 'should handle Google API errors' do
     allow(mock_service).to receive(:get_spreadsheet_values).and_raise(Google::Apis::ClientError.new('Not found'))
 
-    expect { google_sheet_input.execute(inputs, nil) }
+    mock_graph = double('CommandGraph')
+    expect { google_sheet_input.execute(inputs, nil, mock_graph) }
       .to raise_error(CGE::GoogleSheetError, /Google API error/)
   end
 
   it 'should handle network errors' do
     allow(mock_service).to receive(:get_spreadsheet_values).and_raise(StandardError.new('Network error'))
 
-    expect { google_sheet_input.execute(inputs, nil) }
+    mock_graph = double('CommandGraph')
+    expect { google_sheet_input.execute(inputs, nil, mock_graph) }
       .to raise_error(CGE::GoogleSheetError, /Failed to fetch spreadsheet/)
   end
 
@@ -98,7 +107,8 @@ describe CGE::GoogleSheetInput do
       .with(json_key_io: mock_file, scope: ['https://www.googleapis.com/auth/spreadsheets.readonly'])
       .and_return(mock_credentials)
 
-    google_sheet_input.execute(inputs_with_credentials, nil)
+    mock_graph = double('CommandGraph')
+    google_sheet_input.execute(inputs_with_credentials, nil, mock_graph)
     expect(google_sheet_input.content).to eq("Name\tAge\nJohn\t25\nJane\t30")
   end
 end

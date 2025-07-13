@@ -13,7 +13,8 @@ RSpec.describe CGE::TimeConditional do
         past_time = (Time.now - 3600).strftime('%Y-%m-%d %H:%M:%S') # 1 hour ago
         conditional.send(:process_inputs, { 'time' => past_time })
         
-        result = conditional.send(:determine_next_node, next_command)
+        mock_graph = double('CommandGraph')
+        result = conditional.send(:determine_next_node, next_command, mock_graph)
         expect(result).to eq(next_command)
       end
 
@@ -21,7 +22,8 @@ RSpec.describe CGE::TimeConditional do
         future_time = (Time.now + 3600).strftime('%Y-%m-%d %H:%M:%S') # 1 hour from now
         conditional.send(:process_inputs, { 'time' => future_time })
         
-        result = conditional.send(:determine_next_node, next_command)
+        mock_graph = double('CommandGraph')
+        result = conditional.send(:determine_next_node, next_command, mock_graph)
         expect(result).to be_nil
       end
     end
@@ -34,7 +36,8 @@ RSpec.describe CGE::TimeConditional do
           'operator' => 'before'
         })
         
-        result = conditional.send(:determine_next_node, next_command)
+        mock_graph = double('CommandGraph')
+        result = conditional.send(:determine_next_node, next_command, mock_graph)
         expect(result).to eq(next_command)
       end
 
@@ -45,7 +48,8 @@ RSpec.describe CGE::TimeConditional do
           'operator' => 'before'
         })
         
-        result = conditional.send(:determine_next_node, next_command)
+        mock_graph = double('CommandGraph')
+        result = conditional.send(:determine_next_node, next_command, mock_graph)
         expect(result).to be_nil
       end
     end
@@ -59,7 +63,8 @@ RSpec.describe CGE::TimeConditional do
           'tolerance' => 120
         })
         
-        result = conditional.send(:determine_next_node, next_command)
+        mock_graph = double('CommandGraph')
+        result = conditional.send(:determine_next_node, next_command, mock_graph)
         expect(result).to eq(next_command)
       end
 
@@ -71,7 +76,8 @@ RSpec.describe CGE::TimeConditional do
           'tolerance' => 60
         })
         
-        result = conditional.send(:determine_next_node, next_command)
+        mock_graph = double('CommandGraph')
+        result = conditional.send(:determine_next_node, next_command, mock_graph)
         expect(result).to be_nil
       end
     end

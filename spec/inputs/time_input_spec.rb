@@ -128,9 +128,10 @@ RSpec.describe CGE::TimeInput do
   describe '#execute' do
     it 'processes inputs and invokes time gathering' do
       next_command = double('NextCommand')
+      mock_graph = double('CommandGraph')
       inputs = { 'format' => 'unix' }
       
-      result = input.execute(inputs, next_command)
+      result = input.execute(inputs, next_command, mock_graph)
       
       expect(result).to eq(next_command)
       expect(input.formatted_time).to match(/^\d+$/)

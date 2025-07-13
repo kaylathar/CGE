@@ -60,7 +60,8 @@ describe CGE::DropboxFileAction do
       expect(Net::HTTP).to receive(:new).with('content.dropboxapi.com', 443)
       expect(@http).to receive(:use_ssl=).with(true)
 
-      @action.execute(@inputs, nil)
+      mock_graph = double('CommandGraph')
+      @action.execute(@inputs, nil, mock_graph)
     end
 
     it 'sets correct headers for the request' do
@@ -71,7 +72,8 @@ describe CGE::DropboxFileAction do
       expect(@request).to receive(:[]=).with('Content-Type', 'application/octet-stream')
       expect(@request).to receive(:[]=).with('Dropbox-API-Arg', kind_of(String))
 
-      @action.execute(@inputs, nil)
+      mock_graph = double('CommandGraph')
+      @action.execute(@inputs, nil, mock_graph)
     end
 
     it 'sends content as request body' do
@@ -80,7 +82,8 @@ describe CGE::DropboxFileAction do
 
       expect(@request).to receive(:body=).with('Test content')
 
-      @action.execute(@inputs, nil)
+      mock_graph = double('CommandGraph')
+      @action.execute(@inputs, nil, mock_graph)
     end
 
     it 'uses overwrite mode when overwrite is true' do
@@ -92,7 +95,8 @@ describe CGE::DropboxFileAction do
       expect(@request).to receive(:[]=).with('Content-Type', kind_of(String))
       expect(@request).to receive(:[]=).with('Dropbox-API-Arg', kind_of(String))
 
-      @action.execute(@inputs, nil)
+      mock_graph = double('CommandGraph')
+      @action.execute(@inputs, nil, mock_graph)
 
       expect(JSON.parse(@request_headers['Dropbox-API-Arg'])).to match(hash_including("mode" => "overwrite"))
     end
@@ -106,7 +110,8 @@ describe CGE::DropboxFileAction do
       expect(@request).to receive(:[]=).with('Content-Type', kind_of(String))
       expect(@request).to receive(:[]=).with('Dropbox-API-Arg', kind_of(String))
 
-      @action.execute(@inputs, nil)
+      mock_graph = double('CommandGraph')
+      @action.execute(@inputs, nil, mock_graph)
 
       expect(JSON.parse(@request_headers['Dropbox-API-Arg'])).to match(hash_including("mode" => "add"))
     end
@@ -115,13 +120,15 @@ describe CGE::DropboxFileAction do
       allow(@response).to receive(:code).and_return('400')
       allow(@response).to receive(:body).and_return('{"error": "Invalid request"}')
 
-      expect {@action.execute(@inputs, nil)}.to raise_error(CGE::DropboxFileActionError)
+      mock_graph = double('CommandGraph')
+      expect {@action.execute(@inputs, nil, mock_graph)}.to raise_error(CGE::DropboxFileActionError)
     end
 
     it 'handles network errors gracefully' do
       allow(@http).to receive(:request).and_raise(StandardError.new('Network error'))
 
-      expect {@action.execute(@inputs, nil)}.to raise_error(CGE::DropboxFileActionError)
+      mock_graph = double('CommandGraph')
+      expect {@action.execute(@inputs, nil, mock_graph)}.to raise_error(CGE::DropboxFileActionError)
     end
   end
 end

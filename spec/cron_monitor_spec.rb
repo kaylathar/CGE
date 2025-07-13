@@ -11,7 +11,8 @@ describe CGE::CronMonitor do
 
     it 'should validate that time is parseable' do
       invalid_inputs = { 'time' => 'not a time' }
-      expect { monitor.execute(invalid_inputs, nil) }.to raise_error
+      mock_graph = double('CommandGraph')
+      expect { monitor.execute(invalid_inputs, nil, mock_graph) }.to raise_error
     end
 
     it 'should accept valid time formats' do
@@ -23,12 +24,14 @@ describe CGE::CronMonitor do
 
       valid_times.each do |time_str|
         inputs = { 'time' => time_str }
-        expect { monitor.execute(inputs, nil) }.not_to raise_error
+        mock_graph = double('CommandGraph')
+        expect { monitor.execute(inputs, nil, mock_graph) }.not_to raise_error
       end
     end
 
     it 'should parse the target time correctly' do
-      monitor.execute(inputs, nil)
+      mock_graph = double('CommandGraph')
+      monitor.execute(inputs, nil, mock_graph)
       expect(monitor.instance_variable_get(:@target_time)).to be_a(Time)
     end
 
@@ -39,12 +42,14 @@ describe CGE::CronMonitor do
 
       it 'should sleep until target time' do
         expect(future_monitor).to receive(:sleep).with(kind_of(Numeric))
-        future_monitor.execute(future_inputs, nil)
+        mock_graph = double('CommandGraph')
+        future_monitor.execute(future_inputs, nil, mock_graph)
       end
 
       it 'should set fired_at when triggered' do
         allow(future_monitor).to receive(:sleep)
-        future_monitor.execute(future_inputs, nil)
+        mock_graph = double('CommandGraph')
+        future_monitor.execute(future_inputs, nil, mock_graph)
         expect(future_monitor.fired_at).to be_a(Time)
       end
 
@@ -57,12 +62,14 @@ describe CGE::CronMonitor do
 
       it 'should not sleep' do
         expect(past_monitor).not_to receive(:sleep)
-        past_monitor.execute(past_inputs, nil)
+        mock_graph = double('CommandGraph')
+        past_monitor.execute(past_inputs, nil, mock_graph)
       end
 
       it 'should return immediately' do
         start_time = Time.now
-        past_monitor.execute(past_inputs, nil)
+        mock_graph = double('CommandGraph')
+        past_monitor.execute(past_inputs, nil, mock_graph)
         end_time = Time.now
         expect(end_time - start_time).to be < 0.1
       end

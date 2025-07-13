@@ -15,7 +15,8 @@ describe CGE::Input do
   let(:inputs) { { 'input' => 'test' } }
 
   it 'should set input values' do
-    test_input.execute(inputs, nil)
+    mock_graph = double('CommandGraph')
+    test_input.execute(inputs, nil, mock_graph)
     expect(test_input.input.value).to eq('test')
   end
 end

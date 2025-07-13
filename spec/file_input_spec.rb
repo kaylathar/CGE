@@ -17,35 +17,41 @@ describe CGE::FileInput do
   end
 
   it 'should read file content correctly' do
-    file_input.execute(inputs, nil)
+    mock_graph = double('CommandGraph')
+    file_input.execute(inputs, nil, mock_graph)
     expect(file_input.content).to eq(test_content)
   end
 
   it 'should raise error when file_path is not provided' do
-    expect { file_input.execute({}, nil) }
+    mock_graph = double('CommandGraph')
+    expect { file_input.execute({}, nil, mock_graph) }
       .to raise_error(CGE::InputError)
   end
 
   it 'should raise error when file_path is empty' do
-    expect { file_input.execute({ 'file_path' => '' }, nil) }
+    mock_graph = double('CommandGraph')
+    expect { file_input.execute({ 'file_path' => '' }, nil, mock_graph) }
       .to raise_error(CGE::InputError)
   end
 
   it 'should raise error when file does not exist' do
-    expect { file_input.execute({ 'file_path' => '/nonexistent/file.txt' }, nil) }
+    mock_graph = double('CommandGraph')
+    expect { file_input.execute({ 'file_path' => '/nonexistent/file.txt' }, nil, mock_graph) }
       .to raise_error(CGE::InputError)
   end
 
   it 'should raise error when path is a directory' do
     Dir.mktmpdir do |dir|
-      expect { file_input.execute({ 'file_path' => dir }, nil) }
+      mock_graph = double('CommandGraph')
+      expect { file_input.execute({ 'file_path' => dir }, nil, mock_graph) }
       .to raise_error(CGE::InputError)
     end
   end
 
   it 'should raise error when file is not readable' do
     File.chmod(0o000, temp_file.path)
-    expect { file_input.execute(inputs, nil) }
+    mock_graph = double('CommandGraph')
+    expect { file_input.execute(inputs, nil, mock_graph) }
       .to raise_error(CGE::InputError)
   ensure
     File.chmod(0o644, temp_file.path)
@@ -57,7 +63,8 @@ describe CGE::FileInput do
     large_file.write(large_content)
     large_file.close
 
-    file_input.execute({ 'file_path' => large_file.path }, nil)
+    mock_graph = double('CommandGraph')
+    file_input.execute({ 'file_path' => large_file.path }, nil, mock_graph)
     expect(file_input.content).to eq(large_content)
 
     large_file.unlink
@@ -69,7 +76,8 @@ describe CGE::FileInput do
     binary_file.write(binary_content)
     binary_file.close
 
-    file_input.execute({ 'file_path' => binary_file.path }, nil)
+    mock_graph = double('CommandGraph')
+    file_input.execute({ 'file_path' => binary_file.path }, nil, mock_graph)
     expect(file_input.content).to eq(binary_content)
 
     binary_file.unlink
@@ -79,7 +87,8 @@ describe CGE::FileInput do
     empty_file = Tempfile.new('empty_test_file')
     empty_file.close
 
-    file_input.execute({ 'file_path' => empty_file.path }, nil)
+    mock_graph = double('CommandGraph')
+    file_input.execute({ 'file_path' => empty_file.path }, nil, mock_graph)
     expect(file_input.content).to eq('')
 
     empty_file.unlink

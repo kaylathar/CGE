@@ -17,7 +17,7 @@ module CGE
   # though subclasses may override this behavior
   class CommandGraph
     include Logging
-    attr_reader :name, :id, :initial_command, :constants, :owner_id
+    attr_reader :name, :id, :initial_command, :constants, :owner_id, :subgraphs, :initial_subgraph_id
 
     @plugins_loaded = false
 
@@ -48,35 +48,65 @@ module CGE
       end
     end
 
-    # Create a new command object from a data source
+    # Create a new command object from subgraph data
     # @param id [String] Optional unique identifier for this graph (auto-generated if not provided)
     # @param name [String] The user readable name for this graph
-    # @param initial_command [Command] The first command of the command graph
+    # @param subgraphs [Hash] Hash of subgraph_id => first_command_of_subgraph (required)
+    # @param initial_subgraph_id [String] ID of the subgraph to start execution with (required)
     # @param global_configuration [GlobalConfiguration] Optional global configuration instance
     # @param constants [Hash] Optional hash of graph-level constants
     # @param owner_id [String] Optional ID of the user who owns this graph
     # @param repeat [Boolean] Whether the graph should repeat when it reaches the end (defaults to false)
-    def initialize(id, name, initial_command, global_configuration = nil, constants = {}, owner_id = nil, repeat = false)
+    # rubocop:disable Metrics/ParameterLists, Metrics/CyclomaticComplexity
+    def initialize(id, name, subgraphs, initial_subgraph_id, global_configuration = nil,
+                   constants = {}, owner_id = nil, repeat = false)
+      # rubocop:enable Metrics/ParameterLists, Metrics/CyclomaticComplexity
+
       @id = id || SecureRandom.uuid
       @name = name
-      @initial_command = initial_command
-      @current_command = initial_command
+      @owner_id = owner_id
+      @repeat = repeat
+
+      @subgraphs = subgraphs
+      @initial_subgraph_id = initial_subgraph_id
+      @initial_command = @subgraphs[@initial_subgraph_id]
+      @current_command = @initial_command
+
+      @node_lookup = {}
+      @subgraphs.each_value do |first_command|
+        current = first_command
+        while current
+          @node_lookup[current.id] = current
+          current = current.next_command
+        end
+      end
+
       @variables = {}
       @initial_variables = {}
       @constants = constants
-      @owner_id = owner_id
 
       # Store constants under the 'graph' namespace
       constants.each do |key, value|
         @variables["graph.#{key}"] = value
+        @initial_variables["graph.#{key}"] = value
       end
 
+      # Store global configuration values in 'global' namespace
       global_configuration&.command_visible_configs&.each do |key, value|
         @variables["global.#{key}"] = value
+        @initial_variables["global.#{key}"] = value
       end
+    end
 
-      @initial_variables = @variables.clone
-      @repeat = repeat
+    # Look up a node by ID, if subgraph ID is used instead will return first node in graph
+    # @param node_id [String] The ID of the node or subgraph to find
+    # @return [Command] The command node, or first node of subgraph if node_id is a subgraph ID
+    def find_node_by_id(node_id)
+      return @node_lookup[node_id] if @node_lookup.key?(node_id)
+      return @subgraphs[node_id] if @subgraphs.key?(node_id)
+
+      # Not found
+      nil
     end
 
     # Begins executing the command by starting the monitor specified in
@@ -98,8 +128,7 @@ module CGE
 
             log_info("Executing command: #{@current_command.id}")
             log_debug("Current Variables: #{@variables}")
-            next_command = @current_command.execute(substitute_variables(@current_command.inputs, @variables),
-                                                    @current_command.next_command)
+            next_command = @current_command.execute(substitute_variables(@current_command.inputs, @variables), @current_command.next_command, self)
             @current_command.class.outputs.each_key do |output_name|
               output_value = @current_command.send(output_name)
               @variables["#{@current_command.id}.#{output_name}"] = output_value

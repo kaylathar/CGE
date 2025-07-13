@@ -12,27 +12,30 @@ describe CGE::JSONCommandGraph do
       let(:config_data) do
         {
           'Name' => 'Test Command Graph',
-          'Graph' => [
-            {
-              'Name' => 'file_monitor',
-              'Class' => 'CGE::FileUpdateMonitor',
-              'Inputs' => {
-                'path' => '/tmp/test_file',
-                'frequency' => 5
+          'StartSubgraphId' => 'main',
+          'Subgraphs' => {
+            'main' => [
+              {
+                'Name' => 'file_monitor',
+                'Class' => 'CGE::FileUpdateMonitor',
+                'Inputs' => {
+                  'path' => '/tmp/test_file',
+                  'frequency' => 5
+                }
+              },
+              {
+                'Name' => 'sms_alert',
+                'Class' => 'CGE::SMSAction',
+                'Inputs' => {
+                  'to' => '+1234567890',
+                  'from' => '+0987654321',
+                  'message' => 'File updated at {{file_monitor.time}}',
+                  'sid' => 'test_sid',
+                  'token' => 'test_token'
+                }
               }
-            },
-            {
-              'Name' => 'sms_alert',
-              'Class' => 'CGE::SMSAction',
-              'Inputs' => {
-                'to' => '+1234567890',
-                'from' => '+0987654321',
-                'message' => 'File updated at {{file_monitor.time}}',
-                'sid' => 'test_sid',
-                'token' => 'test_token'
-              }
-            }
-          ]
+            ]
+          }
         }
       end
       
@@ -73,13 +76,16 @@ describe CGE::JSONCommandGraph do
       let(:invalid_config) do
         {
           'Name' => 'Invalid Graph',
-          'Graph' => [
-            {
-              'Name' => 'invalid_monitor',
-              'Class' => 'CGE::NonExistentMonitor',
-              'Inputs' => {}
-            }
-          ]
+          'StartSubgraphId' => 'main',
+          'Subgraphs' => {
+            'main' => [
+              {
+                'Name' => 'invalid_monitor',
+                'Class' => 'CGE::NonExistentMonitor',
+                'Inputs' => {}
+              }
+            ]
+          }
         }
       end
       
@@ -99,34 +105,37 @@ describe CGE::JSONCommandGraph do
       let(:complex_config) do
         {
           'Name' => 'Complex Monitor Chain',
-          'Graph' => [
-            {
-              'Name' => 'file_monitor',
-              'Class' => 'CGE::FileUpdateMonitor',
-              'Inputs' => {
-                'path' => '/tmp/source_file',
-                'frequency' => 2
+          'StartSubgraphId' => 'main',
+          'Subgraphs' => {
+            'main' => [
+              {
+                'Name' => 'file_monitor',
+                'Class' => 'CGE::FileUpdateMonitor',
+                'Inputs' => {
+                  'path' => '/tmp/source_file',
+                  'frequency' => 2
+                }
+              },
+              {
+                'Name' => 'socket_monitor',
+                'Class' => 'CGE::UnixSocketMonitor',
+                'Inputs' => {
+                  'socket_path' => '/tmp/webhook_{{file_monitor.time}}.sock'
+                }
+              },
+              {
+                'Name' => 'sms_action',
+                'Class' => 'CGE::SMSAction',
+                'Inputs' => {
+                  'to' => '+1234567890',
+                  'message' => 'File modified at {{file_monitor.time}}, webhook data: {{socket_monitor.data}}',
+                  'from' => '+0987654321',
+                  'sid' => 'test_sid',
+                  'token' => 'test_token'
+                }
               }
-            },
-            {
-              'Name' => 'socket_monitor',
-              'Class' => 'CGE::UnixSocketMonitor',
-              'Inputs' => {
-                'socket_path' => '/tmp/webhook_{{file_monitor.time}}.sock'
-              }
-            },
-            {
-              'Name' => 'sms_action',
-              'Class' => 'CGE::SMSAction',
-              'Inputs' => {
-                'to' => '+1234567890',
-                'message' => 'File modified at {{file_monitor.time}}, webhook data: {{socket_monitor.data}}',
-                'from' => '+0987654321',
-                'sid' => 'test_sid',
-                'token' => 'test_token'
-              }
-            }
-          ]
+            ]
+          }
         }
       end
       
@@ -160,38 +169,41 @@ describe CGE::JSONCommandGraph do
       let(:action_chain_config) do
         {
           'Name' => 'Action Chain Graph',
-          'Graph' => [
-            {
-              'Name' => 'file_monitor',
-              'Class' => 'CGE::FileUpdateMonitor',
-              'Inputs' => {
-                'path' => '/tmp/monitored_file',
-                'frequency' => 5
+          'StartSubgraphId' => 'main',
+          'Subgraphs' => {
+            'main' => [
+              {
+                'Name' => 'file_monitor',
+                'Class' => 'CGE::FileUpdateMonitor',
+                'Inputs' => {
+                  'path' => '/tmp/monitored_file',
+                  'frequency' => 5
+                }
+              },
+              {
+                'Name' => 'email_action',
+                'Class' => 'CGE::EmailAction',
+                'Inputs' => {
+                  'to' => 'admin@example.com',
+                  'subject' => 'File Update Alert',
+                  'body' => 'File updated at {{file_monitor.time}}',
+                  'from' => 'system@example.com',
+                  'server' => 'localhost'
+                }
+              },
+              {
+                'Name' => 'sms_action',
+                'Class' => 'CGE::SMSAction',
+                'Inputs' => {
+                  'to' => '+1234567890',
+                  'message' => 'Email sent: {{email_action.message_id}}',
+                  'from' => '+0987654321',
+                  'sid' => 'test_sid',
+                  'token' => 'test_token'
+                }
               }
-            },
-            {
-              'Name' => 'email_action',
-              'Class' => 'CGE::EmailAction',
-              'Inputs' => {
-                'to' => 'admin@example.com',
-                'subject' => 'File Update Alert',
-                'body' => 'File updated at {{file_monitor.time}}',
-                'from' => 'system@example.com',
-                'server' => 'localhost'
-              }
-            },
-            {
-              'Name' => 'sms_action',
-              'Class' => 'CGE::SMSAction',
-              'Inputs' => {
-                'to' => '+1234567890',
-                'message' => 'Email sent: {{email_action.message_id}}',
-                'from' => '+0987654321',
-                'sid' => 'test_sid',
-                'token' => 'test_token'
-              }
-            }
-          ]
+            ]
+          }
         }
       end
       
@@ -216,31 +228,34 @@ describe CGE::JSONCommandGraph do
       let(:constants_config) do
         {
           'Name' => 'Constants Test Graph',
+          'StartSubgraphId' => 'main',
           'Constants' => {
             'admin_email' => 'admin@example.com',
             'base_path' => '/tmp/monitoring'
           },
-          'Graph' => [
-            {
-              'Name' => 'file_monitor',
-              'Class' => 'CGE::FileUpdateMonitor',
-              'Inputs' => {
-                'path' => '{{graph.base_path}}/watched_file',
-                'frequency' => 5
+          'Subgraphs' => {
+            'main' => [
+              {
+                'Name' => 'file_monitor',
+                'Class' => 'CGE::FileUpdateMonitor',
+                'Inputs' => {
+                  'path' => '{{graph.base_path}}/watched_file',
+                  'frequency' => 5
+                }
+              },
+              {
+                'Name' => 'email_action',
+                'Class' => 'CGE::EmailAction',
+                'Inputs' => {
+                  'to' => '{{graph.admin_email}}',
+                  'subject' => 'Alert',
+                  'body' => 'File at {{graph.base_path}} was updated',
+                  'from' => 'system@example.com',
+                  'server' => 'localhost'
+                }
               }
-            },
-            {
-              'Name' => 'email_action',
-              'Class' => 'CGE::EmailAction',
-              'Inputs' => {
-                'to' => '{{graph.admin_email}}',
-                'subject' => 'Alert',
-                'body' => 'File at {{graph.base_path}} was updated',
-                'from' => 'system@example.com',
-                'server' => 'localhost'
-              }
-            }
-          ]
+            ]
+          }
         }
       end
       

@@ -51,37 +51,43 @@ describe CGE::SMSAction do
       allow(mock_client).to receive(:messages).and_return(mock_messages)
       allow(mock_messages).to receive(:create).and_return('SM123')
       
-      expect { action.execute(valid_inputs, nil) }.not_to raise_error
+      mock_graph = double('CommandGraph')
+      expect { action.execute(valid_inputs, nil, mock_graph) }.not_to raise_error
     end
 
     it 'should raise error when to is missing' do
       invalid_inputs = valid_inputs.dup
       invalid_inputs.delete('to')
-      expect { action.execute(invalid_inputs, nil) }.to raise_error
+      mock_graph = double('CommandGraph')
+      expect { action.execute(invalid_inputs, nil, mock_graph) }.to raise_error
     end
 
     it 'should raise error when message is missing' do
       invalid_inputs = valid_inputs.dup
       invalid_inputs.delete('message')
-      expect { action.execute(invalid_inputs, nil) }.to raise_error
+      mock_graph = double('CommandGraph')
+      expect { action.execute(invalid_inputs, nil, mock_graph) }.to raise_error
     end
 
     it 'should raise error when from is missing' do
       invalid_inputs = valid_inputs.dup
       invalid_inputs.delete('from')
-      expect { action.execute(invalid_inputs, nil) }.to raise_error
+      mock_graph = double('CommandGraph')
+      expect { action.execute(invalid_inputs, nil, mock_graph) }.to raise_error
     end
 
     it 'should raise error when sid is missing' do
       invalid_inputs = valid_inputs.dup
       invalid_inputs.delete('sid')
-      expect { action.execute(invalid_inputs, nil) }.to raise_error
+      mock_graph = double('CommandGraph')
+      expect { action.execute(invalid_inputs, nil, mock_graph) }.to raise_error
     end
 
     it 'should raise error when token is missing' do
       invalid_inputs = valid_inputs.dup
       invalid_inputs.delete('token')
-      expect { action.execute(invalid_inputs, nil) }.to raise_error
+      mock_graph = double('CommandGraph')
+      expect { action.execute(invalid_inputs, nil, mock_graph) }.to raise_error
     end
   end
 
@@ -99,7 +105,8 @@ describe CGE::SMSAction do
 
     it 'should call create on client.messages' do
       expect(mock_messages).to receive(:create)
-      action.execute(valid_inputs, nil)
+      mock_graph = double('CommandGraph')
+      action.execute(valid_inputs, nil, mock_graph)
     end
 
     it 'should pass correct parameters to messages.create' do
@@ -110,11 +117,13 @@ describe CGE::SMSAction do
       }
 
       expect(mock_messages).to receive(:create).with(expected_params)
-      action.execute(valid_inputs, nil)
+      mock_graph = double('CommandGraph')
+      action.execute(valid_inputs, nil, mock_graph)
     end
 
     it 'should set message_id output attribute' do
-      action.execute(valid_inputs, nil)
+      mock_graph = double('CommandGraph')
+      action.execute(valid_inputs, nil, mock_graph)
       expect(action.message_id).to eq(mock_message_id)
     end
 
@@ -124,12 +133,14 @@ describe CGE::SMSAction do
       end
 
       it 'should set the returned message ID' do
-        action.execute(valid_inputs, nil)
+        mock_graph = double('CommandGraph')
+        action.execute(valid_inputs, nil, mock_graph)
         expect(action.message_id).to eq('SM_success_id')
       end
 
       it 'should complete without error' do
-        expect { action.execute(valid_inputs, nil) }.not_to raise_error
+        mock_graph = double('CommandGraph')
+        expect { action.execute(valid_inputs, nil, mock_graph) }.not_to raise_error
       end
     end
 
@@ -139,7 +150,8 @@ describe CGE::SMSAction do
       end
 
       it 'should propagate the error' do
-        expect { action.execute(valid_inputs, nil) }.to raise_error(StandardError, 'Twilio API Error')
+        mock_graph = double('CommandGraph')
+        expect { action.execute(valid_inputs, nil, mock_graph) }.to raise_error(StandardError, 'Twilio API Error')
       end
     end
   end

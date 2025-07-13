@@ -24,22 +24,26 @@ describe CGE::Monitor do
   end
 
   it 'should execute without requiring a block' do
-    expect { test_monitor.execute(inputs, nil) }.not_to raise_error
+    mock_graph = double('CommandGraph')
+    expect { test_monitor.execute(inputs, nil, mock_graph) }.not_to raise_error
   end
 
   it 'should call block_until_triggered' do
-    test_monitor.execute(inputs, nil)
+    mock_graph = double('CommandGraph')
+    test_monitor.execute(inputs, nil, mock_graph)
     expect(test_monitor.output).to eq(123)
   end
 
   it 'should return next command' do
     next_monitor = TestMonitor.new('next_monitor_id', 'next_monitor', {}, nil)
-    result = test_monitor.execute(inputs, next_monitor)
+    mock_graph = double('CommandGraph')
+    result = test_monitor.execute(inputs, next_monitor, mock_graph)
     expect(result).to eq(next_monitor)
   end
 
   it 'should set input values' do
-    test_monitor.execute(inputs, nil)
+    mock_graph = double('CommandGraph')
+    test_monitor.execute(inputs, nil, mock_graph)
     expect(test_monitor.input.value).to eq('test')
   end
 end

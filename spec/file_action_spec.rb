@@ -24,7 +24,8 @@ describe CGE::FileAction do
   context 'when execute is called' do
     it 'writes content to the specified file' do
       expect(File).to receive(:write).with('/tmp/test_file.txt', 'Test content')
-      @action.execute(@inputs, nil)
+      mock_graph = double('CommandGraph')
+      @action.execute(@inputs, nil, mock_graph)
     end
 
     it 'creates directories when create_directories is true' do
@@ -34,7 +35,8 @@ describe CGE::FileAction do
       expect(FileUtils).to receive(:mkdir_p).with('/tmp/nested/dir')
       expect(File).to receive(:write).with('/tmp/nested/dir/test_file.txt', 'Test content')
 
-      @action.execute(@inputs, nil)
+      mock_graph = double('CommandGraph')
+      @action.execute(@inputs, nil, mock_graph)
     end
 
     it 'does not create directories when create_directories is false' do
@@ -43,12 +45,14 @@ describe CGE::FileAction do
       expect(FileUtils).not_to receive(:mkdir_p)
       expect(File).to receive(:write).with('/tmp/test_file.txt', 'Test content')
 
-      @action.execute(@inputs, nil)
+      mock_graph = double('CommandGraph')
+      @action.execute(@inputs, nil, mock_graph)
     end
 
     it 'handles file write errors gracefully' do
       allow(File).to receive(:write).and_raise(StandardError.new('Permission denied'))
-      expect { @action.execute(@inputs, nil) }.to raise_error(CGE::FileActionError)
+      mock_graph = double('CommandGraph')
+      expect { @action.execute(@inputs, nil, mock_graph) }.to raise_error(CGE::FileActionError)
     end
   end
 end

@@ -8,7 +8,8 @@ describe 'CGE::FileUpdateMonitor' do
       monitor = CGE::FileUpdateMonitor.new('file_update_monitor_id', 'monitor', {}, nil)
 
       allow(monitor).to receive(:sleep).and_return(true)
-      expect { monitor.execute(inputs, nil) }.to raise_error(CGE::InputError)
+      mock_graph = double('CommandGraph')
+      expect { monitor.execute(inputs, nil, mock_graph) }.to raise_error(CGE::InputError)
     end
 
     it 'should validate that the frequency is > 1' do
@@ -17,7 +18,8 @@ describe 'CGE::FileUpdateMonitor' do
       monitor = CGE::FileUpdateMonitor.new('file_update_monitor_id2', 'monitor', {}, nil)
 
       allow(monitor).to receive(:sleep).and_return(true)
-      expect { monitor.execute(inputs, nil) }.to raise_error(CGE::InputError)
+      mock_graph = double('CommandGraph')
+      expect { monitor.execute(inputs, nil, mock_graph) }.to raise_error(CGE::InputError)
     end
 
     it 'should have a required input named path' do
@@ -48,13 +50,15 @@ describe 'CGE::FileUpdateMonitor' do
 
     it 'should sleep the set frequency' do
       expect(@monitor).to receive(:sleep).with(2)
-      @monitor.execute(@inputs, nil)
+      mock_graph = double('CommandGraph')
+      @monitor.execute(@inputs, nil, mock_graph)
     end
 
     it 'should record current time' do
       expect(File).to receive(:mtime).twice
       allow(@monitor).to receive(:sleep)
-      @monitor.execute(@inputs, nil)
+      mock_graph = double('CommandGraph')
+      @monitor.execute(@inputs, nil, mock_graph)
     end
 
     it 'should skip loop unless file modify time changes' do
@@ -68,19 +72,22 @@ describe 'CGE::FileUpdateMonitor' do
           1
         end
       end
-      @monitor.execute(@inputs, nil)
+      mock_graph = double('CommandGraph')
+      @monitor.execute(@inputs, nil, mock_graph)
     end
 
     context 'when file is modified' do
       it 'should record the time as output' do
         allow(@monitor).to receive(:sleep)
-        @monitor.execute(@inputs, nil)
+        mock_graph = double('CommandGraph')
+        @monitor.execute(@inputs, nil, mock_graph)
         expect(@monitor.time).to eq(1)
       end
 
       it 'should record the contents of the file as output' do
         allow(@monitor).to receive(:sleep)
-        @monitor.execute(@inputs, nil)
+        mock_graph = double('CommandGraph')
+        @monitor.execute(@inputs, nil, mock_graph)
         expect(@monitor.contents).to eq('contents')
       end
     end

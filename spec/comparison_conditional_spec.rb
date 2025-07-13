@@ -6,7 +6,8 @@ describe CGE::ComparisonConditional do
   
   # Helper method to check if condition passes (returns next_node vs nil)
   def evaluate_as_boolean(inputs)
-    result = comparison_conditional.execute(inputs, dummy_next_node)
+    mock_graph = double('CommandGraph')
+    result = comparison_conditional.execute(inputs, dummy_next_node, mock_graph)
     # Returns next_node if condition is true, nil if false
     result == dummy_next_node
   end
@@ -83,7 +84,8 @@ describe CGE::ComparisonConditional do
 
     it 'should raise error for non-numeric values in numeric comparison' do
       inputs = { 'value1' => 'not_a_number', 'value2' => '10', 'operator' => 'gt' }
-      expect { comparison_conditional.execute(inputs, dummy_next_node) }
+      mock_graph = double('CommandGraph')
+      expect { comparison_conditional.execute(inputs, dummy_next_node, mock_graph) }
         .to raise_error(ArgumentError)
     end
   end
@@ -91,12 +93,14 @@ describe CGE::ComparisonConditional do
   describe 'error handling' do
     it 'should raise error for unsupported operator' do
       inputs = { 'value1' => 'test', 'value2' => 'test', 'operator' => 'invalid_op' }
-      expect { comparison_conditional.execute(inputs, dummy_next_node) }
+      mock_graph = double('CommandGraph')
+      expect { comparison_conditional.execute(inputs, dummy_next_node, mock_graph) }
         .to raise_error(CGE::InputError, /Bad value for input operator/)
     end
 
     it 'should raise error when required values are missing' do
-      expect { comparison_conditional.execute({}, dummy_next_node) }
+      mock_graph = double('CommandGraph')
+      expect { comparison_conditional.execute({}, dummy_next_node, mock_graph) }
         .to raise_error(CGE::InputError, /Required input value1 missing/)
     end
   end

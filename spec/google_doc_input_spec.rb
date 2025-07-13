@@ -51,17 +51,20 @@ describe CGE::GoogleDocInput do
 
 
   it 'should fetch and set document content when processed' do
-    google_doc_input.execute(inputs, nil)
+    mock_graph = double('CommandGraph')
+    google_doc_input.execute(inputs, nil, mock_graph)
     expect(google_doc_input.content).to eq('Hello World')
   end
 
   it 'should raise an error when document_id is not provided' do
-    expect { google_doc_input.execute({}, nil) }
+    mock_graph = double('CommandGraph')
+    expect { google_doc_input.execute({}, nil, mock_graph) }
       .to raise_error(CGE::InputError, /Required input document_id missing/)
   end
 
   it 'should raise an error when document_id is not a string' do
-    expect { google_doc_input.execute({ 'document_id' => 123 }, nil) }
+    mock_graph = double('CommandGraph')
+    expect { google_doc_input.execute({ 'document_id' => 123 }, nil, mock_graph) }
       .to raise_error(CGE::InputError, /Bad value for input document_id/)
   end
 
@@ -71,7 +74,8 @@ describe CGE::GoogleDocInput do
 
     allow(mock_service).to receive(:get_document).with(document_id).and_return(table_document)
 
-    google_doc_input.execute(inputs, nil)
+    mock_graph = double('CommandGraph')
+    google_doc_input.execute(inputs, nil, mock_graph)
     expect(google_doc_input.content).to eq('Table Content')
   end
 
@@ -79,31 +83,36 @@ describe CGE::GoogleDocInput do
     empty_document = double('document', body: double('body', content: nil))
     allow(mock_service).to receive(:get_document).with(document_id).and_return(empty_document)
 
-    google_doc_input.execute(inputs, nil)
+    mock_graph = double('CommandGraph')
+    google_doc_input.execute(inputs, nil, mock_graph)
     expect(google_doc_input.content).to eq('')
   end
 
   it 'should handle Google API errors' do
     allow(mock_service).to receive(:get_document).and_raise(Google::Apis::ClientError.new('Not found'))
 
-    expect { google_doc_input.execute(inputs, nil) }
+    mock_graph = double('CommandGraph')
+    expect { google_doc_input.execute(inputs, nil, mock_graph) }
       .to raise_error(CGE::GoogleDocError, /Google API error/)
   end
 
   it 'should handle network errors' do
     allow(mock_service).to receive(:get_document).and_raise(StandardError.new('Network error'))
 
-    expect { google_doc_input.execute(inputs, nil) }
+    mock_graph = double('CommandGraph')
+    expect { google_doc_input.execute(inputs, nil, mock_graph) }
       .to raise_error(CGE::GoogleDocError, /Failed to fetch document/)
   end
 
   it 'should validate document_id format' do
-    expect { google_doc_input.execute({ 'document_id' => 'invalid' }, nil) }
+    mock_graph = double('CommandGraph')
+    expect { google_doc_input.execute({ 'document_id' => 'invalid' }, nil, mock_graph) }
       .to raise_error(CGE::InputError, /Bad value for input document_id/)
   end
 
   it 'should validate credentials_path exists' do
-    expect { google_doc_input.execute({ 'document_id' => document_id, 'credentials_path' => '/nonexistent/path' }, nil) }
+    mock_graph = double('CommandGraph')
+    expect { google_doc_input.execute({ 'document_id' => document_id, 'credentials_path' => '/nonexistent/path' }, nil, mock_graph) }
       .to raise_error(CGE::InputError, /Bad value for input credentials_path/)
   end
 
@@ -117,7 +126,8 @@ describe CGE::GoogleDocInput do
       .with(json_key_io: mock_file, scope: ['https://www.googleapis.com/auth/documents.readonly'])
       .and_return(mock_credentials)
 
-    google_doc_input.execute(inputs_with_credentials, nil)
+    mock_graph = double('CommandGraph')
+    google_doc_input.execute(inputs_with_credentials, nil, mock_graph)
     expect(google_doc_input.content).to eq('Hello World')
   end
 end

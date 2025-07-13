@@ -36,19 +36,22 @@ describe CGE::ShellAction do
   context 'when execute is called' do
     it 'executes a shell script' do
       expect(@action).to receive(:`).with('/bin/ls')
-      @action.execute(@inputs, nil)
+      mock_graph = double('CommandGraph')
+      @action.execute(@inputs, nil, mock_graph)
     end
 
     it 'returns the result of shell script' do
       allow(@action).to receive(:`).and_return('result!')
-      @action.execute(@inputs, nil)
+      mock_graph = double('CommandGraph')
+      @action.execute(@inputs, nil, mock_graph)
       expect(@action.results).to eq('result!')
     end
 
     it 'passes arguments to the shell script' do
       expect(@action).to receive(:`).with('/bin/ls test')
       @inputs['arguments'] = 'test'
-      @action.execute(@inputs, nil)
+      mock_graph = double('CommandGraph')
+      @action.execute(@inputs, nil, mock_graph)
     end
   end
 end

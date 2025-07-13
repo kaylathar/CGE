@@ -143,11 +143,12 @@ RSpec.describe CGE::DiscordBot do
       handler_called = false
       handler = proc { |_event, _content| handler_called = true }
 
-      bot.on_mention(&handler)
-      expect(bot.instance_variable_get(:@mention_handler)).to eq(handler)
+      test_obj = 'test_handler'
+      bot.on_mention(test_obj, &handler)
+      expect(bot.instance_variable_get(:@mention_handlers)[test_obj]).to eq(handler)
 
-      bot.remove_mention_handler
-      expect(bot.instance_variable_get(:@mention_handler)).to be_nil
+      bot.remove_mention_handler(test_obj)
+      expect(bot.instance_variable_get(:@mention_handlers)[test_obj]).to be_nil
     end
   end
 
@@ -262,7 +263,8 @@ RSpec.describe CGE::DiscordBot do
       handler_called = false
       content_received = nil
 
-      bot.on_mention do |_event, content|
+      mention_handler_obj = 'mention_test'
+      bot.on_mention(mention_handler_obj) do |_event, content|
         handler_called = true
         content_received = content
       end

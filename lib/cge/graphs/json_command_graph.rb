@@ -9,30 +9,22 @@ module CGE
   #
   # Loads and constructs a command graph from JSON configuration
   #
-  # JSON Structure:
+  # JSON Subgraph Structure (required format):
   #   {
   #     "Name": "Graph Name",
+  #     "StartSubgraphId": "main",
   #     "Constants": {
-  #       "admin_email": "admin@example.com",
-  #       "base_path": "/tmp"
+  #       "admin_email": "admin@example.com"
   #     },
-  #     "Graph": [
-  #       {
-  #         "Name": "MyMonitor"
-  #         "Class": "CGE::FileUpdateMonitor",
-  #         "Inputs": {
-  #           "path": "{{graph.base_path}}/file",
-  #           "frequency": 5
-  #         }
-  #       },
-  #       {
-  #         "Name": "MyAction"
-  #         "Class": "CGE::EmailAction",
-  #         "Inputs": {
-  #           "to": "{{graph.admin_email}}"
-  #         }
-  #       }
-  #     ]
+  #     "Subgraphs": {
+  #       "main": [
+  #         { "Name": "Monitor", "Class": "CGE::FileUpdateMonitor", "Inputs": {} },
+  #         { "Name": "Action", "Class": "CGE::EmailAction", "Inputs": {} }
+  #       ],
+  #       "alt_flow": [
+  #         { "Name": "AltAction", "Class": "CGE::LogAction", "Inputs": {} }
+  #       ]
+  #     }
   #   }
   #
   # @example
@@ -57,16 +49,21 @@ module CGE
       configuration = JSON.parse(json_data)
       id = configuration['Id']
       name = configuration['Name']
-      command_list = configuration['Graph']
       constants = configuration['Constants'] || {}
 
-      current_command = nil
-      command_list.reverse.each do |command_data|
-        command = command_from_data(command_data, current_command, service_manager)
-        current_command = command
+      subgraphs = {}
+      initial_subgraph_id = configuration['StartSubgraphId']
+
+      configuration['Subgraphs'].each do |subgraph_id, command_list|
+        current_command = nil
+        command_list.reverse.each do |command_data|
+          command = command_from_data(command_data, current_command, service_manager)
+          current_command = command
+        end
+        subgraphs[subgraph_id] = current_command
       end
 
-      super(id, name, current_command, global_configuration, constants, nil, configuration.key?('Repeat'))
+      super(id, name, subgraphs, initial_subgraph_id, global_configuration, constants, nil, configuration.key?('Repeat'))
     end
 
     def get_class(class_name)

@@ -10,9 +10,10 @@ module CGE
     #
     # @param inputs [Hash] A hash of inputs with name/value pairs, must
     # match types expected for each input or will raise an exception
-    # @param next_command [Command] The next command to execute after this one
+    # @param next_command [Command] The next command that would normally execute
+    # @param command_graph [CommandGraph] The command graph context for execution
     # @return [Command] The next command to execute
-    def execute(inputs, next_command)
+    def execute(inputs, next_command, _command_graph)
       process_inputs(inputs)
       invoke
       next_command

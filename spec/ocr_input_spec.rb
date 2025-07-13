@@ -22,19 +22,22 @@ describe CGE::OCRInput do
   end
 
   it 'should extract text from image using OCR' do
-    ocr_input.execute(inputs, nil)
+    mock_graph = double('CommandGraph')
+    ocr_input.execute(inputs, nil, mock_graph)
     expect(ocr_input.text).to eq('Sample OCR text')
   end
 
   it 'should raise error when image_path is empty' do
-    expect { ocr_input.execute({ 'image_path' => '' }, nil) }
+    mock_graph = double('CommandGraph')
+    expect { ocr_input.execute({ 'image_path' => '' }, nil, mock_graph) }
       .to raise_error(CGE::InputError, /Bad value for input image_path/)
   end
 
   it 'should raise error when image file is not accessible' do
     allow(File).to receive(:readable?).with(test_image_path).and_return(false)
     
-    expect { ocr_input.execute(inputs, nil) }
+    mock_graph = double('CommandGraph')
+    expect { ocr_input.execute(inputs, nil, mock_graph) }
       .to raise_error(CGE::InputError, /Bad value for input image_path/)
   end
 
@@ -43,14 +46,16 @@ describe CGE::OCRInput do
     
     valid_formats.each do |format|
       allow(File).to receive(:extname).with(test_image_path).and_return(format)
-      expect { ocr_input.execute(inputs, nil) }.not_to raise_error
+      mock_graph = double('CommandGraph')
+      expect { ocr_input.execute(inputs, nil, mock_graph) }.not_to raise_error
     end
   end
 
   it 'should raise error for unsupported image formats' do
     allow(File).to receive(:extname).with(test_image_path).and_return('.txt')
     
-    expect { ocr_input.execute(inputs, nil) }
+    mock_graph = double('CommandGraph')
+    expect { ocr_input.execute(inputs, nil, mock_graph) }
       .to raise_error(CGE::InputError, /Bad value for input image_path/)
   end
 
@@ -61,27 +66,31 @@ describe CGE::OCRInput do
       hash_including(image: test_image_path, lang: 'spa')
     ).and_return(mock_rtesseract)
     
-    ocr_input.execute(inputs_with_lang, nil)
+    mock_graph = double('CommandGraph')
+    ocr_input.execute(inputs_with_lang, nil, mock_graph)
   end
 
   it 'should clean up whitespace in OCR results' do
     allow(mock_rtesseract).to receive(:to_s).and_return("  Multiple   spaces\n\nand   newlines  ")
     
-    ocr_input.execute(inputs, nil)
+    mock_graph = double('CommandGraph')
+    ocr_input.execute(inputs, nil, mock_graph)
     expect(ocr_input.text).to eq('Multiple spaces and newlines')
   end
 
   it 'should handle empty OCR results' do
     allow(mock_rtesseract).to receive(:to_s).and_return('   ')
     
-    ocr_input.execute(inputs, nil)
+    mock_graph = double('CommandGraph')
+    ocr_input.execute(inputs, nil, mock_graph)
     expect(ocr_input.text).to eq('')
   end
 
   it 'should handle RTesseract errors' do
     allow(RTesseract).to receive(:new).and_raise(StandardError.new('Tesseract error'))
     
-    expect { ocr_input.execute(inputs, nil) }
+    mock_graph = double('CommandGraph')
+    expect { ocr_input.execute(inputs, nil, mock_graph) }
       .to raise_error(CGE::OCRInputError, /OCR processing failed.*Tesseract error/)
   end
 

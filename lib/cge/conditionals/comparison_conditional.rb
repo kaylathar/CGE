@@ -17,7 +17,7 @@ module CGE
 
     protected
 
-    def determine_next_node(next_node)
+    def determine_next_node(next_node, _command_graph)
       return next_node if compute_comparison_result(value1.value, value2.value)
 
       log_debug("Comparison #{self} failed, aborting graph execution")

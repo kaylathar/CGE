@@ -23,13 +23,15 @@ describe CGE::Action do
   it 'should execute and return next command' do
     test_action.success = 123
     next_action = TestAction.new('next_action_id', 'next_action', {}, nil)
-    result = test_action.execute(inputs, next_action)
+    mock_graph = double('CommandGraph')
+    result = test_action.execute(inputs, next_action, mock_graph)
     expect(result).to eq(next_action)
     expect(test_action.success).to eq(123)
   end
 
   it 'should set input values' do
-    test_action.execute(inputs, nil)
+    mock_graph = double('CommandGraph')
+    test_action.execute(inputs, nil, mock_graph)
     expect(test_action.input.value).to eq('test')
   end
   

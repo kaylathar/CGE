@@ -27,7 +27,7 @@ module CGE
 
     protected
 
-    def determine_next_node(next_node)
+    def determine_next_node(next_node, _command_graph)
       return next_node if time_condition_met?
 
       log_debug("Time condition #{self} failed, aborting graph execution")

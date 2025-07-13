@@ -12,23 +12,23 @@ module CGE
   # The YAML file should contain a Name and Graph structure defining
   # the sequence of monitors and actions to execute.
   #
-  # YAML Structure:
+  # YAML Subgraph Structure (required format):
   #   Name: "Graph Name"
+  #   StartSubgraphId: "main"
   #   Constants:
   #     admin_email: "admin@example.com"
-  #     base_path: "/tmp"
-  #   Graph:
-  #     - Name: "mymonitor"
-  #       Type: "monitor"
-  #       Class: "CGE::FileUpdateMonitor"
-  #       Inputs:
-  #         path: "{{graph.base_path}}/file"
-  #         frequency: 5
-  #     - Name: "myaction"
-  #       Type: "action"
-  #       Class: "CGE::EmailAction"
-  #       Inputs:
-  #         to: "{{graph.admin_email}}"
+  #   Subgraphs:
+  #     main:
+  #       - Name: "Monitor"
+  #         Class: "CGE::FileUpdateMonitor"
+  #         Inputs: {}
+  #       - Name: "Action"
+  #         Class: "CGE::EmailAction"
+  #         Inputs: {}
+  #     alt_flow:
+  #       - Name: "AltAction"
+  #         Class: "CGE::LogAction"
+  #         Inputs: {}
   #
   # @example
   #   graph = YAMLCommandGraph.new("/path/to/config.yml")
@@ -52,15 +52,21 @@ module CGE
       configuration = YAML.safe_load(yaml_string)
       id = configuration['Id']
       name = configuration['Name']
-      command_list = configuration['Graph']
       constants = configuration['Constants'] || {}
 
-      current_command = nil
-      command_list.reverse.each do |command_data|
-        command = command_from_data(command_data, current_command, service_manager)
-        current_command = command
+      subgraphs = {}
+      initial_subgraph_id = configuration['StartSubgraphId']
+
+      configuration['Subgraphs'].each do |subgraph_id, command_list|
+        current_command = nil
+        command_list.reverse.each do |command_data|
+          command = command_from_data(command_data, current_command, service_manager)
+          current_command = command
+        end
+        subgraphs[subgraph_id] = current_command
       end
-      super(id, name, current_command, global_configuration, constants)
+
+      super(id, name, subgraphs, initial_subgraph_id, global_configuration, constants, nil, configuration.key?('Repeat'))
     end
 
     def get_class(class_name)

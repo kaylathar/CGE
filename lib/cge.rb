@@ -61,17 +61,31 @@ module CGE
   class CommandGraphExecutor
     # Initializes CGD with a given command set
     #
-    # @param commands [Array] Array containing Command objects
+    # @param command_graphs [Array] Array containing CommandGraph objects
     # @param global_config [GlobalConfiguration, nil] Optional global configuration
-    def initialize(commands, global_config)
-      @commands = commands
+    def initialize(command_graphs, global_config)
+      @command_graphs = command_graphs
       @global_config = global_config
+      @mutex = Mutex.new
+      @started = false
+    end
+
+    def add_command_graph(command_graph)
+      @mutex.synchronize do
+        @command_graphs << command_graph
+        command_graph.execute(self) if @started
+      end
     end
 
     # Starts the daemon - this method will block for duration
     # of execution of program
     def start
-      @commands.each(&:execute)
+      @mutex.synchronize do
+        @started = true
+        @command_graphs.each do |graph|
+          graph.execute(self)
+        end
+      end
       sleep
     end
   end

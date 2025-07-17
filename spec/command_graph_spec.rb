@@ -254,4 +254,138 @@ describe CGE::CommandGraph do
       expect(graph.id.length).to eq(36) # UUID format
     end
   end
+  
+  describe 'add_variables method' do
+    let(:constants) { { 'admin_email' => 'admin@example.com' } }
+    let(:mock_global_config) { double('GlobalConfiguration') }
+    let(:graph) { CGE::CommandGraph.new('test_graph_id', 'test_graph', { 'main' => mock_monitor }, 'main', mock_global_config, constants) }
+    
+    before do
+      allow(mock_global_config).to receive(:command_visible_configs).and_return({ 'heartbeat' => 60 })
+    end
+    
+    it 'should add variables to both initial_variables and variables' do
+      additional_initial = { 'init_var' => 'init_value' }
+      additional_current = { 'current_var' => 'current_value' }
+      
+      graph.send(:add_variables, additional_initial, additional_current)
+      
+      initial_vars = graph.instance_variable_get(:@initial_variables)
+      current_vars = graph.instance_variable_get(:@variables)
+      
+      expect(initial_vars['init_var']).to eq('init_value')
+      expect(current_vars['current_var']).to eq('current_value')
+    end
+    
+    it 'should work with empty parameters' do
+      expect { graph.send(:add_variables, {}, {}) }.not_to raise_error
+    end
+    
+    it 'should preserve existing variables' do
+      existing_initial = graph.instance_variable_get(:@initial_variables).dup
+      existing_current = graph.instance_variable_get(:@variables).dup
+      
+      graph.send(:add_variables, { 'new_init' => 'value' }, { 'new_current' => 'value' })
+      
+      initial_vars = graph.instance_variable_get(:@initial_variables)
+      current_vars = graph.instance_variable_get(:@variables)
+      
+      existing_initial.each { |key, value| expect(initial_vars[key]).to eq(value) }
+      existing_current.each { |key, value| expect(current_vars[key]).to eq(value) }
+    end
+  end
+  
+  describe 'graph forking functionality' do
+    let(:constants) { { 'admin_email' => 'admin@example.com' } }
+    let(:mock_global_config) { double('GlobalConfiguration') }
+    let(:mock_executor) { double('CommandGraphExecutor') }
+    let(:graph) { CGE::CommandGraph.new('test_graph_id', 'test_graph', { 'main' => mock_monitor, 'alt' => mock_action }, 'main', mock_global_config, constants) }
+    
+    before do
+      allow(mock_global_config).to receive(:command_visible_configs).and_return({ 'heartbeat' => 60 })
+      # Set up the graph executor
+      graph.instance_variable_set(:@graph_executor, mock_executor)
+    end
+    
+    describe '#fork' do
+      it 'should create a new graph with unique ID' do
+        forked_graph = graph.fork
+        
+        expect(forked_graph.id).not_to eq(graph.id)
+        expect(forked_graph.id).to be_a(String)
+        expect(forked_graph.id.length).to eq(36) # UUID format
+      end
+      
+      it 'should inherit all current variables from parent graph' do
+        # Add some variables to the parent graph
+        parent_variables = graph.instance_variable_get(:@variables)
+        parent_variables['command1.output'] = 'test_value'
+        parent_variables['command2.result'] = 42
+        
+        forked_graph = graph.fork
+        forked_variables = forked_graph.instance_variable_get(:@variables)
+        
+        expect(forked_variables['graph.admin_email']).to eq('admin@example.com')
+        expect(forked_variables['global.heartbeat']).to eq(60)
+        expect(forked_variables['command1.output']).to eq('test_value')
+        expect(forked_variables['command2.result']).to eq(42)
+      end
+      
+      it 'should use different starting subgraph when specified' do
+        forked_graph = graph.fork({}, 'alt')
+        
+        expect(forked_graph.initial_subgraph_id).to eq('alt')
+        expect(forked_graph.initial_command).to eq(mock_action)
+      end
+      
+      it 'should use same starting subgraph when not specified' do
+        forked_graph = graph.fork
+        
+        expect(forked_graph.initial_subgraph_id).to eq('main')
+        expect(forked_graph.initial_command).to eq(mock_monitor)
+      end
+      
+      it 'should inherit same subgraphs structure' do
+        forked_graph = graph.fork
+        
+        expect(forked_graph.subgraphs).to eq(graph.subgraphs)
+      end
+      
+      it 'should have fork indicator in name' do
+        forked_graph = graph.fork
+        
+        expect(forked_graph.name).to eq('test_graph (fork)')
+      end
+      
+      it 'should preserve owner_id and repeat settings' do
+        graph_with_owner = CGE::CommandGraph.new('test_id', 'test', { 'main' => mock_monitor }, 'main', nil, {}, 'user123', true)
+        forked_graph = graph_with_owner.fork
+        
+        expect(forked_graph.owner_id).to eq('user123')
+        expect(forked_graph.instance_variable_get(:@repeat)).to eq(true)
+      end
+    end
+    
+    describe '#fork_and_execute' do
+      it 'should create forked graph and add it to executor' do
+        forked_graph = double('ForkedGraph')
+        fork_variables = { 'param' => 'value' }
+        start_subgraph = 'alt'
+        
+        expect(graph).to receive(:fork).with(fork_variables, start_subgraph).and_return(forked_graph)
+        expect(mock_executor).to receive(:add_command_graph).with(forked_graph)
+        
+        graph.fork_and_execute(fork_variables, start_subgraph)
+      end
+      
+      it 'should pass empty hash and nil when no parameters provided' do
+        forked_graph = double('ForkedGraph')
+        
+        expect(graph).to receive(:fork).with({}, nil).and_return(forked_graph)
+        expect(mock_executor).to receive(:add_command_graph).with(forked_graph)
+        
+        graph.fork_and_execute
+      end
+    end
+  end
 end

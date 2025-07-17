@@ -89,18 +89,71 @@ describe 'CGE' do
 end
 
 describe 'CGE::CommandGraphExecutor' do
+  let(:command_graph1) { double('CGE::YAMLCommandGraph') }
+  let(:command_graph2) { double('CGE::YAMLCommandGraph') }
+  let(:executor) { CommandGraphExecutor.new([command_graph1, command_graph2], nil) }
+  
   context 'when started' do
-    it 'should execute each command graph' do
-      command_graph1 = double('CGE::YAMLCommandGraph')
-      command_graph2 = double('CGE::YAMLCommandGraph')
-      expect(command_graph1).to receive(:execute)
-      expect(command_graph2).to receive(:execute)
-      cgd = CommandGraphExecutor.new([command_graph1, command_graph2], nil)
+    it 'should execute each command graph with executor reference' do
+      expect(command_graph1).to receive(:execute).with(executor)
+      expect(command_graph2).to receive(:execute).with(executor)
+      
       thread = Thread.new do
-        cgd.start
+        executor.start
       end
       sleep(1)
       thread.kill
+    end
+  end
+  
+  describe '#add_command_graph' do
+    let(:new_command_graph) { double('CGE::CommandGraph') }
+    
+    context 'when executor is not started' do
+      it 'should add command graph to the list' do
+        expect(executor.instance_variable_get(:@command_graphs)).not_to include(new_command_graph)
+        
+        executor.add_command_graph(new_command_graph)
+        
+        expect(executor.instance_variable_get(:@command_graphs)).to include(new_command_graph)
+      end
+      
+      it 'should not execute the command graph immediately' do
+        expect(new_command_graph).not_to receive(:execute)
+        
+        executor.add_command_graph(new_command_graph)
+      end
+    end
+    
+    context 'when executor is started' do
+      before do
+        # Mock the initial command graphs to avoid execution
+        allow(command_graph1).to receive(:execute)
+        allow(command_graph2).to receive(:execute)
+        
+        # Start the executor in a separate thread
+        @executor_thread = Thread.new { executor.start }
+        sleep(0.1) # Give it a moment to start
+      end
+      
+      after do
+        @executor_thread.kill if @executor_thread
+      end
+      
+      it 'should add command graph and execute it immediately' do
+        expect(new_command_graph).to receive(:execute).with(executor)
+        
+        executor.add_command_graph(new_command_graph)
+      end
+      
+      it 'should be thread-safe' do
+        expect(new_command_graph).to receive(:execute).with(executor)
+        
+        # This should work even when called from another thread
+        Thread.new do
+          executor.add_command_graph(new_command_graph)
+        end.join
+      end
     end
   end
 end

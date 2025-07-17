@@ -17,7 +17,7 @@ module CGE
   # though subclasses may override this behavior
   class CommandGraph
     include Logging
-    attr_reader :name, :id, :initial_command, :constants, :owner_id, :subgraphs, :initial_subgraph_id
+    attr_reader :name, :id, :initial_command, :constants, :owner_id, :subgraphs, :initial_subgraph_id, :graph_executor
 
     @plugins_loaded = false
 
@@ -111,7 +111,8 @@ module CGE
 
     # Begins executing the command by starting the monitor specified in
     # the data source - will return immediately
-    def execute
+    def execute(graph_executor)
+      @graph_executor = graph_executor
       @cancelled = false
       @thread = Thread.new do
         if Thread.current != Thread.main
@@ -178,7 +179,43 @@ module CGE
       @variables = @initial_variables.dup
     end
 
-    protected :substitute_variables
+    def add_variables(additional_initial_variables = {}, additional_variables = {})
+      @initial_variables.merge!(additional_initial_variables)
+      @variables.merge!(additional_variables)
+    end
+
+    # Creates a forked copy of this command graph with inherited state
+    # @param fork_variables [Hash] Optional variables to set in the forked graph
+    # @param start_subgraph_id [String] Optional subgraph to start execution with (defaults to initial_subgraph_id)
+    # @return [CommandGraph] A new command graph instance with inherited state
+    def fork(fork_variables = {}, start_subgraph_id = nil)
+      # Create a new graph with the same structure but fresh state
+      forked_graph = self.class.new(
+        SecureRandom.uuid, # New unique ID for the fork
+        "#{@name} (fork)",
+        @subgraphs,
+        start_subgraph_id || @initial_subgraph_id,
+        nil, # global_configuration will be inherited through variables
+        @constants,
+        @owner_id,
+        @repeat
+      )
+
+      forked_graph.add_variables(@initial_variables, @variables)
+      forked_graph.add_variables(fork_variables, fork_variables)
+      forked_graph
+    end
+
+    # Forks this graph and executes it in current executor
+    # @param fork_variables [Hash] Optional variables to set in the forked graph's scope
+    # @param start_subgraph_id [String] Optional subgraph to start execution with
+    # @return [Thread] The thread executing the forked graph
+    def fork_and_execute(fork_variables = {}, start_subgraph_id = nil)
+      forked_graph = fork(fork_variables, start_subgraph_id)
+      @graph_executor.add_command_graph(forked_graph)
+    end
+
+    protected :substitute_variables, :add_variables
   end
 
   # Exception generated during loading or execution of command

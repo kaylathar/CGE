@@ -59,35 +59,35 @@ describe CGE::SMSAction do
       invalid_inputs = valid_inputs.dup
       invalid_inputs.delete('to')
       mock_graph = double('CommandGraph')
-      expect { action.execute(invalid_inputs, nil, mock_graph) }.to raise_error
+      expect { action.execute(invalid_inputs, nil, mock_graph) }.to raise_error(CGE::InputError)
     end
 
     it 'should raise error when message is missing' do
       invalid_inputs = valid_inputs.dup
       invalid_inputs.delete('message')
       mock_graph = double('CommandGraph')
-      expect { action.execute(invalid_inputs, nil, mock_graph) }.to raise_error
+      expect { action.execute(invalid_inputs, nil, mock_graph) }.to raise_error(CGE::InputError)
     end
 
     it 'should raise error when from is missing' do
       invalid_inputs = valid_inputs.dup
       invalid_inputs.delete('from')
       mock_graph = double('CommandGraph')
-      expect { action.execute(invalid_inputs, nil, mock_graph) }.to raise_error
+      expect { action.execute(invalid_inputs, nil, mock_graph) }.to raise_error(CGE::InputError)
     end
 
     it 'should raise error when sid is missing' do
       invalid_inputs = valid_inputs.dup
       invalid_inputs.delete('sid')
       mock_graph = double('CommandGraph')
-      expect { action.execute(invalid_inputs, nil, mock_graph) }.to raise_error
+      expect { action.execute(invalid_inputs, nil, mock_graph) }.to raise_error(CGE::InputError)
     end
 
     it 'should raise error when token is missing' do
       invalid_inputs = valid_inputs.dup
       invalid_inputs.delete('token')
       mock_graph = double('CommandGraph')
-      expect { action.execute(invalid_inputs, nil, mock_graph) }.to raise_error
+      expect { action.execute(invalid_inputs, nil, mock_graph) }.to raise_error(CGE::InputError)
     end
   end
 

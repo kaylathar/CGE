@@ -12,7 +12,7 @@ describe CGE::CronMonitor do
     it 'should validate that time is parseable' do
       invalid_inputs = { 'time' => 'not a time' }
       mock_graph = double('CommandGraph')
-      expect { monitor.execute(invalid_inputs, nil, mock_graph) }.to raise_error
+      expect { monitor.execute(invalid_inputs, nil, mock_graph) }.to raise_error(CGE::InputError)
     end
 
     it 'should accept valid time formats' do

@@ -13,7 +13,8 @@ module CGE
     # @param next_command [Command] The next command that would normally execute
     # @param command_graph [CommandGraph] The command graph context for execution
     # @return [Command] The next command to execute
-    def execute(inputs, next_command, _command_graph)
+    def execute(inputs, next_command, command_graph)
+      @command_graph = command_graph
       process_inputs(inputs)
       invoke
       next_command

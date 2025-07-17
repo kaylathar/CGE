@@ -55,13 +55,14 @@ module CGE
     # @param next_command [Command] The next command that would normally execute
     # @param command_graph [CommandGraph] The command graph context for execution
     # @return [Command] The next command to execute, typically next_command unless overridden
-    def execute(inputs, next_command, _command_graph)
+    def execute(inputs, next_command, command_graph)
+      @command_graph = command_graph
       process_inputs(inputs)
       next_command
     end
 
     protected
 
-    attr_reader :service_manager
+    attr_reader :service_manager, :command_graph
   end
 end

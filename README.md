@@ -17,4 +17,4 @@ Graphs of multiple types of commands are supported - this can include waiting on
 
 ## Contributing
 
-If you're interested in contributing custom commands you've written, please just submit a pull request - http://github.com/klmcarthur/CGE - and I'll happily have a look.
+If you're interested in contributing custom commands you've written, please just submit a pull request and I'll have a look.
